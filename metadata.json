@@ -1,0 +1,6 @@
+{
+  "name": "drwashit",
+  "description": "An all-in-one CRM and workflow management dashboard tailored for professional auto detailing studios. Features real-time job tracking, service bays, billing, client profiles, and a booking simulator.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
