@@ -7,123 +7,130 @@ import { ServicePackage, Customer, Appointment, Staff, ShopSettings } from '../t
 
 export const DEFAULT_SERVICES: ServicePackage[] = [
   {
-    id: 'pkg-express',
-    name: 'Express Clean & Shine',
-    description: 'High-foaming premium hand wash, wheel de-dusting, thorough interior vacuuming, glass polishing, and high-gloss tire dressing.',
+    id: 'pkg-monthly-wash',
+    name: 'Car Wash Monthly Package',
+    description: 'Unlimited or structured premium monthly washing subscriptions with priority bay access.',
     durationMin: 45,
     pricing: {
-      sedan: 75,
-      suv: 95,
-      truck_large: 115
+      sedan: 1499,
+      suv: 1999,
+      truck_large: 2499
     },
     category: 'full_detail',
     features: [
-      'Foam Bath Hand Wash',
-      'Wheel & Tire Cleaning',
-      'Interior Vacuum (Seats & Carpets)',
-      'Dashboard & Trim Wipedown',
-      'Streak-free Window Cleaning',
-      'High-Gloss Tire Dressing'
+      '4 Hand Washes per Month',
+      'Vacuuming & Dusting',
+      'Tire Dressing & Polish',
+      'Priority Scheduling'
     ]
   },
   {
-    id: 'pkg-interior',
-    name: 'Deep Interior Sanitization',
-    description: 'Full interior deep-cleaning featuring carpet hot-water extraction, detailed steam sanitizing, leather conditioning, and headliner detailed wipe.',
+    id: 'pkg-dry-cleaning',
+    name: 'Dry Cleaning',
+    description: 'Complete deep-extraction shampooing and dry clean for seats, mats, carpets, roof headliner, and door pads.',
     durationMin: 180,
     pricing: {
-      sedan: 175,
-      suv: 195,
-      truck_large: 225
+      sedan: 1999,
+      suv: 2499,
+      truck_large: 2999
     },
     category: 'interior',
     features: [
-      'Upholstery Shampoo & Hot Water Extraction',
-      'Deep Steam Sanitizing of Vent Grills',
-      'Leather Cleaning & Premium Conditioning',
-      'Stain & Odor Neutralization Treatment',
-      'All Vinyl & Trim Detailed UV Protection',
-      'Inside Glass & Mirror Detailing'
+      'Upholstery Stain Removal',
+      'Hot-Water Soil Extraction',
+      'Anti-Bacterial Dry Polish',
+      'Odor Neutralizer'
     ]
   },
   {
-    id: 'pkg-full',
-    name: 'Showroom Signature Detail',
-    description: 'The ultimate bumper-to-bumper reset. Combines deep interior decontamination with advanced paint cleansing, clay bar, and hybrid paint sealant coating.',
+    id: 'pkg-special-care',
+    name: 'Special Car Care',
+    description: 'Comprehensive premium detailing treatment including paint correction, high-gloss sealant glaze, and engine-bay conditioning.',
     durationMin: 240,
     pricing: {
-      sedan: 295,
-      suv: 345,
-      truck_large: 395
-    },
-    category: 'full_detail',
-    features: [
-      'Full Deep Interior Sanitization Package',
-      'Engine Bay Clean & Dressing',
-      'Iron Decontamination & Clay Bar Treatment',
-      'Single-Stage Gloss Polish Enhancer',
-      '6-Month Graphene Wax/Sealant Coat',
-      'Wheel Well Cleansing & Coating'
-    ]
-  },
-  {
-    id: 'pkg-ceramic',
-    name: 'Ultimate Ceramic Coating',
-    description: 'Full multi-stage paint correction to remove swirls, finished with a professional 3-year ultra-hydrophobic ceramic glass coating.',
-    durationMin: 360,
-    pricing: {
-      sedan: 795,
-      suv: 895,
-      truck_large: 995
+      sedan: 2999,
+      suv: 3999,
+      truck_large: 4999
     },
     category: 'ceramic',
     features: [
-      '2-Stage Precision Paint Correction (85%+ Swirl Removal)',
-      '3-Year Hydrophobic Nano Ceramic Shield',
-      'Ceramic Trim, Wheel Face, & Windshield Protection',
-      'Curing Oven Inspection & Gloss Meter Certification',
-      'Complementary Maintenance Kit Included',
-      'Premium Interior Conditioning Accent'
+      'Single-stage Machine Glazing',
+      'Teflon/Ceramic Spray Shield',
+      'Engine Dress & Guard',
+      'Chassis Underwash'
     ]
   },
   {
-    id: 'addon-engine',
-    name: 'Engine Bay Detailing',
-    description: 'Degrease, steam clean, and apply high-heat trim dressing to restore factory sheen.',
+    id: 'pkg-bike-scooty',
+    name: 'Bike and Scooty',
+    description: 'Complete foaming, degreasing, detail wash, and polishing for two-wheelers.',
     durationMin: 30,
     pricing: {
-      sedan: 50,
-      suv: 50,
-      truck_large: 60
+      sedan: 199,
+      suv: 249,
+      truck_large: 299
     },
-    category: 'add_on',
-    features: ['Degrease Engine Block', 'Steam Purge Grime', 'Plastics Matte Protection']
+    category: 'full_detail',
+    features: [
+      'Foam Jet Body Wash',
+      'Chain Cleaning & Lube',
+      'Chrome & Paint Polish',
+      'Tire Gloss'
+    ]
   },
   {
-    id: 'addon-headlight',
-    name: 'Headlight Restoration',
-    description: 'Wet-sand, compound, polish, and apply a premium UV-blocking ceramic coat to foggy lenses.',
-    durationMin: 45,
+    id: 'pkg-shine-cost',
+    name: 'Shine and Cost',
+    description: 'Quick wax application and external spray wax booster for maximum gloss at budget-friendly cost.',
+    durationMin: 30,
     pricing: {
-      sedan: 80,
-      suv: 80,
-      truck_large: 80
+      sedan: 499,
+      suv: 699,
+      truck_large: 899
     },
-    category: 'add_on',
-    features: ['Wet Sand Oxidized Layer', 'Micro Polish Gloss', 'UV Ceramic Clear Coat']
+    category: 'exterior',
+    features: [
+      'Gloss-Enhancing Hand Wax',
+      'Glass Water Repellent Coating',
+      'Tire Edge Restoration',
+      'Budget-Optimized Value'
+    ]
   },
   {
-    id: 'addon-pethair',
-    name: 'Severe Pet Hair Extraction',
-    description: 'Heavy duty extraction of embedded hair using specialized static tools and rubber sweeps.',
+    id: 'pkg-interior-basic',
+    name: 'Interior',
+    description: 'Deep detailing of interior cabin including dusting, vacuuming, dashboard dressing, and door cleaning.',
     durationMin: 60,
     pricing: {
-      sedan: 60,
-      suv: 75,
-      truck_large: 90
+      sedan: 799,
+      suv: 999,
+      truck_large: 1199
     },
-    category: 'add_on',
-    features: ['Deep Carpet Static Treatment', 'Serrated Hair Sweepers', 'HEPA Anti-Microbial Vacuum']
+    category: 'interior',
+    features: [
+      'Full Cabin High-Power Vacuum',
+      'Dashboard Clean & Protect',
+      'Console & Cup Holder Scrub',
+      'Windows Streak-Free Polish'
+    ]
+  },
+  {
+    id: 'pkg-exterior-basic',
+    name: 'Exterior',
+    description: 'Thorough exterior foam washing, microfiber hand drying, windshield care, and wheel de-griming.',
+    durationMin: 45,
+    pricing: {
+      sedan: 499,
+      suv: 599,
+      truck_large: 699
+    },
+    category: 'exterior',
+    features: [
+      'Active Foam Pressure Wash',
+      'Underbody Spray Rinse',
+      'Microfiber Touchless Drying',
+      'Rim Grime Treatment'
+    ]
   }
 ];
 

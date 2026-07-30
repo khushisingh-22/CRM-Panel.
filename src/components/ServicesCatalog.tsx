@@ -155,15 +155,15 @@ export default function ServicesCatalog({
                       <div className="grid grid-cols-3 gap-2 text-center">
                         <div className="bg-slate-50 border border-slate-200/40 p-2 rounded-lg">
                           <span className="text-4xs text-slate-500 font-bold uppercase block tracking-wider">Sedan</span>
-                          <strong className="text-xs font-mono font-extrabold text-slate-900">${pkg.pricing.sedan}</strong>
+                          <strong className="text-xs font-mono font-extrabold text-slate-900">₹{pkg.pricing.sedan}</strong>
                         </div>
                         <div className="bg-slate-50 border border-slate-200/40 p-2 rounded-lg">
                           <span className="text-4xs text-slate-500 font-bold uppercase block tracking-wider">Mid SUV</span>
-                          <strong className="text-xs font-mono font-extrabold text-slate-900">${pkg.pricing.suv}</strong>
+                          <strong className="text-xs font-mono font-extrabold text-slate-900">₹{pkg.pricing.suv}</strong>
                         </div>
                         <div className="bg-slate-50 border border-slate-200/40 p-2 rounded-lg">
                           <span className="text-4xs text-slate-500 font-bold uppercase block tracking-wider">Truck/Lrg</span>
-                          <strong className="text-xs font-mono font-extrabold text-slate-900">${pkg.pricing.truck_large}</strong>
+                          <strong className="text-xs font-mono font-extrabold text-slate-900">₹{pkg.pricing.truck_large}</strong>
                         </div>
                       </div>
                     </div>
@@ -234,7 +234,7 @@ export default function ServicesCatalog({
 
               {/* Price Editing fields */}
               <div className="space-y-2 border-t border-slate-100 pt-3">
-                <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Modify Tiered Prices ($)</span>
+                <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Modify Tiered Prices (₹)</span>
                 <div className="grid grid-cols-3 gap-3">
                   <div>
                     <label className="text-4xs text-slate-500 font-bold uppercase block mb-1">Sedan</label>

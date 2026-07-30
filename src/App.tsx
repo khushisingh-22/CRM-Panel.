@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 
 import { getStoredData, saveStoredData } from './utils/storage';
+import { DEFAULT_SERVICES } from './data/mockData';
 import { Appointment, Customer, ServicePackage, Staff, ShopSettings } from './types/crm';
 
 import DashboardOverview from './components/DashboardOverview';
@@ -98,7 +99,13 @@ export default function App() {
   // Load from Storage
   useEffect(() => {
     const data = getStoredData();
-    setServices(data.services);
+    const hasNewService = data.services.some(s => s.id === 'pkg-monthly-wash');
+    if (!hasNewService) {
+      setServices(DEFAULT_SERVICES);
+      saveStoredData({ services: DEFAULT_SERVICES });
+    } else {
+      setServices(data.services);
+    }
     setCustomers(data.customers);
     setAppointments(data.appointments);
     setStaff(data.staff);
