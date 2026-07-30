@@ -471,7 +471,7 @@ export default function App() {
                 { id: 'dashboard', name: 'Dashboard Overview', icon: LayoutDashboard },
                 { id: 'appointments', name: 'Calendar', icon: Calendar },
                 { id: 'bookings', name: 'Bookings', icon: ClipboardCheck },
-                { id: 'crm', name: 'Client Database', icon: Users },
+                { id: 'crm', name: 'Clients', icon: Users },
                 { id: 'billing', name: 'Invoices & Billing', icon: CreditCard },
               ] as Array<{ id: string; name: string; icon: any; badge?: number }>).map(tab => {
                 const active = activeTab === tab.id;
@@ -764,6 +764,8 @@ export default function App() {
               appointments={appointments}
               onAddCustomer={(newCust) => syncCustomers([newCust, ...customers])}
               onUpdateCustomer={(updated) => syncCustomers(customers.map(c => c.id === updated.id ? updated : c))}
+              onDeleteCustomer={(id) => syncCustomers(customers.filter(c => c.id !== id))}
+              onNavigate={handleNavigate}
             />
           )}
 

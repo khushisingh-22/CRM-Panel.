@@ -21,7 +21,9 @@ import {
   DollarSign,
   AlertCircle,
   TrendingUp,
-  ChevronDown
+  ChevronDown,
+  Trash2,
+  Upload
 } from 'lucide-react';
 import { Appointment, Customer, ServicePackage, Staff } from '../types/crm';
 
@@ -63,7 +65,7 @@ export default function BookingsManager({
   const [selectedAptId, setSelectedAptId] = useState<string | null>(null);
 
   // Form State for Booking Creation
-  const [custType, setCustType] = useState<'existing' | 'new'>('existing');
+  const [custType, setCustType] = useState<'existing' | 'new'>('new');
   const [selectedCustId, setSelectedCustId] = useState('');
   const [newCustName, setNewCustName] = useState('');
   const [newCustPhone, setNewCustPhone] = useState('');
@@ -78,6 +80,20 @@ export default function BookingsManager({
   const [bookingTime, setBookingTime] = useState('09:00');
   const [assignedStaffId, setAssignedStaffId] = useState('');
   const [bookingNotes, setBookingNotes] = useState('');
+
+  // Form State for Screenshot 1 Booking Creation
+  const [priceInput, setPriceInput] = useState<number>(0);
+  const [depositInput, setDepositInput] = useState<number>(0);
+  const [scheduledDateTime, setScheduledDateTime] = useState<string>(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  });
+  const [uploadedPhotos, setUploadedPhotos] = useState<string>('');
 
   // Form State for editing customer/booking info
   const [editingApt, setEditingApt] = useState<Appointment | null>(null);
@@ -104,6 +120,24 @@ export default function BookingsManager({
       }
     }
   }, [autoOpenNewBooking, onClearAutoOpenNewBooking]);
+
+  // Handle preselected client from CRM tab
+  useEffect(() => {
+    const preselectedId = localStorage.getItem('preselected_client_id');
+    if (preselectedId) {
+      localStorage.removeItem('preselected_client_id');
+      const client = customers.find(c => c.id === preselectedId);
+      if (client) {
+        setNewCustName(client.name);
+        setNewCustPhone(client.phone || '');
+        setNewCustEmail(client.email || '');
+        if (client.vehicles && client.vehicles[0]) {
+          setVehMake(client.vehicles[0].make);
+        }
+        setShowNewModal(true);
+      }
+    }
+  }, [customers]);
 
   // Set default selected appointment on mount or when lists change
   useEffect(() => {
@@ -132,49 +166,47 @@ export default function BookingsManager({
   const handleCreateBooking = (e: React.FormEvent) => {
     e.preventDefault();
 
-    let clientId = selectedCustId;
-    let clientName = '';
-    let clientPhone = '';
-    let clientEmail = '';
+    let clientId = `cust-${Date.now()}`;
+    let clientName = newCustName.trim();
+    let clientPhone = newCustPhone.trim() || '7078408264';
+    let clientEmail = newCustEmail.trim();
 
-    if (custType === 'new') {
-      clientId = `cust-${Date.now()}`;
-      clientName = newCustName;
-      clientPhone = newCustPhone;
-      clientEmail = newCustEmail;
-    } else {
-      const match = customers.find(c => c.id === selectedCustId);
-      if (match) {
-        clientName = match.name;
-        clientPhone = match.phone;
-        clientEmail = match.email;
-      }
+    // Check if there is an existing customer with this exact name
+    const existingClient = customers.find(c => c.name.toLowerCase() === clientName.toLowerCase());
+    if (existingClient) {
+      clientId = existingClient.id;
+      if (!clientPhone && existingClient.phone) clientPhone = existingClient.phone;
+      if (!clientEmail && existingClient.email) clientEmail = existingClient.email;
     }
 
     const matchedService = services.find(s => s.id === selectedServiceId);
-    let calculatedPrice = 150;
-    let serviceNameStr = 'Standard Detailing';
+    let serviceNameStr = matchedService ? matchedService.name : 'Custom Detailing';
 
-    if (matchedService) {
-      serviceNameStr = matchedService.name;
-      if (vehSize === 'sedan' && matchedService.pricing?.sedan) {
-        calculatedPrice = matchedService.pricing.sedan;
-      } else if (vehSize === 'suv' && matchedService.pricing?.suv) {
-        calculatedPrice = matchedService.pricing.suv;
-      } else if (vehSize === 'truck_large' && matchedService.pricing?.truck_large) {
-        calculatedPrice = matchedService.pricing.truck_large;
-      }
+    let vehicleYear = '2024';
+    let vehicleMake = vehMake;
+    const parts = vehMake.split(' ');
+    if (parts.length > 0 && /^\d{4}$/.test(parts[0])) {
+      vehicleYear = parts[0];
+      vehicleMake = parts.slice(1).join(' ');
     }
 
     const vehicleObj = {
-      year: '2024',
-      make: vehMake || 'Not specified',
-      model: vehModel || 'Not specified',
+      year: vehicleYear,
+      make: vehicleMake || 'Not specified',
+      model: '',
       size: vehSize,
-      licensePlate: vehPlate || 'NOTAG'
+      licensePlate: 'PENDING'
     };
 
-    // Auto-generate some started/ended times if creating as completed
+    // Split scheduledDateTime
+    const [datePart, timePart] = scheduledDateTime.split('T');
+
+    // Build notes with deposit info if present
+    let finalNotes = bookingNotes;
+    if (depositInput > 0) {
+      finalNotes = `${bookingNotes ? bookingNotes + '\n' : ''}Deposit Paid: ₹${depositInput}`;
+    }
+
     const newAppointment: Appointment = {
       id: `apt-${Date.now()}`,
       customerId: clientId,
@@ -185,13 +217,13 @@ export default function BookingsManager({
       serviceId: selectedServiceId,
       serviceName: serviceNameStr,
       addOns: [],
-      date: bookingDate,
-      time: bookingTime,
+      date: datePart || new Date().toISOString().split('T')[0],
+      time: timePart || '09:00',
       status: 'scheduled',
-      price: calculatedPrice,
-      notes: bookingNotes,
+      price: priceInput || 150,
+      notes: finalNotes,
       assignedTo: assignedStaffId || undefined,
-      paymentStatus: 'unpaid',
+      paymentStatus: depositInput > 0 ? 'partially_paid' : 'unpaid',
       invoiceNumber: `INV-2026-0${Math.floor(Math.random() * 900) + 100}`,
       createdAt: new Date().toISOString()
     };
@@ -200,16 +232,15 @@ export default function BookingsManager({
 
     // Reset fields
     setShowNewModal(false);
-    setSelectedCustId('');
     setNewCustName('');
     setNewCustPhone('');
     setNewCustEmail('');
     setVehMake('');
-    setVehModel('');
-    setVehPlate('');
     setSelectedServiceId('');
     setBookingNotes('');
-    setAssignedStaffId('');
+    setPriceInput(0);
+    setDepositInput(0);
+    setUploadedPhotos('');
 
     // Select the newly created booking
     setSelectedAptId(newAppointment.id);
@@ -398,79 +429,123 @@ export default function BookingsManager({
           <div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredApts.map((apt) => {
               const isSelected = selectedAptId === apt.id;
+              
+              // Custom box styles based on status
+              let cardBgBorderClass = "bg-[#131D35] border-slate-800/50 text-slate-300";
+              let textTitleClass = "text-white";
+              let textSubClass = "text-slate-300";
+              let textDetailClass = "text-slate-400";
+              let badgeClass = "bg-sky-500/10 text-sky-400 border border-sky-500/15";
+              
+              if (apt.status === 'completed') {
+                cardBgBorderClass = isSelected
+                  ? "bg-emerald-950/40 border-2 border-emerald-400 text-emerald-100 shadow-lg scale-[1.01]"
+                  : "bg-emerald-950/20 border border-emerald-500/40 text-emerald-300/90";
+                textTitleClass = "text-white";
+                textSubClass = "text-emerald-300";
+                textDetailClass = "text-emerald-400/80";
+                badgeClass = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/15";
+              } else if (apt.status === 'in_progress') {
+                cardBgBorderClass = isSelected
+                  ? "bg-white border-2 border-[#0ea5e9] text-slate-900 shadow-xl scale-[1.01]"
+                  : "bg-white border border-slate-200 text-slate-900 shadow-md";
+                textTitleClass = "text-slate-950 font-black";
+                textSubClass = "text-slate-800";
+                textDetailClass = "text-slate-600";
+                badgeClass = "bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold";
+              } else if (apt.status === 'cancelled') {
+                cardBgBorderClass = isSelected
+                  ? "bg-rose-950/40 border-2 border-rose-400 text-rose-100 shadow-lg scale-[1.01]"
+                  : "bg-rose-950/20 border border-rose-500/40 text-rose-300/90";
+                textTitleClass = "text-white";
+                textSubClass = "text-rose-300";
+                textDetailClass = "text-rose-400/80";
+                badgeClass = "bg-rose-500/10 text-rose-400 border border-rose-500/15";
+              } else if (isSelected) {
+                cardBgBorderClass = "bg-[#131D35] border-2 border-emerald-500 shadow-lg scale-[1.01] text-slate-300";
+              } else {
+                cardBgBorderClass = "bg-[#131D35] border-slate-800/50 hover:border-slate-700 hover:bg-slate-800/20 text-slate-300";
+              }
+
               return (
                 <div
                   key={apt.id}
                   onClick={() => setSelectedAptId(apt.id)}
-                  className={`bg-[#131D35] p-5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
-                    isSelected
-                      ? 'border-2 border-emerald-500 shadow-lg scale-[1.01]'
-                      : 'border-slate-800/50 hover:border-slate-700 hover:bg-slate-800/20'
-                  }`}
+                  className={`p-5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${cardBgBorderClass}`}
                 >
                   <div className="space-y-4">
                     {/* Customer Header */}
                     <div className="flex justify-between items-start gap-2">
                       <div className="flex items-center gap-1.5">
-                        <h3 className="text-sm font-extrabold text-white truncate max-w-[120px]">{apt.customerName}</h3>
+                        <h3 className={`text-sm font-extrabold truncate max-w-[120px] ${textTitleClass}`}>{apt.customerName}</h3>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleOpenEdit(apt);
                           }}
-                          className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors"
+                          className={`p-1 rounded transition-colors ${
+                            apt.status === 'in_progress' ? 'hover:bg-slate-100 text-slate-400 hover:text-slate-950' : 'hover:bg-slate-800 text-slate-400 hover:text-white'
+                          }`}
                         >
                           <Edit2 size={11} />
                         </button>
+
+                        {/* Delete/Del Button for completed box inside box itself */}
+                        {apt.status === 'completed' && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm('Are you sure you want to delete this completed booking?')) {
+                                onDeleteAppointment(apt.id);
+                              }
+                            }}
+                            className="p-1 hover:bg-rose-500/25 text-rose-400 hover:text-rose-300 rounded transition-all ml-1"
+                            title="Delete completed booking"
+                          >
+                            <Trash2 size={12} className="stroke-[2.5]" />
+                          </button>
+                        )}
                       </div>
 
                       {/* Status Badge */}
-                      <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                        apt.status === 'completed'
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/15'
-                          : apt.status === 'cancelled'
-                          ? 'bg-rose-500/10 text-rose-400 border border-rose-500/15'
-                          : apt.status === 'in_progress'
-                          ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/15'
-                          : 'bg-sky-500/10 text-sky-400 border border-sky-500/15'
-                      }`}>
+                      <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${badgeClass}`}>
                         {apt.status === 'in_progress' ? 'IN PROGRESS' : apt.status.toUpperCase()}
                       </span>
                     </div>
 
                     {/* Service Subtitle */}
-                    <p className="text-xs font-bold text-slate-300 block">{apt.serviceName}</p>
+                    <p className={`text-xs font-bold block ${textSubClass}`}>{apt.serviceName}</p>
 
                     {/* Customer Info rows */}
-                    <div className="space-y-1.5 text-xs text-slate-400 font-medium">
+                    <div className={`space-y-1.5 text-xs font-medium ${textDetailClass}`}>
                       <div className="flex items-center gap-2">
-                        <User size={13} className="text-slate-500 shrink-0" />
+                        <User size={13} className="shrink-0" />
                         <span>{apt.customerPhone}</span>
                       </div>
                       {apt.customerEmail && (
                         <div className="flex items-center gap-2">
-                          <Mail size={13} className="text-slate-500 shrink-0" />
+                          <Mail size={13} className="shrink-0" />
                           <span className="truncate">{apt.customerEmail}</span>
                         </div>
                       )}
                       <div className="flex items-center gap-2">
-                        <Car size={13} className="text-slate-500 shrink-0" />
+                        <Car size={13} className="shrink-0" />
                         <span className="capitalize">{apt.vehicle.size === 'truck_large' ? 'Truck / Large SUV' : apt.vehicle.size === 'suv' ? 'Mid-Size SUV' : apt.vehicle.make || 'Not specified'}</span>
                       </div>
                       <div className="flex items-center gap-2 font-mono">
-                        <Clock size={13} className="text-slate-500 shrink-0" />
+                        <Clock size={13} className="shrink-0" />
                         <span>{apt.date}, {apt.time}</span>
                       </div>
                     </div>
 
                     {/* Price and Details */}
-                    <div className="pt-2 border-t border-slate-800/40 flex justify-between items-center">
+                    <div className="pt-2 border-t border-slate-800/20 flex justify-between items-center">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-sm font-extrabold text-white font-mono">₹{apt.price}</span>
+                        <span className={`text-sm font-extrabold font-mono ${apt.status === 'in_progress' ? 'text-slate-950' : 'text-white'}`}>₹{apt.price}</span>
                         {apt.paymentStatus === 'unpaid' ? (
                           <span className="text-[9px] text-slate-500 font-medium">unpaid</span>
                         ) : (
-                          <span className="text-[9px] text-emerald-500 font-medium font-semibold">({apt.paymentStatus})</span>
+                          <span className={`text-[9px] font-semibold ${apt.status === 'in_progress' ? 'text-emerald-700' : 'text-emerald-500'}`}>({apt.paymentStatus})</span>
                         )}
                       </div>
                     </div>
@@ -728,15 +803,15 @@ export default function BookingsManager({
         </div>
       )}
 
-      {/* Book Appointment Modal */}
+      {/* Book Appointment Modal matching Screenshot 1 layout */}
       {showNewModal && (
         <div className="fixed inset-0 bg-slate-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto animate-fade-in" id="appointment-modal">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] shadow-2xl flex flex-col overflow-hidden animate-zoom-in">
+          <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl flex flex-col overflow-hidden animate-zoom-in text-slate-800">
             {/* Modal Header */}
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white shrink-0">
               <div className="flex items-center gap-2">
-                <Calendar size={18} className="text-cyan-400" />
-                <h2 className="text-base font-bold">Schedule New Detailing Session</h2>
+                <Calendar size={18} className="text-[#0ea5e9]" />
+                <h2 className="text-base font-bold">Create New Booking</h2>
               </div>
               <button
                 onClick={() => setShowNewModal(false)}
@@ -746,219 +821,144 @@ export default function BookingsManager({
               </button>
             </div>
 
-            {/* Modal Form */}
-            <form onSubmit={handleCreateBooking} className="flex-1 overflow-y-auto p-6 space-y-6">
+            {/* Modal Form matching screenshot 1 perfectly */}
+            <form onSubmit={handleCreateBooking} className="p-6 space-y-4">
               
-              {/* Customer selection toggle */}
-              <div className="space-y-3">
-                <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Customer Association</span>
-                <div className="flex gap-2 bg-slate-50 border border-slate-200 p-1 rounded-xl">
-                  <button
-                    type="button"
-                    onClick={() => setCustType('existing')}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                      custType === 'existing' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
-                    }`}
-                  >
-                    Select Existing Client
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCustType('new')}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                      custType === 'new' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
-                    }`}
-                  >
-                    Create New Client
-                  </button>
+              {/* Row 1: Client Name * and Vehicle Type * */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Client Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newCustName}
+                    onChange={(e) => setNewCustName(e.target.value)}
+                    placeholder="Enter client name"
+                    className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-sky-500"
+                  />
                 </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Vehicle Type *</label>
+                  <input
+                    type="text"
+                    required
+                    value={vehMake}
+                    onChange={(e) => setVehMake(e.target.value)}
+                    placeholder="e.g., 2020 Toyota Camry"
+                    className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-sky-500"
+                  />
+                </div>
+              </div>
 
-                {custType === 'existing' ? (
+              {/* Row 2: Service Type * and Price * */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Service Type *</label>
                   <select
-                    value={selectedCustId}
-                    onChange={(e) => setSelectedCustId(e.target.value)}
-                    required={custType === 'existing'}
-                    className="w-full text-xs font-semibold rounded-lg border border-slate-200 p-2.5 bg-white text-slate-800"
+                    required
+                    value={selectedServiceId}
+                    onChange={(e) => {
+                      const svcId = e.target.value;
+                      setSelectedServiceId(svcId);
+                      const svc = services.find(s => s.id === svcId);
+                      if (svc) {
+                        setPriceInput(svc.pricing.sedan || 150);
+                      }
+                    }}
+                    className="w-full text-xs font-semibold rounded-lg border border-slate-200 p-2.5 bg-slate-50/50 text-slate-800 focus:outline-sky-500"
                   >
-                    <option value="">Choose existing client...</option>
-                    {customers.map(c => (
-                      <option key={c.id} value={c.id}>{c.name} ({c.phone})</option>
-                    ))}
-                  </select>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <input
-                      type="text"
-                      required={custType === 'new'}
-                      value={newCustName}
-                      onChange={(e) => setNewCustName(e.target.value)}
-                      placeholder="Client Full Name"
-                      className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-indigo-600"
-                    />
-                    <input
-                      type="tel"
-                      required={custType === 'new'}
-                      value={newCustPhone}
-                      onChange={(e) => setNewCustPhone(e.target.value)}
-                      placeholder="Mobile Number"
-                      className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-indigo-600"
-                    />
-                    <input
-                      type="email"
-                      value={newCustEmail}
-                      onChange={(e) => setNewCustEmail(e.target.value)}
-                      placeholder="Email (Optional)"
-                      className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-indigo-600"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Vehicle Specifications */}
-              <div className="space-y-3">
-                <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Vehicle Specifications</span>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div>
-                    <label className="text-3xs text-slate-500 block mb-1 font-semibold">Vehicle Size</label>
-                    <select
-                      value={vehSize}
-                      onChange={(e) => setVehSize(e.target.value as any)}
-                      className="w-full text-xs font-semibold rounded-lg border border-slate-200 p-2 bg-white text-slate-800"
-                    >
-                      <option value="sedan">Sedan / Coupe</option>
-                      <option value="suv">Mid-Size SUV / CUV</option>
-                      <option value="truck_large">Truck / Large SUV</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-3xs text-slate-500 block mb-1 font-semibold">Make</label>
-                    <input
-                      type="text"
-                      required
-                      value={vehMake}
-                      onChange={(e) => setVehMake(e.target.value)}
-                      placeholder="e.g. Tesla"
-                      className="text-xs p-2 border border-slate-200 rounded-lg w-full text-slate-800 focus:outline-indigo-600"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-3xs text-slate-500 block mb-1 font-semibold">Model</label>
-                    <input
-                      type="text"
-                      required
-                      value={vehModel}
-                      onChange={(e) => setVehModel(e.target.value)}
-                      placeholder="e.g. Model S"
-                      className="text-xs p-2 border border-slate-200 rounded-lg w-full text-slate-800 focus:outline-indigo-600"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-3xs text-slate-500 block mb-1 font-semibold">License Plate</label>
-                    <input
-                      type="text"
-                      value={vehPlate}
-                      onChange={(e) => setVehPlate(e.target.value)}
-                      placeholder="e.g. CA-XYZ"
-                      className="text-xs p-2 border border-slate-200 rounded-lg w-full font-mono text-slate-800 focus:outline-indigo-600"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Services & Core Packages */}
-              <div className="space-y-3">
-                <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Select Treatment Package</span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {services
-                    .filter(s => s.category !== 'add_on')
-                    .map(pkg => (
-                      <div
-                        key={pkg.id}
-                        onClick={() => setSelectedServiceId(pkg.id)}
-                        className={`border rounded-xl p-3 cursor-pointer transition-all ${
-                          selectedServiceId === pkg.id
-                            ? 'border-indigo-600 bg-indigo-50/20 shadow-xs'
-                            : 'border-slate-200 hover:border-slate-300 bg-slate-50/50'
-                        }`}
-                      >
-                        <div className="flex justify-between items-start gap-1">
-                          <strong className="text-xs font-bold text-slate-900 block">{pkg.name}</strong>
-                          <span className="text-xs font-extrabold text-indigo-600 font-mono shrink-0">
-                            ₹{vehSize === 'sedan' ? pkg.pricing.sedan : vehSize === 'suv' ? pkg.pricing.suv : pkg.pricing.truck_large}
-                          </span>
-                        </div>
-                        <p className="text-[10px] text-slate-500 mt-1 line-clamp-2">{pkg.description}</p>
-                      </div>
-                    ))}
-                </div>
-              </div>
-
-              {/* Slot Scheduling Details */}
-              <div className="space-y-3">
-                <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Scheduling Specifications</span>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="text-3xs text-slate-500 block mb-1 font-semibold">Date</label>
-                    <input
-                      type="date"
-                      required
-                      value={bookingDate}
-                      onChange={(e) => setBookingDate(e.target.value)}
-                      className="text-xs p-2 border border-slate-200 rounded-lg w-full text-slate-800"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-3xs text-slate-500 block mb-1 font-semibold">Start Time</label>
-                    <input
-                      type="time"
-                      required
-                      value={bookingTime}
-                      onChange={(e) => setBookingTime(e.target.value)}
-                      className="text-xs p-2 border border-slate-200 rounded-lg w-full text-slate-800"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-3xs text-slate-500 block mb-1 font-semibold">Assign Staff</label>
-                    <select
-                      value={assignedStaffId}
-                      onChange={(e) => setAssignedStaffId(e.target.value)}
-                      className="w-full text-xs font-semibold rounded-lg border border-slate-200 p-2 bg-white text-slate-800"
-                    >
-                      <option value="">Auto-Assign (FIFO)</option>
-                      {staff.map(s => (
-                        <option key={s.id} value={s.id}>{s.name} ({s.role})</option>
+                    <option value="">Select service</option>
+                    {services
+                      .filter(s => s.category !== 'add_on')
+                      .map(pkg => (
+                        <option key={pkg.id} value={pkg.id}>{pkg.name}</option>
                       ))}
-                    </select>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Price (₹) *</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-3 text-xs font-bold text-slate-500">₹</span>
+                    <input
+                      type="number"
+                      required
+                      value={priceInput || ''}
+                      onChange={(e) => setPriceInput(Number(e.target.value))}
+                      placeholder="0"
+                      className="text-xs pl-7 pr-2.5 py-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-sky-500"
+                    />
                   </div>
                 </div>
               </div>
 
-              {/* Additional Comments */}
-              <div className="space-y-1.5">
-                <label className="text-3xs text-slate-500 block font-semibold">Detailer Briefing Notes</label>
+              {/* Row 3: Deposit and Scheduled Date & Time */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Deposit (₹)</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-3 text-xs font-bold text-slate-500">₹</span>
+                    <input
+                      type="number"
+                      value={depositInput || ''}
+                      onChange={(e) => setDepositInput(Number(e.target.value))}
+                      placeholder="0"
+                      className="text-xs pl-7 pr-2.5 py-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-sky-500"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Scheduled Date & Time *</label>
+                  <input
+                    type="datetime-local"
+                    required
+                    value={scheduledDateTime}
+                    onChange={(e) => setScheduledDateTime(e.target.value)}
+                    className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-sky-500"
+                  />
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Notes</label>
                 <textarea
                   value={bookingNotes}
                   onChange={(e) => setBookingNotes(e.target.value)}
-                  placeholder="e.g. Scratches on front hood, leather conditioner requested..."
-                  className="w-full text-xs p-3 border border-slate-200 rounded-xl bg-slate-50/50 text-slate-800 focus:outline-indigo-600 h-20"
+                  placeholder="Any special instructions or details..."
+                  className="w-full text-xs rounded-lg border border-slate-200 p-2.5 bg-slate-50/50 text-slate-800 h-20 focus:outline-sky-500"
                 />
               </div>
 
-              {/* Actions */}
-              <div className="flex gap-3 justify-end pt-3 border-t border-slate-100 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setShowNewModal(false)}
-                  className="px-4 py-2 hover:bg-slate-50 text-slate-500 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
+              {/* Photos */}
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Photos</label>
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer text-xs font-semibold text-slate-700">
+                    <Upload size={14} />
+                    <span>Choose files</span>
+                    <input
+                      type="file"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        if (files.length > 0) {
+                          setUploadedPhotos(files.map(f => f.name).join(', '));
+                        }
+                      }}
+                    />
+                  </label>
+                  <span className="text-3xs text-slate-500 truncate max-w-xs">{uploadedPhotos || 'No file chosen'}</span>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div className="pt-4 border-t border-slate-100">
                 <button
                   type="submit"
-                  disabled={custType === 'existing' ? !selectedCustId || !selectedServiceId : !newCustName || !newCustPhone || !selectedServiceId}
-                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-200 disabled:text-slate-400 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                  className="w-full py-3 bg-[#0ea5e9] hover:bg-[#38bdf8] text-white text-xs font-extrabold rounded-lg shadow-md transition-all cursor-pointer text-center"
                 >
-                  Create Appointment
+                  Create Booking
                 </button>
               </div>
 

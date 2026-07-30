@@ -13,11 +13,13 @@ import {
   MapPin,
   Car,
   FileText,
-  DollarSign,
   Briefcase,
-  ChevronRight,
   User,
-  X
+  X,
+  Trash2,
+  Calendar,
+  RefreshCw,
+  Info
 } from 'lucide-react';
 import { Customer, Appointment } from '../types/crm';
 
@@ -26,50 +28,51 @@ interface CustomerCRMProps {
   appointments: Appointment[];
   onAddCustomer: (customer: Customer) => void;
   onUpdateCustomer: (customer: Customer) => void;
+  onDeleteCustomer?: (id: string) => void;
+  onNavigate?: (tab: string) => void;
 }
 
 export default function CustomerCRM({
   customers,
   appointments,
   onAddCustomer,
-  onUpdateCustomer
+  onUpdateCustomer,
+  onDeleteCustomer,
+  onNavigate
 }: CustomerCRMProps) {
   const [search, setSearch] = useState('');
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const [activeSubTab, setActiveSubTab] = useState<'active' | 'history'>('active');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showRecurringMsg, setShowRecurringMsg] = useState<string | null>(null);
 
   // New Customer Form State
   const [custName, setCustName] = useState('');
   const [custPhone, setCustPhone] = useState('');
   const [custEmail, setCustEmail] = useState('');
+  const [custVehicleType, setCustVehicleType] = useState('');
   const [custAddress, setCustAddress] = useState('');
   const [custNotes, setCustNotes] = useState('');
-  
-  // New Customer Vehicle State
-  const [vehYear, setVehYear] = useState('2023');
-  const [vehMake, setVehMake] = useState('');
-  const [vehModel, setVehModel] = useState('');
-  const [vehSize, setVehSize] = useState<'sedan' | 'suv' | 'truck_large'>('sedan');
-  const [vehColor, setVehColor] = useState('');
-  const [vehPlate, setVehPlate] = useState('');
 
   const filteredCustomers = customers.filter(c => {
-    return (
+    const matchesSearch = 
       c.name.toLowerCase().includes(search.toLowerCase()) ||
       c.phone.includes(search) ||
-      c.email.toLowerCase().includes(search.toLowerCase()) ||
-      c.vehicles.some(v => v.make.toLowerCase().includes(search.toLowerCase()) || v.model.toLowerCase().includes(search.toLowerCase()))
-    );
+      (c.email && c.email.toLowerCase().includes(search.toLowerCase())) ||
+      c.vehicles.some(v => 
+        v.make.toLowerCase().includes(search.toLowerCase()) || 
+        v.model.toLowerCase().includes(search.toLowerCase())
+      );
+    return matchesSearch;
   });
-
-  const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
-
-  // History for selected client
-  const customerHistory = appointments.filter(a => a.customerId === selectedCustomerId);
 
   const handleCreateCustomer = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Map the combined "Vehicle Type" to make/model
+    const vehicleTypeStr = custVehicleType.trim() || 'Toyota';
+    
     const newCust: Customer = {
       id: `cust-${Date.now()}`,
       name: custName,
@@ -79,12 +82,12 @@ export default function CustomerCRM({
       notes: custNotes || undefined,
       vehicles: [
         {
-          year: vehYear,
-          make: vehMake,
-          model: vehModel,
-          size: vehSize,
-          color: vehColor || undefined,
-          licensePlate: vehPlate || undefined
+          year: '2024',
+          make: vehicleTypeStr,
+          model: '',
+          size: 'sedan',
+          color: 'Not Specified',
+          licensePlate: 'PENDING'
         }
       ],
       createdAt: new Date().toISOString(),
@@ -94,377 +97,447 @@ export default function CustomerCRM({
 
     onAddCustomer(newCust);
     setShowAddModal(false);
-    setSelectedCustomerId(newCust.id);
 
     // Reset fields
     setCustName('');
     setCustPhone('');
     setCustEmail('');
+    setCustVehicleType('');
     setCustAddress('');
     setCustNotes('');
-    setVehMake('');
-    setVehModel('');
-    setVehPlate('');
-    setVehColor('');
   };
 
+  const handleBookClient = (client: Customer) => {
+    // Store in localStorage to let BookingsManager select it
+    localStorage.setItem('preselected_client_id', client.id);
+    if (onNavigate) {
+      onNavigate('bookings_new');
+    }
+  };
+
+  const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
+  const selectedCustHistory = appointments.filter(a => a.customerId === selectedCustomerId);
+
   return (
-    <div className="space-y-6" id="crm-tab-root">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="space-y-6 animate-fade-in" id="crm-tab-root">
+      
+      {/* Header matching image 2 exactly */}
+      <div className="flex justify-between items-center bg-slate-900/40 p-4 rounded-xl border border-slate-800">
         <div>
-          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight md:text-2xl">Client Relationship Manager (CRM)</h1>
-          <p className="text-xs text-slate-500">Track client lifespans, vehicle details, detailing records, and communication logs</p>
+          <h1 className="text-xl font-extrabold text-white tracking-tight md:text-2xl">Clients</h1>
+          <p className="text-xs text-slate-400">Manage client information, contact logs, and history</p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
+          className="px-4 py-2 bg-[#0ea5e9] hover:bg-[#38bdf8] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
         >
           <Plus size={16} />
-          Register New Client
+          <span>Add Client</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" id="crm-layout-container">
-        {/* Left Side: Client Directory Search & List */}
-        <div className="bg-white rounded-xl border border-slate-100 shadow-xs flex flex-col h-[650px] overflow-hidden">
-          {/* Search bar */}
-          <div className="p-4 border-b border-slate-100 shrink-0">
-            <div className="relative">
-              <Search size={16} className="absolute left-3 top-3 text-slate-400" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search clients..."
-                className="w-full text-xs pl-9 pr-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden"
-              />
-            </div>
-          </div>
-
-          {/* Directory list */}
-          <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
-            {filteredCustomers.length === 0 ? (
-              <div className="p-6 text-center text-slate-400">
-                <Users size={32} className="mx-auto mb-2 text-slate-300" />
-                <span className="text-xs font-semibold">No clients registered</span>
-              </div>
-            ) : (
-              filteredCustomers.map(client => {
-                const isSelected = client.id === selectedCustomerId;
-                return (
-                  <div
-                    key={client.id}
-                    onClick={() => setSelectedCustomerId(client.id)}
-                    className={`p-4 cursor-pointer transition-all flex items-center justify-between ${
-                      isSelected
-                        ? 'bg-indigo-50/30 border-l-4 border-indigo-600'
-                        : 'hover:bg-slate-50/50'
-                    }`}
-                  >
-                    <div className="space-y-1 min-w-0">
-                      <h4 className="text-xs font-bold text-slate-900 truncate">{client.name}</h4>
-                      <p className="text-3xs text-slate-500 font-mono">{client.phone}</p>
-                      {client.vehicles[0] && (
-                        <span className="text-3xs text-indigo-600 font-semibold block truncate">
-                          {client.vehicles[0].year} {client.vehicles[0].make} {client.vehicles[0].model}
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-right shrink-0">
-                      <span className="text-xs font-bold text-slate-950 block font-mono">${client.lifetimeSpend}</span>
-                      <span className="text-3xs text-slate-400">{client.totalJobs} jobs</span>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-
-        {/* Right Side: Detailed Profile Inspector */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-100 shadow-xs h-[650px] overflow-hidden flex flex-col">
-          {selectedCustomer ? (
-            <div className="flex flex-col h-full overflow-hidden">
-              {/* Profile Header */}
-              <div className="p-6 border-b border-slate-100 bg-slate-900 text-white shrink-0">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-full bg-indigo-500 flex items-center justify-center font-extrabold text-white text-lg shadow-inner">
-                      {selectedCustomer.name.charAt(0)}
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-extrabold">{selectedCustomer.name}</h2>
-                      <span className="text-3xs text-slate-400 block font-mono">Member since {new Date(selectedCustomer.createdAt).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4">
-                    <div className="text-center bg-slate-800 p-2.5 rounded-xl border border-slate-700 min-w-[90px]">
-                      <span className="text-3xs text-slate-400 font-bold uppercase block tracking-wider">Total spend</span>
-                      <span className="text-base font-extrabold text-white font-mono">${selectedCustomer.lifetimeSpend}</span>
-                    </div>
-                    <div className="text-center bg-slate-800 p-2.5 rounded-xl border border-slate-700 min-w-[90px]">
-                      <span className="text-3xs text-slate-400 font-bold uppercase block tracking-wider">Total visits</span>
-                      <span className="text-base font-extrabold text-white font-mono">{selectedCustomer.totalJobs}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Profile Tabs Scroll area */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                
-                {/* Contact information */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/50 flex items-center gap-3">
-                    <Phone className="text-slate-400 shrink-0" size={16} />
-                    <div className="min-w-0">
-                      <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Phone</span>
-                      <span className="text-xs font-semibold text-slate-800 truncate block font-mono">{selectedCustomer.phone}</span>
-                    </div>
-                  </div>
-                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/50 flex items-center gap-3">
-                    <Mail className="text-slate-400 shrink-0" size={16} />
-                    <div className="min-w-0">
-                      <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Email</span>
-                      <span className="text-xs font-semibold text-slate-800 truncate block">{selectedCustomer.email || 'N/A'}</span>
-                    </div>
-                  </div>
-                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/50 flex items-center gap-3">
-                    <MapPin className="text-slate-400 shrink-0" size={16} />
-                    <div className="min-w-0">
-                      <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Address</span>
-                      <span className="text-xs font-semibold text-slate-800 truncate block">{selectedCustomer.address || 'No address logged'}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Vehicles Owned */}
-                <div className="space-y-3">
-                  <span className="text-xs font-extrabold text-slate-800 uppercase tracking-wide flex items-center gap-1.5">
-                    <Car size={16} className="text-slate-400" />
-                    Vehicles Registered
-                  </span>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {selectedCustomer.vehicles.map((veh, idx) => (
-                      <div key={idx} className="border border-slate-150 p-4 rounded-xl flex items-center justify-between">
-                        <div className="space-y-1">
-                          <span className="text-sm font-bold text-slate-900 block">
-                            {veh.year} {veh.make} {veh.model}
-                          </span>
-                          <div className="flex gap-2">
-                            {veh.color && (
-                              <span className="text-3xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-medium">
-                                Color: {veh.color}
-                              </span>
-                            )}
-                            <span className="text-3xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-medium uppercase">
-                              Size: {veh.size.replace('_', ' ')}
-                            </span>
-                          </div>
-                        </div>
-
-                        <span className="text-xs font-mono font-bold bg-slate-900 text-white px-2.5 py-1 rounded-md border border-slate-800 tracking-wide">
-                          {veh.licensePlate || 'N/A'}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Detailing History list */}
-                <div className="space-y-3">
-                  <span className="text-xs font-extrabold text-slate-800 uppercase tracking-wide flex items-center gap-1.5">
-                    <FileText size={16} className="text-slate-400" />
-                    Detailing Services History
-                  </span>
-
-                  {customerHistory.length === 0 ? (
-                    <div className="border border-dashed border-slate-200 p-6 rounded-xl text-center text-slate-400">
-                      <p className="text-xs">No service appointments recorded previously</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                      {customerHistory.map(hist => (
-                        <div key={hist.id} className="border border-slate-100 p-3 rounded-lg flex items-center justify-between text-xs">
-                          <div>
-                            <span className="font-bold text-indigo-600 block">{hist.serviceName}</span>
-                            <span className="text-3xs text-slate-400 block font-mono">{hist.date} at {hist.time}</span>
-                          </div>
-                          <div className="text-right">
-                            <span className="font-mono font-extrabold text-slate-950 block">${hist.price}</span>
-                            <span className={`text-3xs uppercase tracking-wide font-semibold ${
-                              hist.status === 'completed' ? 'text-emerald-600' : 'text-slate-500'
-                            }`}>{hist.status}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Profile Notes */}
-                {selectedCustomer.notes && (
-                  <div className="space-y-1.5">
-                    <span className="text-xs font-extrabold text-slate-800 uppercase tracking-wide block">Client Specific Instructions</span>
-                    <div className="p-4 bg-amber-50/40 border border-amber-100 text-amber-900 text-xs rounded-xl italic">
-                      "{selectedCustomer.notes}"
-                    </div>
-                  </div>
-                )}
-
-              </div>
-            </div>
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-slate-400">
-              <User size={48} className="text-slate-200 mb-2" />
-              <p className="text-sm font-semibold text-slate-500">No client selected</p>
-              <p className="text-xs text-slate-400 mt-1">Select a customer from the directory to review details, history, and notes.</p>
-            </div>
-          )}
+      {/* Sub Tabs: Active Clients & Past JobsHistory */}
+      <div className="flex justify-center">
+        <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800/80 w-full max-w-md">
+          <button
+            type="button"
+            onClick={() => setActiveSubTab('active')}
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer text-center ${
+              activeSubTab === 'active'
+                ? 'bg-[#0ea5e9] text-white shadow-md'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Active Clients
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSubTab('history')}
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer text-center ${
+              activeSubTab === 'history'
+                ? 'bg-[#0ea5e9] text-white shadow-md'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Past JobsHistory
+          </button>
         </div>
       </div>
 
-      {/* Add Customer Modal */}
+      {/* Search Input Container */}
+      <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800 shadow-sm">
+        <div className="relative">
+          <Search size={16} className="absolute left-3 top-3 text-slate-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search clients..."
+            className="w-full text-xs pl-9 pr-4 py-2.5 rounded-lg border border-slate-700/50 bg-slate-950 text-white focus:bg-slate-900 focus:outline-hidden"
+          />
+        </div>
+      </div>
+
+      {/* Active Clients Grid */}
+      {activeSubTab === 'active' ? (
+        filteredCustomers.length === 0 ? (
+          <div className="h-64 bg-[#131D35] border border-slate-800/40 rounded-xl flex flex-col items-center justify-center text-center p-6">
+            <Users className="text-slate-600 mb-2" size={40} />
+            <p className="text-sm font-semibold text-slate-400">No clients registered yet</p>
+            <p className="text-xs text-slate-500 mt-1">Click "Add Client" above to register your first profile.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCustomers.map((client) => {
+              const primaryVehicle = client.vehicles[0];
+              return (
+                <div
+                  key={client.id}
+                  className="bg-[#131D35] p-5 rounded-xl border border-slate-800/60 hover:border-slate-700 transition-all flex flex-col justify-between relative group"
+                >
+                  {/* Delete Client Action Button (Trash Can) */}
+                  {onDeleteCustomer && (
+                    <button
+                      onClick={() => {
+                        if (confirm(`Are you sure you want to delete ${client.name}?`)) {
+                          onDeleteCustomer(client.id);
+                        }
+                      }}
+                      className="absolute top-4 right-4 p-1.5 bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white rounded-md transition-all cursor-pointer opacity-80 group-hover:opacity-100"
+                      title="Delete Client"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
+
+                  {/* Card Content */}
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-sm font-extrabold text-white">{client.name}</h3>
+                      <p className="text-xs text-cyan-400 font-semibold mt-0.5">
+                        {primaryVehicle ? `${primaryVehicle.make} ${primaryVehicle.model || ''}`.trim() : 'No Vehicle Registered'}
+                      </p>
+                    </div>
+
+                    {/* Contact Details */}
+                    <div className="space-y-2 text-xs text-slate-300 font-medium">
+                      <div className="flex items-center gap-2">
+                        <Phone size={13} className="text-slate-500" />
+                        <span>{client.phone}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Mail size={13} className="text-slate-500" />
+                        <span className="truncate block max-w-[200px]">{client.email || 'No email registered'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPin size={13} className="text-slate-500" />
+                        <span className="truncate block max-w-[200px]">{client.address || 'No address registered'}</span>
+                      </div>
+                    </div>
+
+                    <hr className="border-slate-800/60" />
+
+                    {/* Brief Stats */}
+                    <div className="flex justify-between items-center text-xs font-bold text-slate-400">
+                      <div className="flex items-center gap-1.5">
+                        <Briefcase size={14} className="text-slate-500" />
+                        <span>{client.totalJobs} jobs</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-slate-500">Spend:</span>
+                        <span className="text-emerald-400 font-mono">₹{client.lifetimeSpend}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions Row (Details, Book, Recurring) */}
+                  <div className="grid grid-cols-3 gap-1.5 mt-5 pt-4 border-t border-slate-800/50">
+                    <button
+                      onClick={() => {
+                        setSelectedCustomerId(client.id);
+                        setShowDetailsModal(true);
+                      }}
+                      className="py-1.5 bg-slate-950 hover:bg-slate-900 border border-slate-850 text-[10px] font-bold rounded text-slate-300 hover:text-white flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <User size={10} />
+                      <span>Details</span>
+                    </button>
+                    <button
+                      onClick={() => handleBookClient(client)}
+                      className="py-1.5 bg-[#0ea5e9] hover:bg-[#38bdf8] text-white text-[10px] font-bold rounded flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <Calendar size={10} />
+                      <span>Book</span>
+                    </button>
+                    <button
+                      onClick={() => setShowRecurringMsg(client.name)}
+                      className="py-1.5 bg-slate-950 hover:bg-slate-900 border border-slate-850 text-[10px] font-bold rounded text-slate-300 hover:text-white flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <RefreshCw size={10} />
+                      <span>Recurring</span>
+                    </button>
+                  </div>
+
+                </div>
+              );
+            })}
+          </div>
+        )
+      ) : (
+        /* Jobs History Tab view */
+        <div className="bg-[#131D35] border border-slate-850 rounded-xl p-5 shadow-md">
+          <h3 className="text-sm font-extrabold text-white mb-4 flex items-center gap-1.5">
+            <FileText size={16} className="text-[#0ea5e9]" />
+            <span>Complete Jobs History log</span>
+          </h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-slate-800/80 text-slate-400 font-bold">
+                  <th className="py-2.5">Client</th>
+                  <th className="py-2.5">Vehicle</th>
+                  <th className="py-2.5">Service</th>
+                  <th className="py-2.5">Date & Time</th>
+                  <th className="py-2.5 text-right">Price</th>
+                  <th className="py-2.5 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/40 text-slate-300">
+                {appointments
+                  .filter(a => a.status === 'completed')
+                  .map((apt) => (
+                    <tr key={apt.id} className="hover:bg-slate-800/20">
+                      <td className="py-3 font-semibold text-white">{apt.customerName}</td>
+                      <td className="py-3 capitalize">{apt.vehicle.make} {apt.vehicle.model}</td>
+                      <td className="py-3 font-semibold text-[#0ea5e9]">{apt.serviceName}</td>
+                      <td className="py-3 font-mono text-slate-400">{apt.date} @ {apt.time}</td>
+                      <td className="py-3 text-right font-mono text-emerald-400 font-bold">₹{apt.price}</td>
+                      <td className="py-3 text-right">
+                        <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] font-black uppercase px-2 py-0.5 rounded">
+                          COMPLETED
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                {appointments.filter(a => a.status === 'completed').length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="text-center py-8 text-slate-500 italic">
+                      No completed jobs logged in the system yet.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Add New Client Modal matching image 3 layout exactly */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto animate-fade-in" id="add-customer-modal">
-          <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl flex flex-col overflow-hidden animate-zoom-in">
-            {/* Header */}
+        <div className="fixed inset-0 bg-slate-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto animate-fade-in" id="add-client-modal">
+          <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl flex flex-col overflow-hidden animate-zoom-in text-slate-800">
+            {/* Modal Header */}
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white shrink-0">
               <div className="flex items-center gap-2">
-                <Users size={18} className="text-cyan-400" />
-                <h2 className="text-base font-bold">Register New CRM Profile</h2>
+                <Users size={18} className="text-[#0ea5e9]" />
+                <h2 className="text-base font-bold">Add New Client</h2>
               </div>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="p-1 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors"
+                className="p-1.5 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleCreateCustomer} className="p-6 space-y-6">
+            {/* Modal Form */}
+            <form onSubmit={handleCreateCustomer} className="p-6 space-y-4">
               
-              {/* Contact Fields */}
-              <div className="space-y-3">
-                <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Customer Information</span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Row 1: Name * & Phone */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Name *</label>
                   <input
                     type="text"
                     required
                     value={custName}
                     onChange={(e) => setCustName(e.target.value)}
-                    placeholder="Full Name"
-                    className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50"
+                    placeholder="Enter full name"
+                    className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-sky-500"
                   />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Phone</label>
                   <input
                     type="tel"
                     required
                     value={custPhone}
                     onChange={(e) => setCustPhone(e.target.value)}
-                    placeholder="Mobile Number"
-                    className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50"
+                    placeholder="Enter phone number"
+                    className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-sky-500"
                   />
+                </div>
+              </div>
+
+              {/* Row 2: Email & Vehicle Type */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Email</label>
                   <input
                     type="email"
                     value={custEmail}
                     onChange={(e) => setCustEmail(e.target.value)}
-                    placeholder="Email Address"
-                    className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 sm:col-span-2"
+                    placeholder="Enter email address"
+                    className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-sky-500"
                   />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Vehicle Type</label>
                   <input
                     type="text"
-                    value={custAddress}
-                    onChange={(e) => setCustAddress(e.target.value)}
-                    placeholder="Service / Billing Address"
-                    className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 sm:col-span-2"
+                    required
+                    value={custVehicleType}
+                    onChange={(e) => setCustVehicleType(e.target.value)}
+                    placeholder="e.g., Toyota Camry"
+                    className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-sky-500"
                   />
                 </div>
               </div>
 
-              {/* Primary Vehicle specifications */}
-              <div className="space-y-3">
-                <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Primary Vehicle Specifications</span>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div>
-                    <label className="text-3xs text-slate-500 block mb-1">Vehicle Size</label>
-                    <select
-                      value={vehSize}
-                      onChange={(e) => setVehSize(e.target.value as any)}
-                      className="w-full text-xs font-semibold rounded-lg border border-slate-200 p-2 bg-white"
-                    >
-                      <option value="sedan">Sedan / Coupe</option>
-                      <option value="suv">Mid-Size SUV / CUV</option>
-                      <option value="truck_large">Truck / Large SUV</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-3xs text-slate-500 block mb-1">Make</label>
-                    <input
-                      type="text"
-                      required
-                      value={vehMake}
-                      onChange={(e) => setVehMake(e.target.value)}
-                      placeholder="e.g. Tesla"
-                      className="text-xs p-2 border border-slate-200 rounded-lg w-full"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-3xs text-slate-500 block mb-1">Model</label>
-                    <input
-                      type="text"
-                      required
-                      value={vehModel}
-                      onChange={(e) => setVehModel(e.target.value)}
-                      placeholder="e.g. Model Y"
-                      className="text-xs p-2 border border-slate-200 rounded-lg w-full"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-3xs text-slate-500 block mb-1">License Plate</label>
-                    <input
-                      type="text"
-                      value={vehPlate}
-                      onChange={(e) => setVehPlate(e.target.value)}
-                      placeholder="License Plate"
-                      className="text-xs p-2 border border-slate-200 rounded-lg w-full font-mono"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Client Notes */}
+              {/* Row 3: Address */}
               <div>
-                <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Client Specific Instructions</label>
-                <textarea
-                  value={custNotes}
-                  onChange={(e) => setCustNotes(e.target.value)}
-                  placeholder="e.g. Prefers matte finish on interior plastics, no gloss. Extremely meticulous on chrome rims."
-                  className="w-full text-xs rounded-lg border border-slate-200 p-2 bg-white h-20"
+                <label className="text-xs font-bold text-slate-700 block mb-1">Address</label>
+                <input
+                  type="text"
+                  value={custAddress}
+                  onChange={(e) => setCustAddress(e.target.value)}
+                  placeholder="Enter full address"
+                  className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-sky-500"
                 />
               </div>
 
-              {/* Modal Footer */}
-              <div className="border-t border-slate-100 pt-4 flex gap-2 justify-end">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-all"
-                >
-                  Cancel
-                </button>
+              {/* Row 4: Notes */}
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Notes</label>
+                <textarea
+                  value={custNotes}
+                  onChange={(e) => setCustNotes(e.target.value)}
+                  placeholder="Any important details about this client..."
+                  className="w-full text-xs rounded-lg border border-slate-200 p-2.5 bg-slate-50/50 text-slate-800 h-24 focus:outline-sky-500"
+                />
+              </div>
+
+              {/* Submit Button */}
+              <div className="pt-4 border-t border-slate-100 flex gap-2">
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow transition-all cursor-pointer"
+                  className="w-full py-3 bg-[#0ea5e9] hover:bg-[#38bdf8] text-white text-xs font-extrabold rounded-lg shadow-md transition-all cursor-pointer text-center"
                 >
-                  Register Client
+                  Add Client
                 </button>
               </div>
 
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Details View Modal */}
+      {showDetailsModal && selectedCustomer && (
+        <div className="fixed inset-0 bg-slate-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto animate-fade-in">
+          <div className="bg-slate-900 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-zoom-in text-white border border-slate-800">
+            <div className="p-5 bg-slate-950 border-b border-slate-800 flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <User size={18} className="text-[#0ea5e9]" />
+                <h3 className="font-bold text-sm">Client Information Profile</h3>
+              </div>
+              <button
+                onClick={() => setShowDetailsModal(false)}
+                className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-5">
+              <div className="flex items-center gap-3 pb-3 border-b border-slate-800/60">
+                <div className="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-black">
+                  {selectedCustomer.name.charAt(0)}
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-base">{selectedCustomer.name}</h4>
+                  <p className="text-3xs text-slate-400">Created: {new Date(selectedCustomer.createdAt).toLocaleDateString()}</p>
+                </div>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between py-1 border-b border-slate-800/40">
+                  <span className="text-slate-400">Phone:</span>
+                  <span className="font-bold text-slate-200">{selectedCustomer.phone}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-800/40">
+                  <span className="text-slate-400">Email:</span>
+                  <span className="font-bold text-slate-200">{selectedCustomer.email || 'N/A'}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-800/40">
+                  <span className="text-slate-400">Address:</span>
+                  <span className="font-bold text-slate-200">{selectedCustomer.address || 'N/A'}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-800/40">
+                  <span className="text-slate-400">Total Visits:</span>
+                  <span className="font-bold text-slate-200">{selectedCustomer.totalJobs} jobs</span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span className="text-slate-400">Lifetime Spend:</span>
+                  <span className="font-bold text-emerald-400 font-mono">₹{selectedCustomer.lifetimeSpend}</span>
+                </div>
+              </div>
+
+              {selectedCustomer.notes && (
+                <div className="p-3 bg-slate-950/80 rounded-lg border border-slate-800/60 text-xs">
+                  <strong className="text-[10px] text-slate-400 block mb-1 uppercase tracking-wider">Client Notes / Specifications</strong>
+                  <p className="text-slate-300 italic">"{selectedCustomer.notes}"</p>
+                </div>
+              )}
+
+              {selectedCustHistory.length > 0 && (
+                <div className="space-y-2">
+                  <strong className="text-[10px] text-slate-400 block uppercase tracking-wider">Detaling Jobs Log ({selectedCustHistory.length})</strong>
+                  <div className="max-h-32 overflow-y-auto space-y-1.5 pr-1">
+                    {selectedCustHistory.map(job => (
+                      <div key={job.id} className="p-2 bg-slate-950/50 rounded border border-slate-800 text-[11px] flex justify-between items-center">
+                        <div>
+                          <span className="font-bold text-slate-200 block">{job.serviceName}</span>
+                          <span className="text-slate-400 font-mono text-[9px]">{job.date}</span>
+                        </div>
+                        <span className="font-mono text-emerald-400 font-bold">₹{job.price}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Recurring Client notification Toast */}
+      {showRecurringMsg && (
+        <div className="fixed bottom-5 right-5 z-50 p-4 bg-slate-900 border-2 border-[#0ea5e9] rounded-xl shadow-2xl text-white max-w-sm animate-zoom-in">
+          <div className="flex gap-2.5 items-start">
+            <Info className="text-[#0ea5e9] shrink-0 mt-0.5" size={16} />
+            <div>
+              <h4 className="text-xs font-extrabold">Recurring Detailing Active</h4>
+              <p className="text-[11px] text-slate-300 mt-1">
+                Automated monthly scheduling is active for <strong>{showRecurringMsg}</strong>. Reminder alerts are configured via SMS notifications.
+              </p>
+              <button
+                onClick={() => setShowRecurringMsg(null)}
+                className="mt-2.5 text-[10px] font-bold text-[#0ea5e9] hover:text-[#38bdf8] uppercase cursor-pointer"
+              >
+                Close Window
+              </button>
+            </div>
           </div>
         </div>
       )}
