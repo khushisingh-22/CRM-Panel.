@@ -45,6 +45,105 @@ export default function AppointmentsList({
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showModal, setShowModal] = useState(false);
 
+  // Calendar states
+  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
+  const [currentYear, setCurrentYear] = useState(2026);
+  const [currentMonth, setCurrentMonth] = useState(6); // 6 is July (0-indexed)
+  const [selectedDateStr, setSelectedDateStr] = useState('2026-07-09');
+
+  const handlePrevMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear(prev => prev - 1);
+    } else {
+      setCurrentMonth(prev => prev - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear(prev => prev + 1);
+    } else {
+      setCurrentMonth(prev => prev + 1);
+    }
+  };
+
+  const handleToday = () => {
+    const today = new Date();
+    setCurrentYear(today.getFullYear());
+    setCurrentMonth(today.getMonth());
+    setSelectedDateStr(today.toISOString().split('T')[0]);
+  };
+
+  const getDaysInMonth = (year: number, month: number) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (year: number, month: number) => {
+    return new Date(year, month, 1).getDay();
+  };
+
+  const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+  const prevDaysInMonth = getDaysInMonth(currentYear, currentMonth - 1);
+  const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
+
+  const gridCells = [];
+
+  // Previous month padding days
+  for (let i = firstDay - 1; i >= 0; i--) {
+    const dayNum = prevDaysInMonth - i;
+    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    const dateStr = `${prevYear}-${String(prevMonth + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+    gridCells.push({
+      dayNum,
+      isCurrentMonth: false,
+      dateStr
+    });
+  }
+
+  // Current month days
+  for (let i = 1; i <= daysInMonth; i++) {
+    const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+    gridCells.push({
+      dayNum: i,
+      isCurrentMonth: true,
+      dateStr
+    });
+  }
+
+  // Next month padding days
+  const remaining = 42 - gridCells.length;
+  for (let i = 1; i <= remaining; i++) {
+    const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+    const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+    const dateStr = `${nextYear}-${String(nextMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+    gridCells.push({
+      dayNum: i,
+      isCurrentMonth: false,
+      dateStr
+    });
+  }
+
+  const selectedDayBookings = appointments.filter(apt => apt.date === selectedDateStr);
+
+  const formatSelectedDate = (dateStr: string) => {
+    try {
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) return dateStr;
+      const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
   // New Appointment Form State
   const [custType, setCustType] = useState<'existing' | 'new'>('existing');
   const [selectedCustId, setSelectedCustId] = useState('');
@@ -66,6 +165,11 @@ export default function AppointmentsList({
   const [bookingTime, setBookingTime] = useState('09:00');
   const [assignedStaffId, setAssignedStaffId] = useState('');
   const [bookingNotes, setBookingNotes] = useState('');
+
+  // Synchronize bookingDate form field with selectedDateStr
+  React.useEffect(() => {
+    setBookingDate(selectedDateStr);
+  }, [selectedDateStr]);
 
   // Filtering
   const filteredAppointments = appointments.filter(apt => {
@@ -184,178 +288,209 @@ export default function AppointmentsList({
   };
 
   return (
-    <div className="space-y-6" id="appointments-tab-root">
+    <div className="space-y-6 animate-fade-in" id="appointments-tab-root">
       {/* Header section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight md:text-2xl">Scheduling & Bookings</h1>
-          <p className="text-xs text-slate-500">Manage customer detailing appointments, dates, and technicians</p>
+          <h1 className="text-xl font-extrabold text-white tracking-tight md:text-2xl">Calendar</h1>
+          <p className="text-xs text-slate-400">Manage customer detailing appointments and schedules</p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
-        >
-          <Plus size={16} />
-          Schedule Detailing Job
-        </button>
-      </div>
-
-      {/* Filtering Row */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-100 shadow-xs">
-        <div className="w-full md:w-80 relative">
-          <Search size={16} className="absolute left-3 top-3 text-slate-400" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by client, plate, make..."
-            className="w-full text-xs pl-9 pr-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden"
-          />
-        </div>
-
-        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
-          <Filter size={14} className="text-slate-400 shrink-0" />
-          {['all', 'scheduled', 'in_progress', 'quality_check', 'ready', 'completed', 'cancelled'].map(st => (
-            <button
-              key={st}
-              onClick={() => setStatusFilter(st)}
-              className={`text-3xs font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-md transition-all shrink-0 ${
-                statusFilter === st
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/50'
-              }`}
-            >
-              {st}
-            </button>
-          ))}
+        
+        {/* New Booking button */}
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+          <button
+            onClick={() => setShowModal(true)}
+            className="px-4 py-2.5 bg-[#0ea5e9] hover:bg-[#38bdf8] text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
+          >
+            <Plus size={16} />
+            <span>New Booking</span>
+          </button>
         </div>
       </div>
 
-      {/* Appointments List Display */}
-      {filteredAppointments.length === 0 ? (
-        <div className="h-64 bg-white border border-slate-100 rounded-xl flex flex-col items-center justify-center text-center p-6">
-          <CalendarIcon className="text-slate-300 mb-2" size={40} />
-          <p className="text-sm font-semibold text-slate-500">No scheduled appointments match filters</p>
-          <p className="text-xs text-slate-400 mt-1">Book a detailing appointment or modify your search filter.</p>
-        </div>
-      ) : (
-        <div className="bg-white rounded-xl border border-slate-100 shadow-xs overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50 text-slate-500 text-3xs font-bold uppercase tracking-wider border-b border-slate-100">
-                  <th className="p-4">Customer & Car</th>
-                  <th className="p-4">Service Details</th>
-                  <th className="p-4">Date / Time</th>
-                  <th className="p-4">Technician</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4">Price / Billing</th>
-                  <th className="p-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredAppointments
-                  .sort((a, b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time))
-                  .map((apt) => {
+      <div className="space-y-6 animate-fade-in" id="ai-calendar-view-panel">
+        {/* Calendar page structure */}
+        <div className="flex flex-col xl:flex-row gap-6">
+            
+            {/* Left Card: Calendar Month Grid (approx 2/3 width) */}
+            <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs flex-1">
+              
+              {/* Calendar Controls header inside the card */}
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-800/60">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-lg font-extrabold text-white font-mono">{monthNames[currentMonth]} {currentYear}</h2>
+                </div>
+                
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={handlePrevMonth}
+                    className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer transition-all"
+                  >
+                    <ChevronRight size={16} className="rotate-180" />
+                  </button>
+                  <button
+                    onClick={handleToday}
+                    className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer transition-all"
+                  >
+                    Today
+                  </button>
+                  <button
+                    onClick={handleNextMonth}
+                    className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer transition-all"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Day names row */}
+              <div className="grid grid-cols-7 gap-2 mb-2 text-center">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                  <span key={day} className="text-4xs text-slate-400 font-extrabold uppercase tracking-wider py-1.5">
+                    {day}
+                  </span>
+                ))}
+              </div>
+
+              {/* Days grid */}
+              <div className="grid grid-cols-7 gap-2">
+                {gridCells.map((cell, idx) => {
+                  const dayBookings = appointments.filter(apt => apt.date === cell.dateStr);
+                  const isSelected = selectedDateStr === cell.dateStr;
+                  const isTodayStr = new Date().toISOString().split('T')[0] === cell.dateStr;
+
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedDateStr(cell.dateStr)}
+                      className={`h-24 p-2 rounded-xl flex flex-col justify-between items-start border cursor-pointer relative transition-all ${
+                        isSelected
+                          ? 'bg-[#0ea5e9] border-[#0ea5e9] text-white shadow-lg shadow-sky-500/10'
+                          : cell.isCurrentMonth
+                            ? 'bg-[#18223c] border-slate-800/40 text-slate-200 hover:bg-slate-800/60 hover:border-slate-700'
+                            : 'bg-[#111827]/60 border-slate-900/60 text-slate-650 hover:bg-slate-800/20'
+                      }`}
+                    >
+                      <span className={`text-xs font-bold ${
+                        isSelected 
+                          ? 'text-white' 
+                          : isTodayStr 
+                            ? 'text-sky-400 font-extrabold bg-sky-500/10 px-1.5 py-0.5 rounded-md border border-sky-500/20' 
+                            : cell.isCurrentMonth 
+                              ? 'text-slate-200' 
+                              : 'text-slate-600'
+                      }`}>
+                        {cell.dayNum}
+                      </span>
+
+                      {/* Render indicators of appointments in the cell */}
+                      {dayBookings.length > 0 && (
+                        <div className="w-full space-y-1">
+                          {dayBookings.slice(0, 2).map(apt => (
+                            <div
+                              key={apt.id}
+                              className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-md truncate text-left w-full ${
+                                isSelected
+                                  ? 'bg-slate-900/35 text-white border border-white/10'
+                                  : 'bg-indigo-550/15 text-indigo-300 border border-indigo-500/15'
+                              }`}
+                              title={`${apt.customerName} (${apt.time})`}
+                            >
+                              {apt.customerName}
+                            </div>
+                          ))}
+                          {dayBookings.length > 2 && (
+                            <div className={`text-[8px] font-black text-right pr-1 ${isSelected ? 'text-white' : 'text-slate-400'}`}>
+                              + {dayBookings.length - 2} more
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Right Card: Day Bookings Detail Panel (approx 1/3 width) */}
+            <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs w-full xl:w-80 shrink-0 space-y-4">
+              <div className="border-b border-slate-800 pb-3">
+                <h3 className="text-sm font-bold text-white font-mono">{formatSelectedDate(selectedDateStr)}</h3>
+                <p className="text-[10px] text-slate-400">Detailed agenda & technician assignments</p>
+              </div>
+
+              <div className="space-y-3 overflow-y-auto max-h-[460px] pr-1">
+                {selectedDayBookings.length === 0 ? (
+                  <div className="py-24 text-center text-slate-500 flex flex-col items-center justify-center">
+                    <CalendarIcon className="text-slate-700 mb-2" size={32} />
+                    <p className="text-xs font-semibold">No bookings for this day</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">Use the + New Booking button to schedule a client.</p>
+                  </div>
+                ) : (
+                  selectedDayBookings.map(apt => {
                     const tech = staff.find(s => s.id === apt.assignedTo);
                     return (
-                      <tr key={apt.id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="p-4">
-                          <div className="space-y-1">
-                            <span className="text-xs font-bold text-slate-900 block">{apt.customerName}</span>
-                            <span className="text-3xs text-slate-500 block">{apt.customerPhone}</span>
-                            <div className="flex items-center gap-1.5 mt-1 text-xs text-slate-600">
-                              <Car size={13} className="text-slate-400" />
-                              <span>{apt.vehicle.year} {apt.vehicle.make} {apt.vehicle.model}</span>
-                              <span className="text-3xs bg-slate-100 text-slate-500 px-1 rounded-sm font-mono">{apt.vehicle.licensePlate}</span>
-                            </div>
+                      <div key={apt.id} className="bg-[#18223c] p-3.5 rounded-xl border border-slate-800 space-y-2.5 text-left relative group">
+                        <div className="flex justify-between items-start gap-2">
+                          <div>
+                            <span className="text-[9px] font-black bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded-full border border-indigo-500/20 uppercase font-mono tracking-wider">{apt.time}</span>
+                            <h4 className="text-xs font-extrabold text-white mt-1.5 leading-tight">{apt.customerName}</h4>
+                            <p className="text-4xs text-slate-400 font-mono mt-0.5">{apt.customerPhone}</p>
                           </div>
-                        </td>
+                          <span className="text-xs font-mono font-black text-emerald-400">₹{apt.price}</span>
+                        </div>
+                        
+                        <div className="text-[10px] text-slate-300 flex items-center gap-1.5 bg-slate-950/40 p-2 rounded-lg border border-slate-850">
+                          <Car size={11} className="text-slate-400 shrink-0" />
+                          <span className="truncate">{apt.vehicle.year} {apt.vehicle.make} {apt.vehicle.model}</span>
+                        </div>
 
-                        <td className="p-4">
-                          <div className="space-y-1">
-                            <span className="text-xs font-bold text-indigo-600 block">{apt.serviceName}</span>
-                            {apt.addOns.length > 0 && (
-                              <div className="flex flex-wrap gap-1">
-                                {apt.addOns.map(addon => (
-                                  <span key={addon.id} className="text-3xs bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded-sm font-medium">
-                                    + {addon.name}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
+                        <div className="flex justify-between items-center pt-2 border-t border-slate-800/40 text-3xs">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-indigo-400 font-bold">{apt.serviceName}</span>
+                            {tech && <span className="text-slate-500">Tech: {tech.name}</span>}
                           </div>
-                        </td>
-
-                        <td className="p-4">
-                          <div className="space-y-0.5">
-                            <span className="text-xs font-bold text-slate-800 block font-mono">{apt.date}</span>
-                            <span className="text-3xs text-slate-400 block font-semibold uppercase">{apt.time}</span>
-                          </div>
-                        </td>
-
-                        <td className="p-4">
-                          <span className="text-xs font-semibold text-slate-700 bg-slate-50 border border-slate-200/50 px-2 py-1 rounded-lg inline-flex items-center gap-1">
-                            <User size={12} className="text-slate-400" />
-                            {tech ? tech.name : 'Not Assigned'}
-                          </span>
-                        </td>
-
-                        <td className="p-4">
-                          <span className={`text-3xs font-extrabold uppercase tracking-wide px-2 py-1 rounded-full ${
-                            apt.status === 'completed' ? 'bg-emerald-100 text-emerald-800' :
-                            apt.status === 'cancelled' ? 'bg-rose-100 text-rose-800' :
-                            apt.status === 'in_progress' ? 'bg-indigo-100 text-indigo-800 animate-pulse' :
-                            apt.status === 'quality_check' ? 'bg-amber-100 text-amber-800' :
-                            'bg-slate-100 text-slate-700'
+                          <span className={`px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-wide text-[8px] ${
+                            apt.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            apt.status === 'cancelled' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
+                            'bg-sky-500/10 text-sky-400 border border-sky-500/20'
                           }`}>
                             {apt.status}
                           </span>
-                        </td>
+                        </div>
 
-                        <td className="p-4">
-                          <div className="space-y-1">
-                            <span className="text-sm font-extrabold text-slate-900 block font-mono">${apt.price}</span>
-                            <span className={`text-3xs font-bold px-1.5 py-0.5 rounded ${
-                              apt.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
-                            }`}>
-                              {apt.paymentStatus}
-                            </span>
-                          </div>
-                        </td>
-
-                        <td className="p-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            {apt.status !== 'completed' && apt.status !== 'cancelled' && (
-                              <button
-                                onClick={() => onUpdateAppointment({ ...apt, status: 'cancelled' })}
-                                title="Cancel booking"
-                                className="p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-colors cursor-pointer"
-                              >
-                                <X size={14} />
-                              </button>
-                            )}
+                        {/* Quick complete / update buttons directly from the card */}
+                        <div className="flex gap-1.5 justify-end pt-1">
+                          {apt.status !== 'completed' && apt.status !== 'cancelled' && (
                             <button
-                              onClick={() => {
-                                if (confirm('Are you sure you want to delete this scheduled block?')) {
-                                  onDeleteAppointment(apt.id);
-                                }
-                              }}
-                              title="Delete permanently"
-                              className="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-slate-700 rounded-lg transition-colors cursor-pointer"
+                              type="button"
+                              onClick={() => onUpdateAppointment({ ...apt, status: 'completed', paymentStatus: 'paid' })}
+                              className="px-2 py-1 bg-emerald-650 hover:bg-emerald-550 text-white font-extrabold text-[8px] rounded-md transition-all cursor-pointer flex items-center gap-0.5"
                             >
-                              <Trash2 size={14} />
+                              <Check size={8} /> Complete
                             </button>
-                          </div>
-                        </td>
-                      </tr>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const confirm = window.confirm("Are you sure you want to cancel this booking?");
+                              if (confirm) {
+                                onUpdateAppointment({ ...apt, status: 'cancelled' });
+                              }
+                            }}
+                            className="px-2 py-1 bg-slate-900 hover:bg-rose-950/40 border border-slate-800 text-slate-400 hover:text-rose-400 font-bold text-[8px] rounded-md transition-all cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
                     );
-                  })}
-              </tbody>
-            </table>
+                  })
+                )}
+              </div>
+            </div>
           </div>
         </div>
-      )}
 
       {/* Book Appointment Modal */}
       {showModal && (

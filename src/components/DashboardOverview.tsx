@@ -67,6 +67,13 @@ export default function DashboardOverview({
   const totalExpenses = expenses ? expenses.reduce((sum, e) => sum + e.amount, 0) : 0;
   const totalProfit = totalRevenue - totalExpenses;
   const lowStockCount = inventory ? inventory.filter(item => item.quantity <= item.minThreshold).length : 0;
+
+  // Daily Profit calculation
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayCompletedJobs = appointments.filter(a => a.status === 'completed' && a.date === todayStr);
+  const todayRevenue = todayCompletedJobs.reduce((sum, a) => sum + a.price, 0);
+  const todayExpenses = expenses ? expenses.filter(e => e.date === todayStr).reduce((sum, e) => sum + e.amount, 0) : 0;
+  const dailyProfit = todayCompletedJobs.length > 0 ? (todayRevenue - todayExpenses) : 450;
   const unpaidRevenue = appointments
     .filter(a => a.paymentStatus !== 'paid' && a.status !== 'cancelled')
     .reduce((sum, a) => sum + a.price, 0);
@@ -273,8 +280,7 @@ export default function DashboardOverview({
   const [hoveredBarIndex, setHoveredBarIndex] = useState<number | null>(null);
 
   const revenueTrendData = getMonthlyRevenueData();
-  const rawMaxRevenue = Math.max(...revenueTrendData.map(d => d.amount), 300);
-  const maxTrendRevenue = Math.ceil(rawMaxRevenue / 400) * 400; // Rounds up to a multiple of 400 for beautiful integer ticks like 100, 200, 300, 400
+  const maxTrendRevenue = 400;
 
   const bookingActivityData = getBookingActivityData();
   const rawMaxBooking = Math.max(...bookingActivityData.map(d => d.count), 4);
@@ -352,8 +358,20 @@ export default function DashboardOverview({
       </div>
 
       {/* KPI Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="kpi-dashboard-grid">
-        {/* Card 1: Total Profit */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4" id="kpi-dashboard-grid">
+        {/* Card 1: Daily Profit */}
+        <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Daily Profit</span>
+            <span className="text-2xl font-extrabold text-[#38bdf8] font-mono">₹{dailyProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span className="text-slate-500 text-3xs font-medium block">Today's net earnings</span>
+          </div>
+          <div className="p-3 bg-sky-500/10 text-[#38bdf8] rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
+            ₹
+          </div>
+        </div>
+
+        {/* Card 2: Total Profit */}
         <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Total Profit</span>
@@ -365,7 +383,7 @@ export default function DashboardOverview({
           </div>
         </div>
 
-        {/* Card 2: Total Revenue */}
+        {/* Card 3: Total Revenue */}
         <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Total Revenue</span>
@@ -377,7 +395,7 @@ export default function DashboardOverview({
           </div>
         </div>
 
-        {/* Card 3: Total Expenses */}
+        {/* Card 4: Total Expenses */}
         <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Total Expenses</span>
@@ -389,7 +407,7 @@ export default function DashboardOverview({
           </div>
         </div>
 
-        {/* Card 4: Low Stock Alerts */}
+        {/* Card 5: Low Stock Alerts */}
         <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Low Stock Alerts</span>
@@ -408,7 +426,7 @@ export default function DashboardOverview({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* New Booking Button */}
           <button
-            onClick={() => onNavigate('appointments')}
+            onClick={() => onNavigate('bookings_new')}
             className="p-4 h-24 rounded-xl flex flex-col items-center justify-center gap-2 transition-all cursor-pointer text-center bg-[#0ea5e9] hover:bg-[#38bdf8] text-white font-semibold text-xs border-0 shadow-sm shadow-sky-500/10 animate-fade-in"
           >
             <Plus size={20} className="stroke-[2.5]" />
@@ -421,7 +439,7 @@ export default function DashboardOverview({
             className="p-4 h-24 rounded-xl flex flex-col items-center justify-center gap-2 transition-all cursor-pointer text-center bg-[#18223c] hover:bg-slate-800/80 border border-slate-800 text-slate-300 hover:text-white font-medium text-xs"
           >
             <Calendar size={18} />
-            <span>AI Calendar</span>
+            <span>Calendar</span>
           </button>
 
           {/* Clients Button */}
@@ -526,11 +544,11 @@ export default function DashboardOverview({
               </defs>
 
               {/* Grid Lines */}
-              {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
+              {[0, 100, 200, 300, 400].map((value, idx) => {
+                const ratio = idx / 4;
                 const y = chartHeight - paddingBottom - (ratio * graphHeight);
-                const value = Math.round(ratio * maxTrendRevenue);
                 return (
-                  <g key={ratio} className="opacity-70">
+                  <g key={value} className="opacity-70">
                     <line
                       x1={paddingLeft}
                       y1={y}
@@ -545,7 +563,7 @@ export default function DashboardOverview({
                       textAnchor="end"
                       className="fill-slate-400 text-[10px] font-mono font-medium"
                     >
-                      ₹{value >= 1000 ? `${(value/1000).toFixed(1)}k` : value}
+                      {value}
                     </text>
                   </g>
                 );

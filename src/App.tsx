@@ -458,7 +458,7 @@ export default function App() {
               {[
                 { id: 'dashboard', name: 'Dashboard Overview', icon: LayoutDashboard },
                 { id: 'workboard', name: 'Service Bays', icon: Car, badge: appointments.filter(a => ['in_progress', 'quality_check'].includes(a.status)).length },
-                { id: 'appointments', name: 'Scheduling Calendar', icon: Calendar },
+                { id: 'appointments', name: 'Calendar', icon: Calendar },
                 { id: 'crm', name: 'Client Database', icon: Users },
                 { id: 'billing', name: 'Invoices & Billing', icon: CreditCard },
               ].map(tab => {
