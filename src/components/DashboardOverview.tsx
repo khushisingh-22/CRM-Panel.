@@ -280,7 +280,8 @@ export default function DashboardOverview({
   const [hoveredBarIndex, setHoveredBarIndex] = useState<number | null>(null);
 
   const revenueTrendData = getMonthlyRevenueData();
-  const maxTrendRevenue = 400;
+  const maxVal = Math.max(...revenueTrendData.map(d => d.amount), 400);
+  const maxTrendRevenue = Math.ceil(maxVal / 100) * 100;
 
   const bookingActivityData = getBookingActivityData();
   const rawMaxBooking = Math.max(...bookingActivityData.map(d => d.count), 4);
@@ -544,11 +545,17 @@ export default function DashboardOverview({
               </defs>
 
               {/* Grid Lines */}
-              {[0, 100, 200, 300, 400].map((value, idx) => {
+              {[
+                0,
+                Math.round(maxTrendRevenue * 0.25),
+                Math.round(maxTrendRevenue * 0.5),
+                Math.round(maxTrendRevenue * 0.75),
+                maxTrendRevenue
+              ].map((value, idx) => {
                 const ratio = idx / 4;
                 const y = chartHeight - paddingBottom - (ratio * graphHeight);
                 return (
-                  <g key={value} className="opacity-70">
+                  <g key={idx} className="opacity-70">
                     <line
                       x1={paddingLeft}
                       y1={y}

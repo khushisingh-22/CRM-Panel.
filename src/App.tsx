@@ -29,7 +29,8 @@ import {
   Sliders,
   User,
   HelpCircle,
-  LogOut
+  LogOut,
+  ClipboardCheck
 } from 'lucide-react';
 
 import { getStoredData, saveStoredData } from './utils/storage';
@@ -38,6 +39,7 @@ import { Appointment, Customer, ServicePackage, Staff, ShopSettings } from './ty
 import DashboardOverview from './components/DashboardOverview';
 import BayWorkboard from './components/BayWorkboard';
 import AppointmentsList from './components/AppointmentsList';
+import BookingsManager from './components/BookingsManager';
 import CustomerCRM from './components/CustomerCRM';
 import ServicesCatalog from './components/ServicesCatalog';
 import BillingManager from './components/BillingManager';
@@ -58,6 +60,7 @@ import HelpCenter from './components/HelpCenter';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const [autoOpenNewBooking, setAutoOpenNewBooking] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -396,6 +399,15 @@ export default function App() {
   };
 
   // Nav support helper
+  const handleNavigate = (tabId: string) => {
+    if (tabId === 'bookings_new') {
+      setActiveTab('bookings');
+      setAutoOpenNewBooking(true);
+    } else {
+      setActiveTab(tabId);
+    }
+  };
+
   const handleSelectJobFromOutside = (jobId: string | null) => {
     setActiveTab('workboard');
     setSelectedJobId(jobId);
@@ -455,19 +467,19 @@ export default function App() {
             {/* Core Operation Section */}
             <div className="space-y-1">
               {sidebarOpen && <span className="text-4xs text-slate-500 font-extrabold uppercase tracking-widest block mb-1.5 px-2.5">Operations</span>}
-              {[
+              {([
                 { id: 'dashboard', name: 'Dashboard Overview', icon: LayoutDashboard },
-                { id: 'workboard', name: 'Service Bays', icon: Car, badge: appointments.filter(a => ['in_progress', 'quality_check'].includes(a.status)).length },
                 { id: 'appointments', name: 'Calendar', icon: Calendar },
+                { id: 'bookings', name: 'Bookings', icon: ClipboardCheck },
                 { id: 'crm', name: 'Client Database', icon: Users },
                 { id: 'billing', name: 'Invoices & Billing', icon: CreditCard },
-              ].map(tab => {
+              ] as Array<{ id: string; name: string; icon: any; badge?: number }>).map(tab => {
                 const active = activeTab === tab.id;
                 const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => handleNavigate(tab.id)}
                     className={`w-full flex items-center justify-between p-2.5 rounded-lg text-xs font-bold tracking-wide transition-all cursor-pointer ${
                       active
                         ? 'bg-indigo-600 text-white shadow-xs'
@@ -503,7 +515,7 @@ export default function App() {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => handleNavigate(tab.id)}
                     className={`w-full flex items-center justify-between p-2.5 rounded-lg text-xs font-bold tracking-wide transition-all cursor-pointer ${
                       active
                         ? 'bg-indigo-600 text-white shadow-xs'
@@ -537,7 +549,7 @@ export default function App() {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => handleNavigate(tab.id)}
                     className={`w-full flex items-center justify-between p-2.5 rounded-lg text-xs font-bold tracking-wide transition-all cursor-pointer ${
                       active
                         ? 'bg-indigo-600 text-white shadow-xs'
@@ -570,7 +582,7 @@ export default function App() {
             
             {/* Help Button */}
             <button
-              onClick={() => setActiveTab('help')}
+              onClick={() => handleNavigate('help')}
               className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-slate-800/60 rounded-lg text-slate-300 hover:text-white text-xs font-bold transition-all cursor-pointer"
             >
               <HelpCircle size={15} className="text-slate-400" />
@@ -579,7 +591,7 @@ export default function App() {
 
             {/* Settings Button */}
             <button
-              onClick={() => setActiveTab('settings')}
+              onClick={() => handleNavigate('settings')}
               className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-slate-800/60 rounded-lg text-slate-300 hover:text-white text-xs font-bold transition-all cursor-pointer"
             >
               <Settings size={15} className="text-slate-400" />
@@ -703,8 +715,23 @@ export default function App() {
               leads={leads}
               expenses={expenses}
               inventory={inventory}
-              onNavigate={setActiveTab}
+              onNavigate={handleNavigate}
               onSelectJob={handleSelectJobFromOutside}
+            />
+          )}
+
+          {activeTab === 'bookings' && (
+            <BookingsManager
+              appointments={appointments}
+              customers={customers}
+              services={services}
+              staff={staff}
+              onAddAppointment={handleAddAppointment}
+              onUpdateAppointment={handleUpdateAppointment}
+              onDeleteAppointment={handleDeleteAppointment}
+              onNavigate={handleNavigate}
+              autoOpenNewBooking={autoOpenNewBooking}
+              onClearAutoOpenNewBooking={() => setAutoOpenNewBooking(false)}
             />
           )}
 
