@@ -72,8 +72,8 @@ export default function TeamManager({
 
   const roleLabels: Record<Staff['role'], string> = {
     owner: 'Studio Owner',
-    manager: 'Studio Manager',
-    detailer: 'Detailing Specialist'
+    manager: 'Car Washer',
+    detailer: 'Employee'
   };
 
   const roleBadges: Record<Staff['role'], string> = {
@@ -87,7 +87,7 @@ export default function TeamManager({
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-xl font-extrabold text-white tracking-tight md:text-2xl">Team & Roster Management</h1>
+          <h1 className="text-xl font-extrabold text-white tracking-tight md:text-2xl">Team Status</h1>
           <p className="text-xs text-slate-400">Control active detailer shifts, assignments, and studio access roles</p>
         </div>
         <button
@@ -95,7 +95,7 @@ export default function TeamManager({
           className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
         >
           <Plus size={16} />
-          Add Staff Specialist
+          Add Team Member
         </button>
       </div>
 
@@ -137,11 +137,9 @@ export default function TeamManager({
         {staffList.map(stf => (
           <div key={stf.id} className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl flex items-center justify-between gap-4 hover:border-slate-700/60 transition-all">
             <div className="flex items-center gap-3">
-              <img
-                src={stf.avatar}
-                alt={stf.name}
-                className="h-12 w-12 rounded-full object-cover border border-slate-700"
-              />
+              <div className="h-12 w-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-sm font-bold text-slate-300 uppercase shrink-0">
+                {stf.name.charAt(0)}
+              </div>
               <div className="space-y-1">
                 <h3 className="text-xs font-extrabold text-white">{stf.name}</h3>
                 <div className="flex items-center gap-2">
@@ -171,7 +169,7 @@ export default function TeamManager({
                 <button
                   onClick={() => handleDeleteStaff(stf.id)}
                   className="p-1.5 bg-slate-950 hover:bg-rose-500/10 text-slate-500 hover:text-rose-400 border border-slate-800 rounded-lg transition-all cursor-pointer"
-                  title="Remove from roster"
+                  title="Remove team member"
                 >
                   <Trash2 size={13} />
                 </button>
@@ -188,7 +186,7 @@ export default function TeamManager({
             <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900 text-white">
               <h2 className="text-sm font-extrabold uppercase tracking-wider flex items-center gap-2">
                 <UserCheck size={16} className="text-indigo-400" />
-                Add Staff Specialist
+                Add Team Member
               </h2>
               <button onClick={() => setShowAddModal(false)} className="p-1 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white">
                 <X size={18} />
@@ -209,14 +207,14 @@ export default function TeamManager({
               </div>
 
               <div className="space-y-1">
-                <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Studio Role</label>
+                <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Job Role</label>
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value as any)}
-                  className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500"
+                  className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500 cursor-pointer"
                 >
-                  <option value="detailer">Detailing Specialist (Bay tech)</option>
-                  <option value="manager">Studio Manager (Bay lead)</option>
+                  <option value="detailer">Employee</option>
+                  <option value="manager">Car Washer</option>
                 </select>
               </div>
 

@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 
 import { getStoredData, saveStoredData } from './utils/storage';
-import { DEFAULT_SERVICES, DEFAULT_STAFF } from './data/mockData';
+import { DEFAULT_SERVICES, DEFAULT_STAFF, DEFAULT_SETTINGS } from './data/mockData';
 import { Appointment, Customer, ServicePackage, Staff, ShopSettings } from './types/crm';
 
 import DashboardOverview from './components/DashboardOverview';
@@ -111,13 +111,23 @@ export default function App() {
     setAppointments(data.appointments);
     const hasOldStaff = data.staff.some(s => s.id === 'stf-1' || s.name === 'Alex Rivera' || s.name === 'Marcus Chen');
     const hasNewStaff = data.staff.some(s => s.id === 'stf-shailu' || s.id === 'stf-ashu');
-    if (hasOldStaff || !hasNewStaff || data.staff.length !== 2) {
+    const needsStaffUpdate = data.staff.some(s => 
+      (s.id === 'stf-shailu' && (s.salary !== 10000 || s.phone !== '9219099704')) ||
+      (s.id === 'stf-ashu' && (s.salary !== 10000 || s.phone !== '9810516620'))
+    );
+    if (hasOldStaff || !hasNewStaff || data.staff.length !== 2 || needsStaffUpdate) {
       setStaff(DEFAULT_STAFF);
       saveStoredData({ staff: DEFAULT_STAFF });
     } else {
       setStaff(data.staff);
     }
-    setSettings(data.settings);
+    const hasOldSettings = !data.settings || data.settings.phone === '800-555-WASH' || !data.settings.address || data.settings.address.includes('Oceanside');
+    if (hasOldSettings) {
+      setSettings(DEFAULT_SETTINGS);
+      saveStoredData({ settings: DEFAULT_SETTINGS });
+    } else {
+      setSettings(data.settings);
+    }
     setLeads(data.leads);
     setExpenses(data.expenses || []);
     setInventory(data.inventory || []);
@@ -523,8 +533,7 @@ export default function App() {
                 { id: 'expenses', name: 'Expenses Ledger', icon: DollarSign },
                 { id: 'inventory', name: 'Stock & Inventory', icon: Package, badge: inventory.filter(item => item.quantity <= item.minThreshold).length },
                 { id: 'services', name: 'Service Packages', icon: ClipboardList },
-                { id: 'team', name: 'Team Roster', icon: Users },
-                { id: 'waitlist', name: 'Waitlist Queue', icon: Clock, badge: waitlist.length },
+                { id: 'team', name: 'Team Status', icon: Users },
               ].map(tab => {
                 const active = activeTab === tab.id;
                 const Icon = tab.icon;
@@ -857,15 +866,6 @@ export default function App() {
             <TeamManager
               staffList={staff}
               onUpdateStaffList={syncStaff}
-            />
-          )}
-
-          {activeTab === 'waitlist' && (
-            <WaitlistManager
-              waitlist={waitlist}
-              services={services}
-              onUpdateWaitlist={syncWaitlist}
-              onPromoteToBooking={handlePromoteWaitlistToBooking}
             />
           )}
 

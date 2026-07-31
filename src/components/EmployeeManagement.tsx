@@ -166,7 +166,7 @@ export default function EmployeeManagement({
         <div>
           <h1 className="text-xl font-extrabold text-white tracking-tight md:text-2xl flex items-center gap-2.5">
             <Users className="text-indigo-400" size={24} />
-            <span>Employee Management </span>
+            <span>Employee Management & Ledger</span>
           </h1>
           <p className="text-xs text-slate-400">Track employee details, base salaries, and payment transactions ("Hisab-Kitab")</p>
         </div>
@@ -191,7 +191,7 @@ export default function EmployeeManagement({
           
           {/* Left Area: Employees List */}
           <div className="space-y-4">
-            <h3 className="text-3xs text-slate-500 font-extrabold uppercase tracking-wider block px-1">Staff Data</h3>
+            <h3 className="text-3xs text-slate-500 font-extrabold uppercase tracking-wider block px-1">Staff Roster</h3>
             <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
               {staffList.map((emp) => {
                 const isSelected = selectedStaff?.id === emp.id;
@@ -208,11 +208,9 @@ export default function EmployeeManagement({
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <img
-                        src={emp.avatar}
-                        alt={emp.name}
-                        className="h-10 w-10 rounded-xl object-cover bg-slate-900 border border-slate-700"
-                      />
+                      <div className="h-10 w-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-300 uppercase shrink-0">
+                        {emp.name.charAt(0)}
+                      </div>
                       <div className="min-w-0">
                         <h4 className="text-xs font-extrabold truncate text-white">{emp.name}</h4>
                         <span className={`inline-block text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md mt-1 ${roleColors[emp.role]}`}>
@@ -239,11 +237,9 @@ export default function EmployeeManagement({
               <div className="bg-[#111827] border border-slate-800 p-5 rounded-2xl shadow-xl">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
                   <div className="flex items-center gap-4">
-                    <img
-                      src={selectedStaff.avatar}
-                      alt={selectedStaff.name}
-                      className="h-16 w-16 rounded-2xl object-cover bg-slate-900 border-2 border-slate-700 shadow-md"
-                    />
+                    <div className="h-16 w-16 rounded-2xl bg-slate-800 border-2 border-slate-700 shadow-md flex items-center justify-center text-lg font-black text-slate-300 uppercase shrink-0">
+                      {selectedStaff.name.charAt(0)}
+                    </div>
                     <div>
                       <h2 className="text-base font-black text-white">{selectedStaff.name}</h2>
                       <div className="flex flex-wrap items-center gap-2 mt-1.5">

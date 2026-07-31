@@ -179,8 +179,8 @@ export const DEFAULT_STAFF: Staff[] = [
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
     status: 'active',
     activeJobsCount: 0,
-    phone: '9891404510',
-    salary: 15000,
+    phone: '9219099704',
+    salary: 10000,
     ledger: []
   },
   {
@@ -190,8 +190,8 @@ export const DEFAULT_STAFF: Staff[] = [
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
     status: 'active',
     activeJobsCount: 0,
-    phone: '9891404510',
-    salary: 15000,
+    phone: '9810516620',
+    salary: 10000,
     ledger: []
   }
 ];
@@ -210,11 +210,11 @@ export const DEFAULT_APPOINTMENTS: Appointment[] = [];
 export const DEFAULT_LEADS: any[] = [];
 
 export const DEFAULT_SETTINGS: ShopSettings = {
-  shopName: 'drwashit Pro Studio',
-  phone: '800-555-WASH',
-  email: 'info@drwashit.com',
-  address: '100 Detailing Way, Suite A, Oceanside, CA 92054',
-  taxRate: 8.25,
+  shopName: 'Dr Washit',
+  phone: '8510002780',
+  email: 'support@drwashit.com',
+  address: 'B-129, Pocket B, Sector-omicron 3rd, omicron III, Greater Noida, Mathurapur, Uttar Pradesh - 201310',
+  taxRate: 0,
   currencySymbol: '₹',
   smsTemplates: {
     bookingConfirmed: 'Hi {customer_name}! Your booking for {service_name} on {booking_date} at {booking_time} has been confirmed. See you soon! - {shop_name}',
