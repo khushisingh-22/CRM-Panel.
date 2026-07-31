@@ -49,6 +49,7 @@ export default function EmployeeManagement({
   const [successMsg, setSuccessMsg] = useState('');
 
   const selectedStaff = staffList.find(stf => stf.id === selectedStaffId) || staffList[0] || null;
+  const selectedStaffTotalPaid = selectedStaff ? (selectedStaff.ledger || []).reduce((acc, entry) => acc + entry.amount, 0) : 0;
 
   // Handler to register a new employee
   const handleAddEmployee = (e: React.FormEvent) => {
@@ -220,8 +221,9 @@ export default function EmployeeManagement({
                     </div>
 
                     <div className="text-right">
-                      <span className="text-[10px] text-slate-400 block font-semibold">Total Paid</span>
-                      <strong className="text-xs font-extrabold font-mono text-emerald-400">₹{totalPaid}</strong>
+                      <span className="text-[9px] text-indigo-400 block font-black uppercase tracking-wider">Remaining</span>
+                      <strong className="text-xs font-black font-mono text-indigo-300">₹{Math.max(0, (emp.salary || 0) - totalPaid)}</strong>
+                      <span className="text-[9px] text-slate-500 block font-semibold mt-0.5">Paid: ₹{totalPaid}</span>
                     </div>
                   </div>
                 );
@@ -235,7 +237,7 @@ export default function EmployeeManagement({
               
               {/* Profile Card details */}
               <div className="bg-[#111827] border border-slate-800 p-5 rounded-2xl shadow-xl">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-5 border-b border-slate-800 pb-5">
                   <div className="flex items-center gap-4">
                     <div className="h-16 w-16 rounded-2xl bg-slate-800 border-2 border-slate-700 shadow-md flex items-center justify-center text-lg font-black text-slate-300 uppercase shrink-0">
                       {selectedStaff.name.charAt(0)}
@@ -257,9 +259,20 @@ export default function EmployeeManagement({
                     </div>
                   </div>
 
-                  <div className="bg-slate-950 p-3 rounded-xl border border-slate-800/80 text-right sm:min-w-[150px]">
-                    <span className="text-4xs text-slate-500 font-black uppercase tracking-wider block">Monthly Salary</span>
-                    <strong className="text-lg font-black text-white font-mono">₹{selectedStaff.salary || 18000}</strong>
+                  {/* Dynamic Salary Deductions Display */}
+                  <div className="grid grid-cols-3 gap-3 w-full xl:w-auto">
+                    <div className="bg-slate-950 p-3 rounded-xl border border-slate-800/80 text-center min-w-[100px] flex-1">
+                      <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider block">Base Salary</span>
+                      <strong className="text-sm font-black text-white font-mono block mt-0.5">₹{selectedStaff.salary || 18000}</strong>
+                    </div>
+                    <div className="bg-slate-950 p-3 rounded-xl border border-slate-800/80 text-center min-w-[100px] flex-1">
+                      <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider block">Advance/Paid</span>
+                      <strong className="text-sm font-black text-rose-400 font-mono block mt-0.5">₹{selectedStaffTotalPaid}</strong>
+                    </div>
+                    <div className="bg-slate-950/90 p-3 rounded-xl border border-emerald-500/30 text-center min-w-[100px] flex-1 ring-1 ring-emerald-500/10">
+                      <span className="text-[9px] text-emerald-400 font-extrabold uppercase tracking-wider block">Net Remaining</span>
+                      <strong className="text-sm font-black text-emerald-300 font-mono block mt-0.5">₹{Math.max(0, (selectedStaff.salary || 0) - selectedStaffTotalPaid)}</strong>
+                    </div>
                   </div>
                 </div>
 
@@ -276,8 +289,8 @@ export default function EmployeeManagement({
                   <div className="flex items-center gap-2.5 text-slate-300">
                     <TrendingUp size={14} className="text-slate-500 shrink-0" />
                     <div>
-                      <span className="text-slate-500 text-[10px] block font-semibold uppercase">Total Payments Sent</span>
-                      <strong className="text-emerald-400 font-mono">₹{(selectedStaff.ledger || []).reduce((acc, entry) => acc + entry.amount, 0)}</strong>
+                      <span className="text-slate-500 text-[10px] block font-semibold uppercase">Ledger Status</span>
+                      <span className="text-slate-300 font-medium">Automatic balance deduction active</span>
                     </div>
                   </div>
                 </div>
