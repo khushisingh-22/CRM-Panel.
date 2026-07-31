@@ -550,7 +550,6 @@ export default function App() {
               {sidebarOpen && <span className="text-4xs text-slate-500 font-extrabold uppercase tracking-widest block mb-1.5 px-2.5">Business</span>}
               {[
                 { id: 'inventory', name: 'Stock & Inventory', icon: Package, badge: inventory.filter(item => item.quantity < 5).length },
-                { id: 'services', name: 'Service Packages', icon: ClipboardList },
                 { id: 'team', name: 'Team Status', icon: Users },
               ].map(tab => {
                 const active = activeTab === tab.id;
