@@ -130,7 +130,26 @@ export default function App() {
     }
     setLeads(data.leads);
     setExpenses(data.expenses || []);
-    setInventory(data.inventory || []);
+    const hasOldInventory = (data.inventory || []).some((item: any) => 
+      item.category === 'chemicals' || 
+      item.category === 'coatings' || 
+      item.category === 'towels' || 
+      item.category === 'pads' || 
+      item.category === 'other' || 
+      item.name === 'Ceramic Nano Coating 50ml' || 
+      item.name === 'Premium High-Foam Suds'
+    );
+    if (hasOldInventory || !data.inventory || data.inventory.length === 0) {
+      const defaultInv = [
+        { id: 'inv-1', name: 'Premium Shampoo', category: 'shampoo', quantity: 25, unit: 'litres', minThreshold: 5, costPrice: 450, location: 'Bay 1' },
+        { id: 'inv-2', name: 'Disposable Paper Mats', category: 'papermats', quantity: 150, unit: 'sheets', minThreshold: 30, costPrice: 5, location: 'Shelf B2' },
+        { id: 'inv-3', name: 'Paper Air Freshener', category: 'paperAirFreshner', quantity: 80, unit: 'pieces', minThreshold: 20, costPrice: 15, location: 'Counter' }
+      ];
+      setInventory(defaultInv);
+      saveStoredData({ inventory: defaultInv });
+    } else {
+      setInventory(data.inventory);
+    }
     setRecurringList(data.recurring || []);
     setWaitlist(data.waitlist || []);
     setWorkflows(data.workflows || []);

@@ -22,7 +22,7 @@ import {
 export interface InventoryItem {
   id: string;
   name: string;
-  category: 'chemicals' | 'towels' | 'pads' | 'coatings' | 'other';
+  category: 'shampoo' | 'papermats' | 'paperAirFreshner';
   quantity: number;
   unit: string;
   minThreshold: number;
@@ -41,14 +41,12 @@ export default function InventoryManager({
 }: InventoryManagerProps) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [search, setSearch] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
 
   // Add Item states
   const [name, setName] = useState('');
-  const [category, setCategory] = useState<InventoryItem['category']>('chemicals');
+  const [category, setCategory] = useState<InventoryItem['category']>('shampoo');
   const [quantity, setQuantity] = useState('');
   const [unit, setUnit] = useState('bottles');
-  const [minThreshold, setMinThreshold] = useState('');
   const [costPrice, setCostPrice] = useState('');
   const [location, setLocation] = useState('');
 
@@ -62,7 +60,7 @@ export default function InventoryManager({
       category,
       quantity: Number(quantity),
       unit,
-      minThreshold: Number(minThreshold || 5),
+      minThreshold: 1,
       costPrice: Number(costPrice || 0),
       location
     };
@@ -72,10 +70,9 @@ export default function InventoryManager({
 
     // Reset Form
     setName('');
-    setCategory('chemicals');
+    setCategory('shampoo');
     setQuantity('');
     setUnit('bottles');
-    setMinThreshold('');
     setCostPrice('');
     setLocation('');
   };
@@ -102,19 +99,15 @@ export default function InventoryManager({
   };
 
   const filteredItems = inventory.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase());
-    const matchesCat = categoryFilter === 'all' || item.category === categoryFilter;
-    return matchesSearch && matchesCat;
+    return item.name.toLowerCase().includes(search.toLowerCase());
   });
 
   const lowStockCount = inventory.filter(item => item.quantity <= item.minThreshold).length;
 
   const categoryLabels: Record<InventoryItem['category'], string> = {
-    chemicals: 'Soaps & Cleaners',
-    towels: 'Microfibers & Cloths',
-    pads: 'Polishing Pads',
-    coatings: 'Ceramic Coatings',
-    other: 'General Supplies'
+    shampoo: 'Shampoo',
+    papermats: 'Paper Mats',
+    paperAirFreshner: 'Paper Air Freshener'
   };
 
   return (
@@ -123,7 +116,7 @@ export default function InventoryManager({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-xl font-extrabold text-white tracking-tight md:text-2xl">Inventory & Stock Tracking</h1>
-          <p className="text-xs text-slate-400">Manage detailing chemicals, towels, buffing pads, and coatings</p>
+          <p className="text-xs text-slate-400">Manage essential car washing supplies: shampoo, paper mats, and air fresheners</p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
@@ -171,8 +164,8 @@ export default function InventoryManager({
 
       {/* Table & Filtering */}
       <div className="bg-[#131D35] border border-slate-800/40 rounded-xl overflow-hidden flex flex-col">
-        <div className="p-4 border-b border-slate-800/40 flex flex-col sm:flex-row gap-3 justify-between items-center bg-slate-900/10">
-          <div className="relative w-full sm:w-64">
+        <div className="p-4 border-b border-slate-800/40 flex gap-3 justify-between items-center bg-slate-900/10">
+          <div className="relative w-full">
             <Search size={14} className="absolute left-3 top-3 text-slate-500" />
             <input
               type="text"
@@ -181,32 +174,6 @@ export default function InventoryManager({
               placeholder="Search products..."
               className="w-full text-xs pl-9 pr-4 py-2 border border-slate-800 rounded-lg bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500"
             />
-          </div>
-
-          <div className="flex gap-1 overflow-x-auto w-full sm:w-auto">
-            <button
-              onClick={() => setCategoryFilter('all')}
-              className={`px-3 py-1 text-4xs font-bold rounded uppercase tracking-wider transition-all whitespace-nowrap border ${
-                categoryFilter === 'all'
-                  ? 'bg-indigo-600 text-white border-indigo-600'
-                  : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
-              }`}
-            >
-              All Categories
-            </button>
-            {Object.entries(categoryLabels).map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => setCategoryFilter(key)}
-                className={`px-3 py-1 text-4xs font-bold rounded uppercase tracking-wider transition-all whitespace-nowrap border ${
-                  categoryFilter === key
-                    ? 'bg-indigo-600 text-white border-indigo-600'
-                    : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
-                }`}
-              >
-                {label.split(' ')[0]}
-              </button>
-            ))}
           </div>
         </div>
 
@@ -218,16 +185,15 @@ export default function InventoryManager({
                 <th className="py-3 px-4">Product Name</th>
                 <th className="py-3 px-4">Category</th>
                 <th className="py-3 px-4 text-center">Stock Level</th>
-                <th className="py-3 px-4">Threshold</th>
                 <th className="py-3 px-4">Unit Price</th>
-                <th className="py-3 px-4">Storage Bay</th>
+                <th className="py-3 px-4">Storage</th>
                 <th className="py-3 px-4 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/40 text-slate-300">
               {filteredItems.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-slate-500 font-medium">
+                  <td colSpan={6} className="p-8 text-center text-slate-500 font-medium">
                     <Package size={28} className="mx-auto mb-2 text-slate-600" />
                     No supply items found in database.
                   </td>
@@ -262,14 +228,6 @@ export default function InventoryManager({
                           >
                             <Plus size={10} />
                           </button>
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-mono font-bold">{item.minThreshold}</span>
-                          <span className={`px-1.5 py-0.5 rounded text-4xs font-extrabold border ${status.color}`}>
-                            {status.label}
-                          </span>
                         </div>
                       </td>
                       <td className="py-3.5 px-4 font-mono font-semibold text-slate-400">
@@ -349,33 +307,21 @@ export default function InventoryManager({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Unit Typology</label>
+                  <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Unit</label>
                   <input
                     type="text"
                     required
                     value={unit}
                     onChange={(e) => setUnit(e.target.value)}
-                    placeholder="e.g. bottles"
+                    placeholder="e.g. litres, sheets, pieces"
                     className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white text-center focus:outline-hidden"
                   />
                 </div>
 
                 <div>
-                  <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Min Threshold</label>
-                  <input
-                    type="number"
-                    required
-                    value={minThreshold}
-                    onChange={(e) => setMinThreshold(e.target.value)}
-                    placeholder="e.g. 5"
-                    className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white text-center focus:outline-hidden"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Cost Price (₹)</label>
+                  <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Unit Price (₹)</label>
                   <input
                     type="number"
                     step="0.01"
@@ -389,12 +335,12 @@ export default function InventoryManager({
               </div>
 
               <div className="space-y-1">
-                <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Storage Shelf Location</label>
+                <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Storage</label>
                 <input
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder="e.g. Aisle B, Shelf 3"
+                  placeholder="e.g. Bay 1, Shelf B"
                   className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden"
                 />
               </div>

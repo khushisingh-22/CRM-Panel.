@@ -30,10 +30,9 @@ const KEYS = {
 };
 
 const DEFAULT_INVENTORY = [
-  { id: 'inv-1', name: 'Ceramic Nano Coating 50ml', category: 'coatings' as const, quantity: 12, unit: 'bottles', minThreshold: 3, costPrice: 45, location: 'Shelf A3' },
-  { id: 'inv-2', name: 'Premium High-Foam Suds', category: 'chemicals' as const, quantity: 5, unit: 'gallons', minThreshold: 2, costPrice: 28, location: 'Chemical Rack' },
-  { id: 'inv-3', name: 'Microfiber Towels 40x40 (10pk)', category: 'towels' as const, quantity: 20, unit: 'packs', minThreshold: 5, costPrice: 15, location: 'Towel Bin' },
-  { id: 'inv-4', name: 'Medium Foam Polishing Pads', category: 'pads' as const, quantity: 15, unit: 'units', minThreshold: 4, costPrice: 8, location: 'Pad Box 1' }
+  { id: 'inv-1', name: 'Premium Shampoo', category: 'shampoo' as const, quantity: 25, unit: 'litres', minThreshold: 5, costPrice: 450, location: 'Bay 1' },
+  { id: 'inv-2', name: 'Disposable Paper Mats', category: 'papermats' as const, quantity: 150, unit: 'sheets', minThreshold: 30, costPrice: 5, location: 'Shelf B2' },
+  { id: 'inv-3', name: 'Paper Air Freshener', category: 'paperAirFreshner' as const, quantity: 80, unit: 'pieces', minThreshold: 20, costPrice: 15, location: 'Counter' }
 ];
 
 const DEFAULT_WORKFLOWS = [
