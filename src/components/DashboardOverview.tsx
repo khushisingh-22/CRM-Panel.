@@ -24,7 +24,11 @@ import {
   CreditCard,
   Cpu,
   ChevronDown,
-  Briefcase
+  Briefcase,
+  X,
+  AlertCircle,
+  Edit2,
+  Search
 } from 'lucide-react';
 import { Appointment, Customer, ServicePackage } from '../types/crm';
 
@@ -37,6 +41,7 @@ interface DashboardOverviewProps {
   inventory: any[];
   onNavigate: (tab: string) => void;
   onSelectJob: (jobId: string) => void;
+  onUpdateAppointment?: (updated: Appointment) => void;
 }
 
 export default function DashboardOverview({
@@ -47,7 +52,8 @@ export default function DashboardOverview({
   expenses,
   inventory,
   onNavigate,
-  onSelectJob
+  onSelectJob,
+  onUpdateAppointment
 }: DashboardOverviewProps) {
   // Local date helper
   const getRelativeDate = (offsetDays: number): string => {
@@ -74,9 +80,17 @@ export default function DashboardOverview({
   const todayRevenue = todayCompletedJobs.reduce((sum, a) => sum + a.price, 0);
   const todayExpenses = expenses ? expenses.filter(e => e.date === todayStr).reduce((sum, e) => sum + e.amount, 0) : 0;
   const dailyProfit = todayCompletedJobs.length > 0 ? (todayRevenue - todayExpenses) : 450;
-  const unpaidRevenue = appointments
+  const pendingPaymentsTotal = appointments
     .filter(a => a.paymentStatus !== 'paid' && a.status !== 'cancelled')
-    .reduce((sum, a) => sum + a.price, 0);
+    .reduce((sum, a) => {
+      const paid = a.paidAmount ?? 0;
+      return sum + Math.max(0, a.price - paid);
+    }, 0);
+
+  const [showPendingListModal, setShowPendingListModal] = useState(false);
+  const [pendingSearchTerm, setPendingSearchTerm] = useState('');
+  const [editingAptId, setEditingAptId] = useState<string | null>(null);
+  const [newPaidAmount, setNewPaidAmount] = useState<string>('');
 
   const averageJobValue = completedJobs.length > 0 
     ? Math.round(totalRevenue / completedJobs.length) 
@@ -329,6 +343,23 @@ export default function DashboardOverview({
   const scheduledStroke = (scheduledPercent / 100) * circumference;
   const completedStroke = (completedPercent / 100) * circumference;
 
+  const pendingApts = appointments.filter(a => {
+    if (a.status === 'cancelled') return false;
+    if (a.paymentStatus === 'paid') return false;
+    const balance = a.price - (a.paidAmount ?? 0);
+    return balance > 0;
+  });
+
+  const filteredPendingApts = pendingApts.filter(a => {
+    const term = pendingSearchTerm.toLowerCase();
+    return (
+      a.customerName.toLowerCase().includes(term) ||
+      a.customerPhone.toLowerCase().includes(term) ||
+      a.serviceName.toLowerCase().includes(term) ||
+      (a.invoiceNumber && a.invoiceNumber.toLowerCase().includes(term))
+    );
+  });
+
   return (
     <div className="space-y-6" id="dashboard-overview-container">
       <style>{`
@@ -359,7 +390,7 @@ export default function DashboardOverview({
       </div>
 
       {/* KPI Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4" id="kpi-dashboard-grid">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4" id="kpi-dashboard-grid">
         {/* Card 1: Daily Profit */}
         <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
@@ -419,6 +450,21 @@ export default function DashboardOverview({
             <Package size={22} />
           </div>
         </div>
+
+        {/* Card 6: Pending Client Payments */}
+        <button
+          onClick={() => setShowPendingListModal(true)}
+          className="bg-[#131D35] p-5 rounded-xl border border-rose-500/20 hover:border-rose-500/50 transition-all shadow-xs flex items-center justify-between text-left cursor-pointer w-full group relative overflow-hidden"
+        >
+          <div className="space-y-1">
+            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Pending Payments</span>
+            <span className="text-2xl font-extrabold text-rose-400 font-mono">₹{pendingPaymentsTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span className="text-slate-500 text-3xs font-medium block group-hover:text-rose-300 transition-colors">Click to view list →</span>
+          </div>
+          <div className="p-3 bg-rose-500/10 text-rose-400 group-hover:bg-rose-500/20 transition-all rounded-lg flex items-center justify-center h-11 w-11 shrink-0">
+            <CreditCard size={22} />
+          </div>
+        </button>
       </div>
 
       {/* Quick Actions Container */}
@@ -927,6 +973,216 @@ export default function DashboardOverview({
           </div>
         </div>
       </div>
+
+      {/* Pending Payments Modal */}
+      {showPendingListModal && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-xs flex items-center justify-center z-50 p-4" id="pending-payments-modal">
+          <div className="bg-[#0B1329] border border-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-scale-up-corner">
+            {/* Header */}
+            <div className="p-5 border-b border-slate-800/60 flex items-center justify-between bg-slate-900/40">
+              <div>
+                <h3 className="text-base font-extrabold text-white flex items-center gap-2">
+                  <CreditCard className="text-rose-400" size={18} />
+                  Pending Client Payments Details
+                </h3>
+                <p className="text-3xs text-slate-400 mt-1">
+                  Showing all clients with remaining unpaid balances. Total Pending: <strong className="text-rose-400 font-mono">₹{pendingPaymentsTotal.toLocaleString()}</strong>
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowPendingListModal(false);
+                  setEditingAptId(null);
+                }}
+                className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Filter Search */}
+            <div className="p-4 border-b border-slate-800/40 bg-slate-950/20">
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-3 text-slate-500" />
+                <input
+                  type="text"
+                  placeholder="Filter by client name, phone or invoice number..."
+                  value={pendingSearchTerm}
+                  onChange={(e) => setPendingSearchTerm(e.target.value)}
+                  className="w-full text-xs pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-hidden focus:border-indigo-500"
+                />
+              </div>
+            </div>
+
+            {/* Content Table / List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {filteredPendingApts.length === 0 ? (
+                <div className="py-12 text-center text-slate-500">
+                  <CheckCircle size={32} className="mx-auto mb-2 text-emerald-500" />
+                  <p className="text-xs font-bold text-white">No pending payments found!</p>
+                  <p className="text-3xs text-slate-400 mt-1">All filtered client invoices are settled and fully paid.</p>
+                </div>
+              ) : (
+                <div className="border border-slate-800/60 rounded-xl overflow-hidden bg-[#131D35]">
+                  <table className="w-full text-left border-collapse text-3xs">
+                    <thead>
+                      <tr className="border-b border-slate-800 text-slate-400 font-extrabold uppercase bg-slate-950">
+                        <th className="py-3 px-4">Client Details</th>
+                        <th className="py-3 px-4">Vehicle & Service</th>
+                        <th className="py-3 px-4">Job Info</th>
+                        <th className="py-3 px-4 text-right">Billing Stats</th>
+                        <th className="py-3 px-4 text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/40 text-slate-300">
+                      {filteredPendingApts.map(apt => {
+                        const balance = Math.max(0, apt.price - (apt.paidAmount ?? 0));
+                        const isEditing = editingAptId === apt.id;
+
+                        const handleSavePayment = () => {
+                          if (!onUpdateAppointment) return;
+                          const updatedPaid = parseFloat(newPaidAmount);
+                          if (isNaN(updatedPaid) || updatedPaid < 0) {
+                            alert("Please enter a valid amount.");
+                            return;
+                          }
+                          if (updatedPaid > apt.price) {
+                            alert(`Paid amount cannot exceed total price of ₹${apt.price}.`);
+                            return;
+                          }
+
+                          const newStatus = updatedPaid === apt.price ? 'paid' : (updatedPaid > 0 ? 'partially_paid' : 'unpaid');
+                          onUpdateAppointment({
+                            ...apt,
+                            paidAmount: updatedPaid,
+                            paymentStatus: newStatus
+                          });
+                          setEditingAptId(null);
+                        };
+
+                        const handleQuickFullyPaid = () => {
+                          if (!onUpdateAppointment) return;
+                          onUpdateAppointment({
+                            ...apt,
+                            paidAmount: apt.price,
+                            paymentStatus: 'paid'
+                          });
+                        };
+
+                        return (
+                          <tr key={apt.id} className="hover:bg-slate-900/30 transition-all">
+                            {/* Client details */}
+                            <td className="py-3.5 px-4">
+                              <strong className="font-bold text-white block text-xs">{apt.customerName}</strong>
+                              <span className="text-slate-400 block mt-0.5">{apt.customerPhone}</span>
+                              <span className="text-slate-500 block text-4xs font-mono">{apt.customerEmail}</span>
+                            </td>
+                            {/* Vehicle & service */}
+                            <td className="py-3.5 px-4">
+                              <span className="text-slate-200 block font-semibold">{apt.serviceName}</span>
+                              <span className="text-slate-400 block mt-0.5 text-4xs bg-slate-900 border border-slate-800/40 px-1.5 py-0.5 rounded-sm inline-block">
+                                {apt.vehicle.year} {apt.vehicle.make} {apt.vehicle.model} ({apt.vehicle.size.toUpperCase()})
+                              </span>
+                            </td>
+                            {/* Job info */}
+                            <td className="py-3.5 px-4">
+                              <span className="text-slate-300 block font-mono">{apt.date}</span>
+                              <span className="text-slate-400 block font-mono mt-0.5">{apt.time}</span>
+                              <span className="text-slate-500 block text-4xs font-mono mt-0.5">{apt.invoiceNumber || 'No Invoice'}</span>
+                            </td>
+                            {/* Billing stats */}
+                            <td className="py-3.5 px-4 text-right font-mono">
+                              <div className="space-y-0.5">
+                                <div>Price: <span className="font-bold text-white">₹{apt.price.toFixed(2)}</span></div>
+                                <div className="text-slate-400">Paid: <span className="text-emerald-400">₹{(apt.paidAmount ?? 0).toFixed(2)}</span></div>
+                                <div className="text-rose-400 font-bold border-t border-slate-800/80 pt-0.5 mt-0.5">
+                                  Pending: <span>₹{balance.toFixed(2)}</span>
+                                </div>
+                              </div>
+                            </td>
+                            {/* Actions */}
+                            <td className="py-3.5 px-4">
+                              <div className="flex flex-col items-center gap-1.5">
+                                {isEditing ? (
+                                  <div className="flex items-center gap-1 bg-slate-950 p-1 border border-slate-800 rounded-lg">
+                                    <input
+                                      type="number"
+                                      step="0.01"
+                                      placeholder="Amount"
+                                      value={newPaidAmount}
+                                      onChange={(e) => setNewPaidAmount(e.target.value)}
+                                      className="w-20 bg-transparent text-white border-0 text-center text-xs p-1 focus:outline-hidden"
+                                    />
+                                    <button
+                                      onClick={handleSavePayment}
+                                      className="bg-emerald-600 hover:bg-emerald-500 text-white text-4xs px-2 py-1 rounded font-bold cursor-pointer transition-colors"
+                                    >
+                                      Save
+                                    </button>
+                                    <button
+                                      onClick={() => setEditingAptId(null)}
+                                      className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-4xs px-2 py-1 rounded font-bold cursor-pointer transition-colors"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div className="flex gap-1.5 justify-center">
+                                    <button
+                                      onClick={() => {
+                                        setEditingAptId(apt.id);
+                                        setNewPaidAmount((apt.paidAmount ?? 0).toString());
+                                      }}
+                                      className="px-2 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 text-4xs font-bold rounded cursor-pointer transition-all"
+                                      title="Update partial payment"
+                                    >
+                                      Update Payment
+                                    </button>
+                                    <button
+                                      onClick={handleQuickFullyPaid}
+                                      className="px-2 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-4xs font-bold rounded cursor-pointer transition-all"
+                                      title="Mark as fully paid"
+                                    >
+                                      Mark Paid
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        setShowPendingListModal(false);
+                                        onSelectJob(apt.id);
+                                        onNavigate('workboard');
+                                      }}
+                                      className="px-2 py-1 bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200 text-4xs font-bold rounded cursor-pointer transition-all"
+                                    >
+                                      View Job
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-slate-800/60 bg-slate-900/30 flex justify-end">
+              <button
+                onClick={() => {
+                  setShowPendingListModal(false);
+                  setEditingAptId(null);
+                }}
+                className="px-4 py-1.5 bg-slate-800 hover:bg-slate-705 text-slate-300 hover:text-white text-xs font-bold rounded-lg border border-slate-700 transition-colors cursor-pointer"
+              >
+                Close details
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

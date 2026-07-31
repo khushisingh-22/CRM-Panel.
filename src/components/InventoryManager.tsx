@@ -94,7 +94,7 @@ export default function InventoryManager({
 
   const getStatus = (item: InventoryItem) => {
     if (item.quantity === 0) return { label: 'Out of Stock', color: 'bg-rose-500/15 text-rose-400 border-rose-500/20' };
-    if (item.quantity <= item.minThreshold) return { label: 'Low Stock', color: 'bg-amber-500/15 text-amber-400 border-amber-500/20' };
+    if (item.quantity < 5) return { label: 'Low Stock', color: 'bg-amber-500/15 text-amber-400 border-amber-500/20' };
     return { label: 'In Stock', color: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20' };
   };
 
@@ -102,7 +102,7 @@ export default function InventoryManager({
     return item.name.toLowerCase().includes(search.toLowerCase());
   });
 
-  const lowStockCount = inventory.filter(item => item.quantity <= item.minThreshold).length;
+  const lowStockCount = inventory.filter(item => item.quantity < 5).length;
 
   const categoryLabels: Record<InventoryItem['category'], string> = {
     shampoo: 'Shampoo',
@@ -126,6 +126,26 @@ export default function InventoryManager({
           Add Supply Item
         </button>
       </div>
+
+      {/* Alert Reminders for Low Stock Items (< 5) */}
+      {inventory.some(item => item.quantity < 5) && (
+        <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl flex items-start gap-3 text-amber-300 animate-fade-in" id="low-stock-alert-reminder">
+          <AlertTriangle className="shrink-0 mt-0.5 text-amber-400" size={16} />
+          <div className="text-xs space-y-1">
+            <strong className="font-extrabold block uppercase tracking-wide">⚠️ Low Stock Warning Reminder (Quantity below 5)</strong>
+            <p className="text-slate-300 font-medium leading-relaxed">
+              The following supply items have dropped below 5 units. Please restock as soon as possible to maintain seamless studio operations:
+            </p>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {inventory.filter(item => item.quantity < 5).map(item => (
+                <span key={item.id} className="bg-amber-500/20 border border-amber-500/30 text-amber-300 font-mono font-bold text-4xs px-2.5 py-1 rounded-md uppercase">
+                  {item.name}: {item.quantity} {item.unit}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Grid Overview Info */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
