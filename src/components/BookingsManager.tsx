@@ -43,6 +43,56 @@ interface BookingsManagerProps {
   onClearAutoOpenNewBooking?: () => void;
 }
 
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  return dateStr;
+};
+
+const formatTime = (timeStr: string) => {
+  if (!timeStr) return '';
+  const parts = timeStr.split(':');
+  if (parts.length >= 2) {
+    let hours = parseInt(parts[0], 10);
+    if (isNaN(hours)) return timeStr;
+    const minutes = parts[1];
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    return `${hours}:${minutes} ${ampm}`;
+  }
+  return timeStr;
+};
+
+const getFormattedMessage = (customerName: string, date: string, time: string, phone: string) => {
+  return `Dear ${customerName || 'sir'}, 
+
+Your Slot has been booked successfully.
+
+Our Reaching Time ⬇️.
+*Time - ${formatTime(time)}
+*Date - ${formatDate(date)}
+
+Customer Support ⬇️.
+Mobile Num - ${phone}
+Email - support@drwashit.com
+Website - www.drwashit.com
+
+Download the Dr Washit - Doorstep Car Carr App Now 
+
+For Android User ⬇️.
+https://play.google.com/store/apps/details?id=com.app.buntywash&pcampaignid=web_share
+
+For Apple User⬇️
+https://apps.apple.com/in/app/dr-washit/id6756914622
+
+
+Let your car sparkle at your doorstep🚗💦✨ & thankyou for choosing *Dr Washit*`;
+};
+
 export default function BookingsManager({
   appointments,
   customers,
@@ -242,7 +292,7 @@ export default function BookingsManager({
       show: true,
       clientName: clientName,
       phone: clientPhone,
-      message: `Your booking has been confirmed! Our detailing specialist team will reach your location on time.`
+      message: getFormattedMessage(clientName, datePart || new Date().toISOString().split('T')[0], timePart || '09:00', clientPhone)
     });
 
     // Reset fields
@@ -548,14 +598,14 @@ export default function BookingsManager({
                         <span className="font-mono font-bold text-white">{apt.customerPhone}</span>
                         <div className="flex gap-1">
                           <a
-                            href={`sms:${apt.customerPhone}?body=${encodeURIComponent(`Hello ${apt.customerName}, your booking at DrWashIt is confirmed for ${apt.date} at ${apt.time}. Price: ₹${apt.price}. Thank you!`)}`}
+                            href={`sms:${apt.customerPhone}?body=${encodeURIComponent(getFormattedMessage(apt.customerName, apt.date, apt.time, apt.customerPhone))}`}
                             className="p-1 hover:bg-slate-800 rounded text-sky-400 hover:text-sky-300 transition-colors"
                             title="Send Free SMS (Message Box)"
                           >
                             <Send size={10} />
                           </a>
                           <a
-                            href={`https://wa.me/${apt.customerPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello ${apt.customerName}, your booking at DrWashIt is confirmed for ${apt.date} at ${apt.time}. Price: ₹${apt.price}. Thank you!`)}`}
+                            href={`https://wa.me/${apt.customerPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(getFormattedMessage(apt.customerName, apt.date, apt.time, apt.customerPhone))}`}
                             target="_blank"
                             rel="noreferrer"
                             className="p-1 hover:bg-slate-800 rounded text-emerald-400 hover:text-emerald-300 transition-colors"
