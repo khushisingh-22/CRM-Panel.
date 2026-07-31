@@ -390,7 +390,7 @@ export default function DashboardOverview({
       </div>
 
       {/* KPI Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4" id="kpi-dashboard-grid">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4" id="kpi-dashboard-grid">
         {/* Card 1: Daily Profit */}
         <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
@@ -427,19 +427,7 @@ export default function DashboardOverview({
           </div>
         </div>
 
-        {/* Card 4: Total Expenses */}
-        <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Total Expenses</span>
-            <span className="text-2xl font-extrabold text-rose-400 font-mono">₹{totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            <span className="text-slate-500 text-3xs font-medium block">₹{totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} this month</span>
-          </div>
-          <div className="p-3 bg-rose-500/10 text-rose-400 rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
-            ₹
-          </div>
-        </div>
-
-        {/* Card 5: Low Stock Alerts */}
+        {/* Card 4: Low Stock Alerts */}
         <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Low Stock Alerts</span>
@@ -451,7 +439,7 @@ export default function DashboardOverview({
           </div>
         </div>
 
-        {/* Card 6: Pending Client Payments */}
+        {/* Card 5: Pending Client Payments */}
         <button
           onClick={() => setShowPendingListModal(true)}
           className="bg-[#131D35] p-5 rounded-xl border border-rose-500/20 hover:border-rose-500/50 transition-all shadow-xs flex items-center justify-between text-left cursor-pointer w-full group relative overflow-hidden"
@@ -1144,16 +1132,6 @@ export default function DashboardOverview({
                                       title="Mark as fully paid"
                                     >
                                       Mark Paid
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        setShowPendingListModal(false);
-                                        onSelectJob(apt.id);
-                                        onNavigate('workboard');
-                                      }}
-                                      className="px-2 py-1 bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200 text-4xs font-bold rounded cursor-pointer transition-all"
-                                    >
-                                      View Job
                                     </button>
                                   </div>
                                 )}

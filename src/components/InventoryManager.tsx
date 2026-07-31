@@ -123,7 +123,7 @@ export default function InventoryManager({
           className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
         >
           <Plus size={16} />
-          Add Supply Item
+          Add Item
         </button>
       </div>
 
@@ -154,7 +154,7 @@ export default function InventoryManager({
             <Package size={20} />
           </div>
           <div>
-            <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Total Supply Items</span>
+            <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Total Items</span>
             <strong className="text-lg font-black text-white">{inventory.length}</strong>
           </div>
         </div>
@@ -273,14 +273,14 @@ export default function InventoryManager({
         </div>
       </div>
 
-      {/* Add Supply Item Modal */}
+      {/* Add Item Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center z-50 p-4">
           <div className="bg-[#111827] border border-slate-800 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-zoom-in">
             <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900 text-white">
               <h2 className="text-sm font-extrabold uppercase tracking-wider flex items-center gap-2">
                 <Package size={16} className="text-indigo-400" />
-                Add Supply Item
+                Add Item
               </h2>
               <button onClick={() => setShowAddModal(false)} className="p-1 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white">
                 <X size={18} />
