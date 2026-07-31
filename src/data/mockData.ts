@@ -131,6 +131,43 @@ export const DEFAULT_SERVICES: ServicePackage[] = [
       'Microfiber Touchless Drying',
       'Rim Grime Treatment'
     ]
+  },
+  {
+    id: 'pkg-interior-exterior-wash',
+    name: 'Interior+Exterior Wash',
+    description: 'Complete detailing package including premium vacuuming, dashboard restoration, foam body washing, and tire glazing.',
+    durationMin: 75,
+    pricing: {
+      sedan: 999,
+      suv: 1299,
+      truck_large: 1599
+    },
+    category: 'full_detail',
+    features: [
+      'Foam Jet Exterior Wash',
+      'Underbody Mud Flush',
+      'Interior Cabin Dusting & Vacuum',
+      'Dashboard & Console Detailing',
+      'Streak-free Glass Polishing'
+    ]
+  },
+  {
+    id: 'pkg-basic-wash',
+    name: 'Basic Wash',
+    description: 'Essential outer body wash with premium car shampoo and gentle micro-drying.',
+    durationMin: 20,
+    pricing: {
+      sedan: 299,
+      suv: 399,
+      truck_large: 499
+    },
+    category: 'exterior',
+    features: [
+      'Exterior Water Spray Wash',
+      'Foam Shampoo Wipe',
+      'Clean Water Rinse',
+      'Microfiber Wipe Dry'
+    ]
   }
 ];
 

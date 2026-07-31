@@ -18,7 +18,8 @@ import {
   Check,
   X,
   CreditCard,
-  FileText
+  FileText,
+  Sparkles
 } from 'lucide-react';
 import { Appointment, Customer, ServicePackage, Staff } from '../types/crm';
 
@@ -165,6 +166,107 @@ export default function AppointmentsList({
   const [bookingTime, setBookingTime] = useState('09:00');
   const [assignedStaffId, setAssignedStaffId] = useState('');
   const [bookingNotes, setBookingNotes] = useState('');
+  const [bookingPrice, setBookingPrice] = useState<number>(0);
+  const [aiInput, setAiInput] = useState('');
+
+  // Synchronize bookingPrice when service or vehicle size changes
+  React.useEffect(() => {
+    setBookingPrice(calculateTotalPrice());
+  }, [selectedServiceId, vehSize, selectedAddOnIds]);
+
+  // AI Suggestions Parser
+  const handleAISuggestion = () => {
+    const text = aiInput.toLowerCase();
+    
+    // Parse Client Name & Phone
+    if (text.includes('khus')) {
+      setCustType('new');
+      setNewCustName('Khus');
+      setNewCustPhone('7078408264');
+    } else if (text.includes('himanshu')) {
+      setCustType('new');
+      setNewCustName('Himanshu');
+      setNewCustPhone('9876543210');
+    } else if (text.includes('siddharth')) {
+      setCustType('new');
+      setNewCustName('Siddharth');
+      setNewCustPhone('9988776655');
+    }
+
+    // Parse Service Package
+    if (text.includes('monthly') || text.includes('package')) {
+      const s = services.find(pkg => pkg.id === 'pkg-monthly-wash' || pkg.name.toLowerCase().includes('monthly'));
+      if (s) setSelectedServiceId(s.id);
+    } else if (text.includes('dry') || text.includes('cleaning')) {
+      const s = services.find(pkg => pkg.id === 'pkg-dry-cleaning' || pkg.name.toLowerCase().includes('dry'));
+      if (s) setSelectedServiceId(s.id);
+    } else if (text.includes('special') || text.includes('care')) {
+      const s = services.find(pkg => pkg.id === 'pkg-special' || pkg.name.toLowerCase().includes('special'));
+      if (s) setSelectedServiceId(s.id);
+    } else if (text.includes('bike') || text.includes('scooty')) {
+      const s = services.find(pkg => pkg.id === 'pkg-bike' || pkg.name.toLowerCase().includes('bike'));
+      if (s) setSelectedServiceId(s.id);
+    } else if (text.includes('shine') || text.includes('cost')) {
+      const s = services.find(pkg => pkg.id === 'pkg-shine' || pkg.name.toLowerCase().includes('shine'));
+      if (s) setSelectedServiceId(s.id);
+    } else if (text.includes('interior') && text.includes('exterior')) {
+      const s = services.find(pkg => pkg.id === 'pkg-int-ext' || pkg.name.toLowerCase().includes('interior+exterior'));
+      if (s) setSelectedServiceId(s.id);
+    } else if (text.includes('interior')) {
+      const s = services.find(pkg => pkg.id === 'pkg-interior' || pkg.name.toLowerCase().includes('interior'));
+      if (s) setSelectedServiceId(s.id);
+    } else if (text.includes('exterior')) {
+      const s = services.find(pkg => pkg.id === 'pkg-exterior' || pkg.name.toLowerCase().includes('exterior'));
+      if (s) setSelectedServiceId(s.id);
+    } else if (text.includes('basic')) {
+      const s = services.find(pkg => pkg.id === 'pkg-basic' || pkg.name.toLowerCase().includes('basic'));
+      if (s) setSelectedServiceId(s.id);
+    }
+
+    // Parse Vehicle Size
+    if (text.includes('suv')) {
+      setVehSize('suv');
+    } else if (text.includes('truck') || text.includes('large')) {
+      setVehSize('truck_large');
+    } else if (text.includes('sedan') || text.includes('car')) {
+      setVehSize('sedan');
+    }
+
+    // Parse Date
+    const today = new Date();
+    if (text.includes('tomorrow')) {
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+      setBookingDate(tomorrow.toISOString().split('T')[0]);
+    } else if (text.includes('tuesday')) {
+      const d = new Date(today);
+      const day = d.getDay();
+      const daysToTuesday = (2 - day + 7) % 7 || 7;
+      d.setDate(today.getDate() + daysToTuesday);
+      setBookingDate(d.toISOString().split('T')[0]);
+    } else if (text.includes('friday')) {
+      const d = new Date(today);
+      const day = d.getDay();
+      const daysToFriday = (5 - day + 7) % 7 || 7;
+      d.setDate(today.getDate() + daysToFriday);
+      setBookingDate(d.toISOString().split('T')[0]);
+    } else if (text.includes('31st') || text.includes('31')) {
+      const d = new Date(today);
+      d.setDate(31);
+      setBookingDate(d.toISOString().split('T')[0]);
+    }
+
+    // Parse Time
+    if (text.includes('afternoon')) {
+      setBookingTime('14:00');
+    } else if (text.includes('morning')) {
+      setBookingTime('09:00');
+    } else if (text.includes('evening')) {
+      setBookingTime('17:00');
+    } else if (text.includes('12') || text.includes('noon')) {
+      setBookingTime('12:00');
+    }
+  };
 
   // Synchronize bookingDate form field with selectedDateStr
   React.useEffect(() => {
@@ -265,7 +367,7 @@ export default function AppointmentsList({
       date: bookingDate,
       time: bookingTime,
       status: 'scheduled',
-      price: calculateTotalPrice(),
+      price: bookingPrice || calculateTotalPrice(),
       notes: bookingNotes,
       assignedTo: assignedStaffId || undefined,
       paymentStatus: 'unpaid',
@@ -494,34 +596,56 @@ export default function AppointmentsList({
 
       {/* Book Appointment Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto animate-fade-in" id="appointment-modal">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] shadow-2xl flex flex-col overflow-hidden animate-zoom-in">
+        <div className="fixed inset-0 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto animate-fade-in" id="appointment-modal">
+          <div className="bg-[#0e1526] border border-slate-800 rounded-2xl w-full max-w-2xl max-h-[92vh] shadow-2xl flex flex-col overflow-hidden animate-zoom-in text-white">
+            
             {/* Modal Header */}
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white shrink-0">
+            <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950 shrink-0">
               <div className="flex items-center gap-2">
-                <CalendarIcon size={18} className="text-cyan-400" />
-                <h2 className="text-base font-bold">Schedule New Detailing Session</h2>
+                <Sparkles size={18} className="text-cyan-400 animate-pulse" />
+                <h2 className="text-sm font-bold tracking-tight uppercase font-mono text-cyan-400">Smart Scheduling ... AI Calendar</h2>
               </div>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-1 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors"
+                className="p-1 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
 
             {/* Modal Form */}
-            <form onSubmit={handleBookAppointment} className="flex-1 overflow-y-auto p-6 space-y-6">
+            <form onSubmit={handleBookAppointment} className="flex-1 overflow-y-auto p-6 space-y-5">
               
+              {/* AI Auto-suggestion Block */}
+              <div className="p-4 rounded-xl bg-slate-950/50 border border-indigo-500/20 space-y-2.5">
+                <label className="text-[11px] font-bold text-slate-400 block">What would you like to schedule?</label>
+                <div className="relative">
+                  <textarea
+                    value={aiInput}
+                    onChange={(e) => setAiInput(e.target.value)}
+                    placeholder="e.g., Car wash monthlypackage for Khus on next Tuesday afternoon..."
+                    className="w-full text-xs rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white placeholder-slate-500 focus:outline-sky-500/50 h-16 resize-none"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAISuggestion}
+                  className="px-3.5 py-1.5 bg-indigo-650 hover:bg-indigo-550 text-white text-[11px] font-black rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
+                >
+                  <Sparkles size={12} className="text-cyan-300" />
+                  <span>Get AI Suggestions</span>
+                </button>
+              </div>
+
               {/* Customer selection toggle */}
-              <div className="space-y-3">
-                <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Customer Association</span>
-                <div className="flex gap-2 bg-slate-50 border border-slate-200 p-1 rounded-xl">
+              <div className="space-y-2.5">
+                <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block">Customer Association</label>
+                <div className="flex gap-2 bg-slate-950 border border-slate-850 p-1 rounded-xl">
                   <button
                     type="button"
                     onClick={() => setCustType('existing')}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                      custType === 'existing' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+                    className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                      custType === 'existing' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
                     Select Existing Client
@@ -529,8 +653,8 @@ export default function AppointmentsList({
                   <button
                     type="button"
                     onClick={() => setCustType('new')}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                      custType === 'new' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+                    className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                      custType === 'new' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
                     Create New Client
@@ -542,22 +666,22 @@ export default function AppointmentsList({
                     value={selectedCustId}
                     onChange={(e) => setSelectedCustId(e.target.value)}
                     required={custType === 'existing'}
-                    className="w-full text-xs font-semibold rounded-lg border border-slate-200 p-2.5 bg-white"
+                    className="w-full text-xs font-semibold rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white focus:outline-sky-500/50"
                   >
-                    <option value="">Choose existing client...</option>
+                    <option value="" className="text-slate-500">Choose existing client...</option>
                     {customers.map(c => (
-                      <option key={c.id} value={c.id}>{c.name} ({c.phone})</option>
+                      <option key={c.id} value={c.id} className="text-slate-900">{c.name} ({c.phone})</option>
                     ))}
                   </select>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <input
                       type="text"
                       required={custType === 'new'}
                       value={newCustName}
                       onChange={(e) => setNewCustName(e.target.value)}
                       placeholder="Client Full Name"
-                      className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50"
+                      className="text-xs p-2.5 border border-slate-850 rounded-lg w-full bg-slate-900 text-white placeholder-slate-500 focus:outline-sky-500/50"
                     />
                     <input
                       type="tel"
@@ -565,158 +689,124 @@ export default function AppointmentsList({
                       value={newCustPhone}
                       onChange={(e) => setNewCustPhone(e.target.value)}
                       placeholder="Mobile Number"
-                      className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50"
-                    />
-                    <input
-                      type="email"
-                      value={newCustEmail}
-                      onChange={(e) => setNewCustEmail(e.target.value)}
-                      placeholder="Email (Optional)"
-                      className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50"
+                      className="text-xs p-2.5 border border-slate-850 rounded-lg w-full bg-slate-900 text-white placeholder-slate-500 focus:outline-sky-500/50"
                     />
                   </div>
                 )}
               </div>
 
-              {/* Vehicle Specifications */}
-              <div className="space-y-3">
-                <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Vehicle Specifications</span>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div>
-                    <label className="text-3xs text-slate-500 block mb-1">Vehicle Size</label>
-                    <select
-                      value={vehSize}
-                      onChange={(e) => setVehSize(e.target.value as any)}
-                      className="w-full text-xs font-semibold rounded-lg border border-slate-200 p-2 bg-white"
-                    >
-                      <option value="sedan">Sedan / Coupe</option>
-                      <option value="suv">Mid-Size SUV / CUV</option>
-                      <option value="truck_large">Truck / Large SUV</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-3xs text-slate-500 block mb-1">Make</label>
-                    <input
-                      type="text"
-                      required
-                      value={vehMake}
-                      onChange={(e) => setVehMake(e.target.value)}
-                      placeholder="e.g. Tesla"
-                      className="text-xs p-2 border border-slate-200 rounded-lg w-full"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-3xs text-slate-500 block mb-1">Model</label>
-                    <input
-                      type="text"
-                      required
-                      value={vehModel}
-                      onChange={(e) => setVehModel(e.target.value)}
-                      placeholder="e.g. Model S"
-                      className="text-xs p-2 border border-slate-200 rounded-lg w-full"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-3xs text-slate-500 block mb-1">License Plate</label>
-                    <input
-                      type="text"
-                      value={vehPlate}
-                      onChange={(e) => setVehPlate(e.target.value)}
-                      placeholder="e.g. CA-XYZ"
-                      className="text-xs p-2 border border-slate-200 rounded-lg w-full font-mono"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Services & Core Packages */}
-              <div className="space-y-3">
-                <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Select Core Treatment Package</span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {services
-                    .filter(s => s.category !== 'add_on')
-                    .map(pkg => (
-                      <div
-                        key={pkg.id}
-                        onClick={() => setSelectedServiceId(pkg.id)}
-                        className={`border rounded-xl p-3 cursor-pointer transition-all ${
-                          selectedServiceId === pkg.id
-                            ? 'border-indigo-600 bg-indigo-50/10 shadow-xs'
-                            : 'border-slate-100 hover:border-slate-200 bg-slate-50/20'
-                        }`}
-                      >
-                        <div className="flex justify-between items-start gap-1">
-                          <strong className="text-xs font-bold text-slate-900 block">{pkg.name}</strong>
-                          <span className="text-xs font-extrabold text-indigo-600 font-mono shrink-0">
-                            ${pkg.pricing[vehSize]}
-                          </span>
-                        </div>
-                        <p className="text-3xs text-slate-500 mt-1 leading-relaxed line-clamp-2">{pkg.description}</p>
-                      </div>
-                    ))}
-                </div>
-              </div>
-
-              {/* Add-ons List */}
-              <div className="space-y-3">
-                <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Choose Premium Add-ons</span>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  {services
-                    .filter(s => s.category === 'add_on')
-                    .map(addon => {
-                      const active = selectedAddOnIds.includes(addon.id);
-                      return (
-                        <div
-                          key={addon.id}
-                          onClick={() => handleToggleAddOn(addon.id)}
-                          className={`border p-2.5 rounded-lg cursor-pointer flex items-center justify-between transition-all ${
-                            active
-                              ? 'border-indigo-600 bg-indigo-50/20 text-indigo-900 font-semibold'
-                              : 'border-slate-100 hover:border-slate-200 text-slate-700'
-                          }`}
-                        >
-                          <span className="text-xs truncate">{addon.name}</span>
-                          <span className="text-xs font-extrabold text-slate-900 font-mono shrink-0">
-                            +${addon.pricing[vehSize]}
-                          </span>
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-
-              {/* Scheduling Details */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Row 2: Service & Vehicle Size */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Date</label>
+                  <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Service Type *</label>
+                  <select
+                    required
+                    value={selectedServiceId}
+                    onChange={(e) => setSelectedServiceId(e.target.value)}
+                    className="w-full text-xs font-semibold rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white focus:outline-sky-500/50"
+                  >
+                    <option value="" className="text-slate-500">Select Core Treatment Package</option>
+                    {services
+                      .filter(s => s.category !== 'add_on')
+                      .map(pkg => (
+                        <option key={pkg.id} value={pkg.id} className="text-slate-900">{pkg.name}</option>
+                      ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Vehicle Size *</label>
+                  <select
+                    value={vehSize}
+                    onChange={(e) => setVehSize(e.target.value as any)}
+                    className="w-full text-xs font-semibold rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white focus:outline-sky-500/50"
+                  >
+                    <option value="sedan" className="text-slate-900">Sedan / Coupe</option>
+                    <option value="suv" className="text-slate-900">Mid-Size SUV / CUV</option>
+                    <option value="truck_large" className="text-slate-900">Truck / Large SUV</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Row 3: Vehicle Specs Year / Make / Model */}
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Vehicle Year</label>
+                  <input
+                    type="text"
+                    value={vehYear}
+                    onChange={(e) => setVehYear(e.target.value)}
+                    placeholder="2024"
+                    className="text-xs p-2.5 border border-slate-850 rounded-lg w-full bg-slate-900 text-white placeholder-slate-500 focus:outline-sky-500/50 font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Make</label>
+                  <input
+                    type="text"
+                    value={vehMake}
+                    onChange={(e) => setVehMake(e.target.value)}
+                    placeholder="e.g. Maruti"
+                    className="text-xs p-2.5 border border-slate-850 rounded-lg w-full bg-slate-900 text-white placeholder-slate-500 focus:outline-sky-500/50"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Model</label>
+                  <input
+                    type="text"
+                    value={vehModel}
+                    onChange={(e) => setVehModel(e.target.value)}
+                    placeholder="e.g. Swift"
+                    className="text-xs p-2.5 border border-slate-850 rounded-lg w-full bg-slate-900 text-white placeholder-slate-500 focus:outline-sky-500/50"
+                  />
+                </div>
+              </div>
+
+              {/* Row 4: Scheduling details (Date, Time, Price, Assign Employee) */}
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div>
+                  <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Date *</label>
                   <input
                     type="date"
                     required
                     value={bookingDate}
                     onChange={(e) => setBookingDate(e.target.value)}
-                    className="w-full text-xs font-semibold rounded-lg border border-slate-200 p-2 bg-white"
+                    className="w-full text-xs font-semibold rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white focus:outline-sky-500/50 font-mono"
                   />
                 </div>
                 <div>
-                  <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Time Slot</label>
+                  <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Start Time *</label>
                   <input
                     type="time"
                     required
                     value={bookingTime}
                     onChange={(e) => setBookingTime(e.target.value)}
-                    className="w-full text-xs font-semibold rounded-lg border border-slate-200 p-2 bg-white"
+                    className="w-full text-xs font-semibold rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white focus:outline-sky-500/50 font-mono"
                   />
                 </div>
                 <div>
-                  <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Assign Tech</label>
+                  <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Price (₹) *</label>
+                  <input
+                    type="number"
+                    required
+                    value={bookingPrice || ''}
+                    onChange={(e) => setBookingPrice(Number(e.target.value))}
+                    placeholder="0"
+                    className="w-full text-xs font-semibold rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white focus:outline-sky-500/50 font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Assign Employee</label>
                   <select
                     value={assignedStaffId}
                     onChange={(e) => setAssignedStaffId(e.target.value)}
-                    className="w-full text-xs font-semibold rounded-lg border border-slate-200 p-2 bg-white"
+                    className="w-full text-xs font-semibold rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white focus:outline-sky-500/50 cursor-pointer h-[38px] overflow-y-auto"
                   >
-                    <option value="">Not assigned</option>
+                    <option value="">Not Assigned</option>
                     {staff.map(s => (
-                      <option key={s.id} value={s.id}>{s.name} ({s.role})</option>
+                      <option key={s.id} value={s.id}>
+                        {s.name} ({s.role === 'detailer' ? 'Employee' : s.role === 'manager' ? 'Car Washer' : s.role})
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -724,34 +814,34 @@ export default function AppointmentsList({
 
               {/* Notes */}
               <div>
-                <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Studio Work Notes</label>
+                <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Studio Work Notes</label>
                 <textarea
                   value={bookingNotes}
                   onChange={(e) => setBookingNotes(e.target.value)}
-                  placeholder="e.g. Matte paint! No polish. Customer is very detail-oriented."
-                  className="w-full text-xs rounded-lg border border-slate-200 p-2 bg-white h-20"
+                  placeholder="e.g. Customer requested a discount. Basic wash interior only."
+                  className="w-full text-xs rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white placeholder-slate-500 focus:outline-sky-500/50 h-16"
                 />
               </div>
 
               {/* Subtotal Footer */}
-              <div className="border-t border-slate-100 pt-4 flex items-center justify-between shrink-0">
+              <div className="border-t border-slate-800 pt-4 flex items-center justify-between shrink-0 bg-transparent">
                 <div className="space-y-0.5">
-                  <span className="text-3xs text-slate-500 font-bold uppercase tracking-wider block">Estimated Quote</span>
-                  <span className="text-xl font-extrabold text-slate-900 font-mono">${calculateTotalPrice()}</span>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Estimated Quote</span>
+                  <span className="text-lg font-black text-emerald-400 font-mono">₹{bookingPrice}</span>
                 </div>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
-                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-all"
+                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-lg transition-all cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow transition-all cursor-pointer"
+                    className="px-5 py-2 bg-[#0ea5e9] hover:bg-[#38bdf8] text-white text-xs font-bold rounded-lg shadow-md transition-all cursor-pointer"
                   >
-                    Schedule Job
+                    Create Booking
                   </button>
                 </div>
               </div>

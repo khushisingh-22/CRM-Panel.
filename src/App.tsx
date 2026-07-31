@@ -53,6 +53,7 @@ import InventoryManager from './components/InventoryManager';
 import PaymentsManager from './components/PaymentsManager';
 import RecurringManager from './components/RecurringManager';
 import TeamManager from './components/TeamManager';
+import EmployeeManagement from './components/EmployeeManagement';
 import WaitlistManager from './components/WaitlistManager';
 import WorkflowsManager from './components/WorkflowsManager';
 import AutomationsManager from './components/AutomationsManager';
@@ -479,6 +480,7 @@ export default function App() {
                 { id: 'appointments', name: 'Calendar', icon: Calendar },
                 { id: 'bookings', name: 'Bookings', icon: ClipboardCheck },
                 { id: 'crm', name: 'Clients', icon: Users },
+                { id: 'employee_ledger', name: 'Employee Ledger', icon: ClipboardList },
                 { id: 'billing', name: 'Invoices & Billing', icon: CreditCard },
               ] as Array<{ id: string; name: string; icon: any; badge?: number }>).map(tab => {
                 const active = activeTab === tab.id;
@@ -773,6 +775,13 @@ export default function App() {
               onUpdateCustomer={(updated) => syncCustomers(customers.map(c => c.id === updated.id ? updated : c))}
               onDeleteCustomer={(id) => syncCustomers(customers.filter(c => c.id !== id))}
               onNavigate={handleNavigate}
+            />
+          )}
+
+          {activeTab === 'employee_ledger' && (
+            <EmployeeManagement
+              staffList={staff}
+              onUpdateStaffList={syncStaff}
             />
           )}
 

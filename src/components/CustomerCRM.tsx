@@ -367,13 +367,13 @@ export default function CustomerCRM({
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Phone</label>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Mobile Number *</label>
                   <input
                     type="tel"
                     required
                     value={custPhone}
                     onChange={(e) => setCustPhone(e.target.value)}
-                    placeholder="Enter phone number"
+                    placeholder="Enter mobile number"
                     className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-sky-500"
                   />
                 </div>

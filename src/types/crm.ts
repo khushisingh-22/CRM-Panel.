@@ -67,10 +67,18 @@ export interface Appointment {
   notes?: string;
   assignedTo?: string; // staff ID
   checklist?: { [key: string]: boolean };
-  paymentStatus: 'paid' | 'unpaid' | 'partially_paid';
+  paymentStatus: 'paid' | 'unpaid' | 'partially_paid' | 'discount';
+  paidAmount?: number;
   paymentMethod?: 'cash' | 'card' | 'stripe' | 'apple_pay' | 'bank_transfer';
   invoiceNumber?: string;
   createdAt: string;
+}
+
+export interface StaffLedgerEntry {
+  id: string;
+  amount: number;
+  date: string;
+  reason: string;
 }
 
 export interface Staff {
@@ -80,6 +88,9 @@ export interface Staff {
   avatar: string;
   status: 'active' | 'off-duty';
   activeJobsCount: number;
+  phone?: string;
+  salary?: number;
+  ledger?: StaffLedgerEntry[];
 }
 
 export interface ShopSettings {
