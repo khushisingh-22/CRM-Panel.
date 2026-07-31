@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 
 import { getStoredData, saveStoredData } from './utils/storage';
-import { DEFAULT_SERVICES } from './data/mockData';
+import { DEFAULT_SERVICES, DEFAULT_STAFF } from './data/mockData';
 import { Appointment, Customer, ServicePackage, Staff, ShopSettings } from './types/crm';
 
 import DashboardOverview from './components/DashboardOverview';
@@ -109,7 +109,14 @@ export default function App() {
     }
     setCustomers(data.customers);
     setAppointments(data.appointments);
-    setStaff(data.staff);
+    const hasOldStaff = data.staff.some(s => s.id === 'stf-1' || s.name === 'Alex Rivera' || s.name === 'Marcus Chen');
+    const hasNewStaff = data.staff.some(s => s.id === 'stf-shailu' || s.id === 'stf-ashu');
+    if (hasOldStaff || !hasNewStaff || data.staff.length !== 2) {
+      setStaff(DEFAULT_STAFF);
+      saveStoredData({ staff: DEFAULT_STAFF });
+    } else {
+      setStaff(data.staff);
+    }
     setSettings(data.settings);
     setLeads(data.leads);
     setExpenses(data.expenses || []);

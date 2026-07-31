@@ -166,7 +166,7 @@ export default function EmployeeManagement({
         <div>
           <h1 className="text-xl font-extrabold text-white tracking-tight md:text-2xl flex items-center gap-2.5">
             <Users className="text-indigo-400" size={24} />
-            <span>Employee Management & Ledger</span>
+            <span>Employee Management </span>
           </h1>
           <p className="text-xs text-slate-400">Track employee details, base salaries, and payment transactions ("Hisab-Kitab")</p>
         </div>
@@ -191,7 +191,7 @@ export default function EmployeeManagement({
           
           {/* Left Area: Employees List */}
           <div className="space-y-4">
-            <h3 className="text-3xs text-slate-500 font-extrabold uppercase tracking-wider block px-1">Staff Roster</h3>
+            <h3 className="text-3xs text-slate-500 font-extrabold uppercase tracking-wider block px-1">Staff Data</h3>
             <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
               {staffList.map((emp) => {
                 const isSelected = selectedStaff?.id === emp.id;

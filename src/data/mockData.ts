@@ -173,36 +173,26 @@ export const DEFAULT_SERVICES: ServicePackage[] = [
 
 export const DEFAULT_STAFF: Staff[] = [
   {
-    id: 'stf-1',
-    name: 'Alex Rivera',
-    role: 'manager',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    status: 'active',
-    activeJobsCount: 1
-  },
-  {
-    id: 'stf-2',
-    name: 'Marcus Chen',
+    id: 'stf-shailu',
+    name: 'Shailu',
     role: 'detailer',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
     status: 'active',
-    activeJobsCount: 1
+    activeJobsCount: 0,
+    phone: '9891404510',
+    salary: 15000,
+    ledger: []
   },
   {
-    id: 'stf-3',
-    name: 'Sarah Jenkins',
-    role: 'detailer',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
-    status: 'active',
-    activeJobsCount: 1
-  },
-  {
-    id: 'stf-4',
-    name: 'Dave Kincaid',
+    id: 'stf-ashu',
+    name: 'Ashu',
     role: 'detailer',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
-    status: 'off-duty',
-    activeJobsCount: 0
+    status: 'active',
+    activeJobsCount: 0,
+    phone: '9891404510',
+    salary: 15000,
+    ledger: []
   }
 ];
 
