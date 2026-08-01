@@ -558,7 +558,7 @@ export default function App() {
             <div className="space-y-1">
               {sidebarOpen && <span className="text-4xs text-slate-500 font-extrabold uppercase tracking-widest block mb-1.5 px-2.5">Business</span>}
               {[
-                { id: 'inventory', name: 'Stock & Inventory', icon: Package, badge: inventory.filter(item => item.quantity < 5).length },
+                { id: 'inventory', name: 'Stock & Inventory', icon: Package, badge: inventory.filter(item => (item.category === 'shampoo' || item.name.toLowerCase().includes('shampoo')) ? item.quantity < 60 : item.quantity < 5).length },
                 { id: 'packages', name: 'Packages', icon: Percent },
                 { id: 'team', name: 'Team Status', icon: Users },
               ].map(tab => {

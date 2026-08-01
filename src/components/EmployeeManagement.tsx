@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Users,
   Plus,
@@ -34,6 +34,28 @@ export default function EmployeeManagement({
 }: EmployeeManagementProps) {
   // Selected employee for tracking details and ledger
   const [selectedStaffId, setSelectedStaffId] = useState<string>(staffList[0]?.id || '');
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const newEmpFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, target: 'selected' | 'new') => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        if (target === 'selected' && selectedStaff) {
+          const updated = staffList.map(stf => stf.id === selectedStaff.id ? { ...stf, avatar: base64String } : stf);
+          onUpdateStaffList(updated);
+          triggerSuccess(`Profile photo updated successfully for ${selectedStaff.name}!`);
+        } else if (target === 'new') {
+          setNewEmpAvatar(base64String);
+          triggerSuccess(`Profile photo loaded for new employee!`);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
   
   // Forms & Modal states
   const [showAddEmployeeModal, setShowAddEmployeeModal] = useState(false);
@@ -291,12 +313,19 @@ export default function EmployeeManagement({
               <div className="bg-[#111827] border border-slate-800 p-5 rounded-2xl shadow-xl">
                 <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-5 border-b border-slate-800 pb-5">
                   <div className="flex items-center gap-4">
-                    <div className="h-16 w-16 rounded-2xl bg-slate-800 border-2 border-slate-700 shadow-md flex items-center justify-center text-lg font-black text-slate-300 uppercase shrink-0 overflow-hidden">
+                    <div 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="h-16 w-16 rounded-2xl bg-slate-800 border-2 border-slate-700 shadow-md flex items-center justify-center text-lg font-black text-slate-300 uppercase shrink-0 overflow-hidden cursor-pointer hover:border-indigo-500 transition-all group relative"
+                      title="Click to upload profile photo"
+                    >
                       {selectedStaff.avatar ? (
-                        <img src={selectedStaff.avatar} alt={selectedStaff.name} className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+                        <img src={selectedStaff.avatar} alt={selectedStaff.name} className="h-full w-full object-cover group-hover:opacity-75 transition-opacity" referrerPolicy="no-referrer" />
                       ) : (
                         selectedStaff.name.charAt(0)
                       )}
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[10px] text-white font-bold transition-opacity">
+                        Upload 📷
+                      </div>
                     </div>
                     <div>
                       <h2 className="text-base font-black text-white">{selectedStaff.name}</h2>
@@ -311,14 +340,17 @@ export default function EmployeeManagement({
                         }`}>
                           {selectedStaff.status === 'active' ? 'ACTIVE' : 'OFF-DUTY'}
                         </span>
+                        
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={(e) => handleFileChange(e, 'selected')}
+                          accept="image/*"
+                          className="hidden"
+                        />
+
                         <button
-                          onClick={() => {
-                            const newUrl = prompt("Enter profile image URL (प्रोफ़ाइल फोटो URL डालें):", selectedStaff.avatar || "");
-                            if (newUrl !== null) {
-                              const updated = staffList.map(stf => stf.id === selectedStaff.id ? { ...stf, avatar: newUrl } : stf);
-                              onUpdateStaffList(updated);
-                            }
-                          }}
+                          onClick={() => fileInputRef.current?.click()}
                           className="text-[10px] bg-slate-800 hover:bg-slate-700 text-indigo-400 hover:text-indigo-300 px-2 py-0.5 rounded-full border border-slate-700 transition-all cursor-pointer font-bold"
                         >
                           Change Photo 📷
@@ -641,14 +673,30 @@ export default function EmployeeManagement({
               </div>
 
               <div>
-                <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Profile Photo URL (Optional - प्रोफ़ाइल फोटो URL)</label>
-                <input
-                  type="text"
-                  value={newEmpAvatar}
-                  onChange={(e) => setNewEmpAvatar(e.target.value)}
-                  placeholder="https://images.unsplash.com/photo-..."
-                  className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-slate-700 bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500"
-                />
+                <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Profile Photo (Optional - प्रोफ़ाइल फोटो / URL)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newEmpAvatar.startsWith('data:') ? 'Local Image Selected 📷' : newEmpAvatar}
+                    onChange={(e) => setNewEmpAvatar(e.target.value)}
+                    placeholder="https://images.unsplash.com/photo-..."
+                    className="flex-1 text-xs px-3.5 py-2.5 rounded-lg border border-slate-700 bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500"
+                  />
+                  <input
+                    type="file"
+                    ref={newEmpFileInputRef}
+                    onChange={(e) => handleFileChange(e, 'new')}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => newEmpFileInputRef.current?.click()}
+                    className="px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-lg border border-slate-700 transition-all whitespace-nowrap cursor-pointer"
+                  >
+                    Upload File 📁
+                  </button>
+                </div>
               </div>
 
               <div>
