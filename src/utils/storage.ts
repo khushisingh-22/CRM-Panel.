@@ -26,8 +26,13 @@ const KEYS = {
   WAITLIST: 'df_waitlist',
   WORKFLOWS: 'df_workflows',
   AUTOMATION_SETTINGS: 'df_automation_settings',
-  PROFILE: 'df_owner_profile'
+  PROFILE: 'df_owner_profile',
+  PACKAGES: 'df_packages'
 };
+
+const DEFAULT_PACKAGES = [
+  { id: 'pkg-default-1', name: '4 Wash In a Month', originalPrice: 34234, packagePrice: 2342, duration: '0h', status: true }
+];
 
 const DEFAULT_INVENTORY = [
   { id: 'inv-1', name: 'Premium Shampoo', category: 'shampoo' as const, quantity: 25, unit: 'litres', minThreshold: 5, costPrice: 450, location: 'Bay 1' },
@@ -71,6 +76,7 @@ export const getStoredData = () => {
     const workflowsStr = localStorage.getItem(KEYS.WORKFLOWS);
     const automationSettingsStr = localStorage.getItem(KEYS.AUTOMATION_SETTINGS);
     const profileStr = localStorage.getItem(KEYS.PROFILE);
+    const packagesStr = localStorage.getItem(KEYS.PACKAGES);
 
     return {
       services: servicesStr ? JSON.parse(servicesStr) as ServicePackage[] : DEFAULT_SERVICES,
@@ -85,7 +91,8 @@ export const getStoredData = () => {
       waitlist: waitlistStr ? JSON.parse(waitlistStr) : [],
       workflows: workflowsStr ? JSON.parse(workflowsStr) : DEFAULT_WORKFLOWS,
       automationSettings: automationSettingsStr ? JSON.parse(automationSettingsStr) : DEFAULT_AUTOMATION_SETTINGS,
-      profile: profileStr ? JSON.parse(profileStr) : DEFAULT_PROFILE
+      profile: profileStr ? JSON.parse(profileStr) : DEFAULT_PROFILE,
+      packages: packagesStr ? JSON.parse(packagesStr) : DEFAULT_PACKAGES
     };
   } catch (e) {
     console.error('Error loading from localStorage, using defaults', e);
@@ -102,7 +109,8 @@ export const getStoredData = () => {
       waitlist: [],
       workflows: DEFAULT_WORKFLOWS,
       automationSettings: DEFAULT_AUTOMATION_SETTINGS,
-      profile: DEFAULT_PROFILE
+      profile: DEFAULT_PROFILE,
+      packages: DEFAULT_PACKAGES
     };
   }
 };
@@ -121,6 +129,7 @@ export const saveStoredData = (data: {
   workflows?: any[];
   automationSettings?: any;
   profile?: any;
+  packages?: any[];
 }) => {
   try {
     if (data.services) localStorage.setItem(KEYS.SERVICES, JSON.stringify(data.services));
@@ -136,6 +145,7 @@ export const saveStoredData = (data: {
     if (data.workflows) localStorage.setItem(KEYS.WORKFLOWS, JSON.stringify(data.workflows));
     if (data.automationSettings) localStorage.setItem(KEYS.AUTOMATION_SETTINGS, JSON.stringify(data.automationSettings));
     if (data.profile) localStorage.setItem(KEYS.PROFILE, JSON.stringify(data.profile));
+    if (data.packages) localStorage.setItem(KEYS.PACKAGES, JSON.stringify(data.packages));
   } catch (e) {
     console.error('Error saving to localStorage', e);
   }

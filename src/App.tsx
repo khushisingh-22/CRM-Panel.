@@ -22,6 +22,7 @@ import {
   CornerDownRight,
   MessageSquare,
   DollarSign,
+  Percent,
   Package,
   RefreshCw,
   Clock,
@@ -59,6 +60,7 @@ import WorkflowsManager from './components/WorkflowsManager';
 import AutomationsManager from './components/AutomationsManager';
 import ProfileManager from './components/ProfileManager';
 import HelpCenter from './components/HelpCenter';
+import PackagesManager, { BusinessPackage } from './components/PackagesManager';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
@@ -80,6 +82,7 @@ export default function App() {
   const [recurringList, setRecurringList] = useState<any[]>([]);
   const [waitlist, setWaitlist] = useState<any[]>([]);
   const [workflows, setWorkflows] = useState<any[]>([]);
+  const [packages, setPackages] = useState<BusinessPackage[]>([]);
   const [automationSettings, setAutomationSettings] = useState<any>({
     autoAssignStaff: true,
     autoSMSOnReady: true,
@@ -167,6 +170,7 @@ export default function App() {
       phone: '800-555-WASH',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
     });
+    setPackages(data.packages || []);
   }, []);
 
   // Save to Storage when modified
@@ -233,6 +237,11 @@ export default function App() {
   const syncLeads = (updated: any[]) => {
     setLeads(updated);
     saveStoredData({ leads: updated });
+  };
+
+  const syncPackages = (updated: BusinessPackage[]) => {
+    setPackages(updated);
+    saveStoredData({ packages: updated });
   };
 
   // Appointment CRUD Handlers
@@ -550,6 +559,7 @@ export default function App() {
               {sidebarOpen && <span className="text-4xs text-slate-500 font-extrabold uppercase tracking-widest block mb-1.5 px-2.5">Business</span>}
               {[
                 { id: 'inventory', name: 'Stock & Inventory', icon: Package, badge: inventory.filter(item => item.quantity < 5).length },
+                { id: 'packages', name: 'Packages', icon: Percent },
                 { id: 'team', name: 'Team Status', icon: Users },
               ].map(tab => {
                 const active = activeTab === tab.id;
@@ -863,6 +873,13 @@ export default function App() {
             <InventoryManager
               inventory={inventory}
               onUpdateInventory={syncInventory}
+            />
+          )}
+
+          {activeTab === 'packages' && (
+            <PackagesManager
+              packages={packages}
+              onUpdatePackages={syncPackages}
             />
           )}
 
