@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   User,
   Shield,
@@ -21,6 +21,7 @@ export interface OwnerProfile {
   email: string;
   phone: string;
   avatar: string;
+  businessEmail?: string;
 }
 
 interface ProfileManagerProps {
@@ -37,7 +38,23 @@ export default function ProfileManager({
   const [email, setEmail] = useState(profile.email);
   const [phone, setPhone] = useState(profile.phone);
   const [avatar, setAvatar] = useState(profile.avatar);
+  const [businessEmail, setBusinessEmail] = useState(profile.businessEmail || '');
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          setAvatar(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +63,8 @@ export default function ProfileManager({
       role,
       email,
       phone,
-      avatar
+      avatar,
+      businessEmail
     });
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
@@ -71,15 +89,26 @@ export default function ProfileManager({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Card: Avatar Preview */}
         <div className="bg-[#131D35] border border-slate-800/40 p-6 rounded-xl flex flex-col items-center justify-center text-center space-y-4">
-          <div className="relative">
+          <div 
+            className="relative cursor-pointer group"
+            onClick={() => fileInputRef.current?.click()}
+            title="Click to upload profile photo"
+          >
             <img
               src={avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'}
               alt={name}
-              className="h-24 w-24 rounded-full object-cover border-2 border-indigo-500/40 bg-slate-900"
+              className="h-24 w-24 rounded-full object-cover border-2 border-indigo-500/40 bg-slate-900 group-hover:border-indigo-400 transition-all duration-200"
             />
-            <div className="absolute bottom-0 right-0 p-1.5 bg-indigo-600 rounded-full text-white border border-slate-900 shadow-lg">
+            <div className="absolute bottom-0 right-0 p-1.5 bg-indigo-600 group-hover:bg-indigo-500 rounded-full text-white border border-slate-900 shadow-lg transition-all duration-200">
               <Camera size={14} />
             </div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept="image/*"
+              className="hidden"
+            />
           </div>
 
           <div className="space-y-1">
@@ -90,7 +119,7 @@ export default function ProfileManager({
           </div>
 
           <p className="text-3xs text-slate-500 max-w-xs">
-            This card represents the studio owner profile. Changes made here will instantly reflect in the navbar, side panels, and automatic SMS signatures.
+            This card represents the studio owner profile. Click the profile image or camera icon above to upload a photo from your computer.
           </p>
         </div>
 
@@ -155,12 +184,12 @@ export default function ProfileManager({
             </div>
 
             <div className="space-y-1">
-              <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Profile Photo Avatar URL</label>
+              <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Business Email</label>
               <input
-                type="text"
-                value={avatar}
-                onChange={(e) => setAvatar(e.target.value)}
-                placeholder="https://images.unsplash.com/photo-..."
+                type="email"
+                value={businessEmail}
+                onChange={(e) => setBusinessEmail(e.target.value)}
+                placeholder="info@drwashit.online"
                 className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500"
               />
             </div>
