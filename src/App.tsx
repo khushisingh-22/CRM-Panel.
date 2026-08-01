@@ -100,6 +100,37 @@ export default function App() {
 
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
 
+  // Apply accessibility settings globally
+  useEffect(() => {
+    if (!settings || !settings.shopName) return;
+
+    // Apply theme
+    const theme = settings.theme || 'dark';
+    const root = document.documentElement;
+    if (theme === 'light') {
+      root.classList.remove('dark');
+      root.classList.add('light');
+    } else if (theme === 'dark') {
+      root.classList.remove('light');
+      root.classList.add('dark');
+    } else {
+      // System
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (systemPrefersDark) {
+        root.classList.remove('light');
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+        root.classList.add('light');
+      }
+    }
+
+    // Apply font size class
+    const fontSize = settings.fontSize || 'medium';
+    root.classList.remove('text-size-small', 'text-size-medium', 'text-size-large');
+    root.classList.add(`text-size-${fontSize}`);
+  }, [settings]);
+
   // Load from Storage
   useEffect(() => {
     const data = getStoredData();
@@ -505,7 +536,7 @@ export default function App() {
               </span>
               {sidebarOpen && (
                 <div className="min-w-0">
-                  <strong className="text-sm font-black text-white block tracking-tight truncate">drwashit</strong>
+                  <strong className="text-sm font-black text-white block tracking-tight truncate">Dr. WashIt</strong>
                   <span className="text-4xs text-cyan-400 font-bold uppercase tracking-wider block">CRM Pro Edition</span>
                 </div>
               )}
@@ -599,7 +630,7 @@ export default function App() {
               {sidebarOpen && <span className="text-4xs text-slate-500 font-extrabold uppercase tracking-widest block mb-1.5 px-2.5">Resources</span>}
               {[
                 { id: 'profile', name: 'Owner Profile', icon: User },
-                { id: 'settings', name: 'Shop Settings', icon: Settings },
+                { id: 'settings', name: 'Settings', icon: Settings },
                 { id: 'help', name: 'FAQ & Help Center', icon: HelpCircle },
               ].map(tab => {
                 const active = activeTab === tab.id;
@@ -748,7 +779,11 @@ export default function App() {
             )}
 
             {/* Profile widget with customizable states */}
-            <div className="flex items-center gap-2">
+            <div 
+              onClick={() => handleNavigate('profile')}
+              className="flex items-center gap-2 cursor-pointer hover:opacity-85 transition-all duration-200"
+              title="View Owner Profile"
+            >
               <img
                 src={profile.avatar}
                 alt={profile.name}

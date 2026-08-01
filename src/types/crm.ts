@@ -56,6 +56,7 @@ export interface Appointment {
   customerName: string;
   customerPhone: string;
   customerEmail: string;
+  customerAddress?: string;
   vehicle: VehicleInfo;
   serviceId: string;
   serviceName: string;
@@ -106,4 +107,6 @@ export interface ShopSettings {
     readyForPickup: string;
     reviewRequest: string;
   };
+  theme?: 'light' | 'dark' | 'system';
+  fontSize?: 'small' | 'medium' | 'large';
 }

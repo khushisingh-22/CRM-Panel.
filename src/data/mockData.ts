@@ -221,5 +221,7 @@ export const DEFAULT_SETTINGS: ShopSettings = {
     workStarted: 'Hi {customer_name}, we are starting on your {vehicle_year} {vehicle_model}! Technician {tech_name} has checked the vehicle into the wash bay. - {shop_name}',
     readyForPickup: 'Hi {customer_name}! Great news! Your {vehicle_model} is ready for pick up. Total amount due is {total_price}. See you soon! - {shop_name}',
     reviewRequest: 'Thank you for choosing {shop_name}, {customer_name}! We would love to hear your feedback. Please leave us a review here: https://g.page/drwashit - Thank you!'
-  }
+  },
+  theme: 'dark',
+  fontSize: 'medium'
 };
