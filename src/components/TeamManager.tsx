@@ -15,9 +15,11 @@ import {
   Activity,
   Check,
   X,
-  UserCheck
+  UserCheck,
+  BookOpen
 } from 'lucide-react';
 import { Staff } from '../types/crm';
+import EmployeeManagement from './EmployeeManagement';
 
 interface TeamManagerProps {
   staffList: Staff[];
@@ -32,6 +34,7 @@ export default function TeamManager({
   const [name, setName] = useState('');
   const [role, setRole] = useState<Staff['role']>('detailer');
   const [avatar, setAvatar] = useState('');
+  const [mode, setMode] = useState<'shifts' | 'ledger'>('shifts');
 
   const handleAddStaff = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +46,10 @@ export default function TeamManager({
       role,
       avatar: avatar || `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80`,
       status: 'active',
-      activeJobsCount: 0
+      activeJobsCount: 0,
+      phone: '8510002780',
+      salary: 18000,
+      ledger: []
     };
 
     onUpdateStaffList([...staffList, newStaff]);
@@ -84,100 +90,136 @@ export default function TeamManager({
 
   return (
     <div className="space-y-6" id="team-manager-root">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-xl font-extrabold text-white tracking-tight md:text-2xl">Team Status</h1>
-          <p className="text-xs text-slate-400">Control active detailer shifts, assignments, and studio access roles</p>
-        </div>
+      {/* Tab Selectors for Shift vs Ledger */}
+      <div className="flex border-b border-slate-800">
         <button
-          onClick={() => setShowAddModal(true)}
-          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+          onClick={() => setMode('shifts')}
+          className={`px-6 py-3 text-xs font-black uppercase tracking-wider flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+            mode === 'shifts'
+              ? 'border-indigo-500 text-white font-extrabold'
+              : 'border-transparent text-slate-400 hover:text-white'
+          }`}
         >
-          <Plus size={16} />
-          Add Team Member
+          <UserCheck size={14} />
+          <span>Active Shifts & Roster</span>
+        </button>
+        <button
+          onClick={() => setMode('ledger')}
+          className={`px-6 py-3 text-xs font-black uppercase tracking-wider flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+            mode === 'ledger'
+              ? 'border-indigo-500 text-white font-extrabold'
+              : 'border-transparent text-slate-400 hover:text-white'
+          }`}
+        >
+          <BookOpen size={14} />
+          <span>Salary Ledger & Leaves (हिसाब-किताब)</span>
         </button>
       </div>
 
-      {/* Roster overview banner stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl flex items-center gap-4">
-          <div className="h-10 w-10 bg-indigo-500/10 text-indigo-400 rounded-lg flex items-center justify-center">
-            <Users size={20} />
+      {mode === 'ledger' ? (
+        <EmployeeManagement staffList={staffList} onUpdateStaffList={onUpdateStaffList} />
+      ) : (
+        <>
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h1 className="text-xl font-extrabold text-white tracking-tight md:text-2xl">Team Status</h1>
+              <p className="text-xs text-slate-400">Control active detailer shifts, assignments, and studio access roles</p>
+            </div>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <Plus size={16} />
+              Add Team Member
+            </button>
           </div>
-          <div>
-            <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Total Recruited Staff</span>
-            <strong className="text-lg font-black text-white">{staffList.length} Team Members</strong>
-          </div>
-        </div>
 
-        <div className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl flex items-center gap-4">
-          <div className="h-10 w-10 bg-emerald-500/10 text-emerald-400 rounded-lg flex items-center justify-center">
-            <UserCheck size={20} />
-          </div>
-          <div>
-            <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">On Duty Currently</span>
-            <strong className="text-lg font-black text-emerald-400">{staffList.filter(s => s.status === 'active').length} Active</strong>
-          </div>
-        </div>
-
-        <div className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl flex items-center gap-4">
-          <div className="h-10 w-10 bg-amber-500/10 text-amber-400 rounded-lg flex items-center justify-center">
-            <Activity size={20} />
-          </div>
-          <div>
-            <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Total Workload Jobs</span>
-            <strong className="text-lg font-black text-white">{staffList.reduce((sum, s) => sum + s.activeJobsCount, 0)} Active Bays</strong>
-          </div>
-        </div>
-      </div>
-
-      {/* Staff Flat Cards Roster List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {staffList.map(stf => (
-          <div key={stf.id} className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl flex items-center justify-between gap-4 hover:border-slate-700/60 transition-all">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-sm font-bold text-slate-300 uppercase shrink-0">
-                {stf.name.charAt(0)}
+          {/* Roster overview banner stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl flex items-center gap-4">
+              <div className="h-10 w-10 bg-indigo-500/10 text-indigo-400 rounded-lg flex items-center justify-center">
+                <Users size={20} />
               </div>
-              <div className="space-y-1">
-                <h3 className="text-xs font-extrabold text-white">{stf.name}</h3>
+              <div>
+                <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Total Recruited Staff</span>
+                <strong className="text-lg font-black text-white">{staffList.length} Team Members</strong>
+              </div>
+            </div>
+
+            <div className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl flex items-center gap-4">
+              <div className="h-10 w-10 bg-emerald-500/10 text-emerald-400 rounded-lg flex items-center justify-center">
+                <UserCheck size={20} />
+              </div>
+              <div>
+                <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">On Duty Currently</span>
+                <strong className="text-lg font-black text-emerald-400">{staffList.filter(s => s.status === 'active').length} Active</strong>
+              </div>
+            </div>
+
+            <div className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl flex items-center gap-4">
+              <div className="h-10 w-10 bg-amber-500/10 text-amber-400 rounded-lg flex items-center justify-center">
+                <Activity size={20} />
+              </div>
+              <div>
+                <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Total Workload Jobs</span>
+                <strong className="text-lg font-black text-white">{staffList.reduce((sum, s) => sum + s.activeJobsCount, 0)} Active Bays</strong>
+              </div>
+            </div>
+          </div>
+
+          {/* Staff Flat Cards Roster List */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {staffList.map(stf => (
+              <div key={stf.id} className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl flex items-center justify-between gap-4 hover:border-slate-700/60 transition-all">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-sm font-bold text-slate-300 uppercase shrink-0 overflow-hidden">
+                    {stf.avatar ? (
+                      <img src={stf.avatar} alt={stf.name} className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+                    ) : (
+                      stf.name.charAt(0)
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xs font-extrabold text-white">{stf.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-0.5 rounded-full text-4xs font-bold uppercase border ${roleBadges[stf.role]}`}>
+                        {roleLabels[stf.role]}
+                      </span>
+                      <span className="text-4xs text-slate-500 font-semibold uppercase">
+                        {stf.activeJobsCount} Active Jobs
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex items-center gap-2">
-                  <span className={`px-2 py-0.5 rounded-full text-4xs font-bold uppercase border ${roleBadges[stf.role]}`}>
-                    {roleLabels[stf.role]}
-                  </span>
-                  <span className="text-4xs text-slate-500 font-semibold uppercase">
-                    {stf.activeJobsCount} Active Jobs
-                  </span>
+                  <button
+                    onClick={() => handleToggleDuty(stf.id)}
+                    className={`px-2.5 py-1 text-4xs font-extrabold rounded-lg uppercase tracking-wider transition-all border flex items-center gap-1 cursor-pointer ${
+                      stf.status === 'active'
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25 hover:bg-emerald-500/20'
+                        : 'bg-slate-950 text-slate-500 border-slate-800 hover:text-slate-300'
+                    }`}
+                  >
+                    {stf.status === 'active' ? 'On Duty' : 'Off Shift'}
+                  </button>
+
+                  {stf.role !== 'owner' && (
+                    <button
+                      onClick={() => handleDeleteStaff(stf.id)}
+                      className="p-1.5 bg-slate-950 hover:bg-rose-500/10 text-slate-500 hover:text-rose-400 border border-slate-800 rounded-lg transition-all cursor-pointer"
+                      title="Remove team member"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
                 </div>
               </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handleToggleDuty(stf.id)}
-                className={`px-2.5 py-1 text-4xs font-extrabold rounded-lg uppercase tracking-wider transition-all border flex items-center gap-1 cursor-pointer ${
-                  stf.status === 'active'
-                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25 hover:bg-emerald-500/20'
-                    : 'bg-slate-950 text-slate-500 border-slate-800 hover:text-slate-300'
-                }`}
-              >
-                {stf.status === 'active' ? 'On Duty' : 'Off Shift'}
-              </button>
-
-              {stf.role !== 'owner' && (
-                <button
-                  onClick={() => handleDeleteStaff(stf.id)}
-                  className="p-1.5 bg-slate-950 hover:bg-rose-500/10 text-slate-500 hover:text-rose-400 border border-slate-800 rounded-lg transition-all cursor-pointer"
-                  title="Remove team member"
-                >
-                  <Trash2 size={13} />
-                </button>
-              )}
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </>
+      )}
 
       {/* Add Staff Modal */}
       {showAddModal && (

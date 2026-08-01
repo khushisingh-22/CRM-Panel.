@@ -41,6 +41,7 @@ export default function EmployeeManagement({
   const [newEmpRole, setNewEmpRole] = useState<Staff['role']>('detailer');
   const [newEmpPhone, setNewEmpPhone] = useState('');
   const [newEmpSalary, setNewEmpSalary] = useState<number>(18000); // default Indian standard base salary
+  const [newEmpAvatar, setNewEmpAvatar] = useState('');
   
   // Add payment form states
   const [payAmount, setPayAmount] = useState<number>(0);
@@ -48,8 +49,18 @@ export default function EmployeeManagement({
   const [payReason, setPayReason] = useState('Monthly Salary');
   const [successMsg, setSuccessMsg] = useState('');
 
+  // Leave & Salary Cut form states
+  const [formTab, setFormTab] = useState<'payment' | 'leave'>('payment');
+  const [leaveDate, setLeaveDate] = useState(new Date().toISOString().split('T')[0]);
+  const [leaveReason, setLeaveReason] = useState('Absent without permission (बिना बताए छुट्टी)');
+  const [leaveRemarks, setLeaveRemarks] = useState('');
+  const [leaveDeduction, setLeaveDeduction] = useState<number>(0);
+
   const selectedStaff = staffList.find(stf => stf.id === selectedStaffId) || staffList[0] || null;
-  const selectedStaffTotalPaid = selectedStaff ? (selectedStaff.ledger || []).reduce((acc, entry) => acc + entry.amount, 0) : 0;
+  const selectedStaffLedger = selectedStaff ? (selectedStaff.ledger || []) : [];
+  const selectedStaffTotalPaid = selectedStaffLedger.filter(e => e.amount > 0).reduce((acc, entry) => acc + entry.amount, 0);
+  const selectedStaffTotalDeductions = Math.abs(selectedStaffLedger.filter(e => e.amount < 0).reduce((acc, entry) => acc + entry.amount, 0));
+  const selectedStaffNetRemaining = selectedStaff ? Math.max(0, (selectedStaff.salary || 18000) - selectedStaffTotalPaid - selectedStaffTotalDeductions) : 0;
 
   // Handler to register a new employee
   const handleAddEmployee = (e: React.FormEvent) => {
@@ -60,7 +71,7 @@ export default function EmployeeManagement({
       id: `stf-${Date.now()}`,
       name: newEmpName.trim(),
       role: newEmpRole,
-      avatar: `https://images.unsplash.com/photo-${1500000000000 + Math.floor(Math.random() * 999999)}?w=150&auto=format&fit=crop&q=80`,
+      avatar: newEmpAvatar.trim() || `https://images.unsplash.com/photo-${1500000000000 + Math.floor(Math.random() * 999999)}?w=150&auto=format&fit=crop&q=80`,
       status: 'active',
       activeJobsCount: 0,
       phone: newEmpPhone.trim() || '7078408264',
@@ -77,6 +88,7 @@ export default function EmployeeManagement({
     setNewEmpRole('detailer');
     setNewEmpPhone('');
     setNewEmpSalary(18000);
+    setNewEmpAvatar('');
     setShowAddEmployeeModal(false);
 
     // Show custom toast notification
@@ -111,6 +123,36 @@ export default function EmployeeManagement({
     setPayAmount(0);
     setPayReason('Monthly Salary');
     triggerSuccess(`Recorded payment of ₹${payAmount} for ${selectedStaff.name}!`);
+  };
+
+  // Handler to add a leave / salary cut deduction
+  const handleAddLeaveEntry = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStaff) return;
+    if (leaveDeduction <= 0) return;
+
+    const newEntry: StaffLedgerEntry = {
+      id: `led-${Date.now()}`,
+      amount: -leaveDeduction,
+      date: leaveDate,
+      reason: `Leave: ${leaveReason}${leaveRemarks.trim() ? ` (${leaveRemarks.trim()})` : ''}`
+    };
+
+    const updated = staffList.map(stf => {
+      if (stf.id === selectedStaff.id) {
+        const currentLedger = stf.ledger || [];
+        return {
+          ...stf,
+          ledger: [newEntry, ...currentLedger]
+        };
+      }
+      return stf;
+    });
+
+    onUpdateStaffList(updated);
+    setLeaveDeduction(0);
+    setLeaveRemarks('');
+    triggerSuccess(`Salary cut of ₹${leaveDeduction} recorded for ${selectedStaff.name}!`);
   };
 
   const handleDeleteLedgerEntry = (entryId: string) => {
@@ -196,7 +238,10 @@ export default function EmployeeManagement({
             <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
               {staffList.map((emp) => {
                 const isSelected = selectedStaff?.id === emp.id;
-                const totalPaid = (emp.ledger || []).reduce((acc, entry) => acc + entry.amount, 0);
+                const empLedger = emp.ledger || [];
+                const totalPaid = empLedger.filter(e => e.amount > 0).reduce((acc, entry) => acc + entry.amount, 0);
+                const totalDeductions = Math.abs(empLedger.filter(e => e.amount < 0).reduce((acc, entry) => acc + entry.amount, 0));
+                const netRemaining = Math.max(0, (emp.salary || 18000) - totalPaid - totalDeductions);
 
                 return (
                   <div
@@ -209,8 +254,12 @@ export default function EmployeeManagement({
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="h-10 w-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-300 uppercase shrink-0">
-                        {emp.name.charAt(0)}
+                      <div className="h-10 w-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-300 uppercase shrink-0 overflow-hidden">
+                        {emp.avatar ? (
+                          <img src={emp.avatar} alt={emp.name} className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+                        ) : (
+                          emp.name.charAt(0)
+                        )}
                       </div>
                       <div className="min-w-0">
                         <h4 className="text-xs font-extrabold truncate text-white">{emp.name}</h4>
@@ -222,8 +271,11 @@ export default function EmployeeManagement({
 
                     <div className="text-right">
                       <span className="text-[9px] text-indigo-400 block font-black uppercase tracking-wider">Remaining</span>
-                      <strong className="text-xs font-black font-mono text-indigo-300">₹{Math.max(0, (emp.salary || 0) - totalPaid)}</strong>
-                      <span className="text-[9px] text-slate-500 block font-semibold mt-0.5">Paid: ₹{totalPaid}</span>
+                      <strong className="text-xs font-black font-mono text-indigo-300 font-bold">₹{netRemaining}</strong>
+                      <div className="text-[9px] text-slate-500 block font-semibold mt-0.5">Paid: ₹{totalPaid}</div>
+                      {totalDeductions > 0 && (
+                        <div className="text-[9px] text-rose-500 font-bold">Cut: ₹{totalDeductions}</div>
+                      )}
                     </div>
                   </div>
                 );
@@ -239,8 +291,12 @@ export default function EmployeeManagement({
               <div className="bg-[#111827] border border-slate-800 p-5 rounded-2xl shadow-xl">
                 <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-5 border-b border-slate-800 pb-5">
                   <div className="flex items-center gap-4">
-                    <div className="h-16 w-16 rounded-2xl bg-slate-800 border-2 border-slate-700 shadow-md flex items-center justify-center text-lg font-black text-slate-300 uppercase shrink-0">
-                      {selectedStaff.name.charAt(0)}
+                    <div className="h-16 w-16 rounded-2xl bg-slate-800 border-2 border-slate-700 shadow-md flex items-center justify-center text-lg font-black text-slate-300 uppercase shrink-0 overflow-hidden">
+                      {selectedStaff.avatar ? (
+                        <img src={selectedStaff.avatar} alt={selectedStaff.name} className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+                      ) : (
+                        selectedStaff.name.charAt(0)
+                      )}
                     </div>
                     <div>
                       <h2 className="text-base font-black text-white">{selectedStaff.name}</h2>
@@ -255,23 +311,39 @@ export default function EmployeeManagement({
                         }`}>
                           {selectedStaff.status === 'active' ? 'ACTIVE' : 'OFF-DUTY'}
                         </span>
+                        <button
+                          onClick={() => {
+                            const newUrl = prompt("Enter profile image URL (प्रोफ़ाइल फोटो URL डालें):", selectedStaff.avatar || "");
+                            if (newUrl !== null) {
+                              const updated = staffList.map(stf => stf.id === selectedStaff.id ? { ...stf, avatar: newUrl } : stf);
+                              onUpdateStaffList(updated);
+                            }
+                          }}
+                          className="text-[10px] bg-slate-800 hover:bg-slate-700 text-indigo-400 hover:text-indigo-300 px-2 py-0.5 rounded-full border border-slate-700 transition-all cursor-pointer font-bold"
+                        >
+                          Change Photo 📷
+                        </button>
                       </div>
                     </div>
                   </div>
 
                   {/* Dynamic Salary Deductions Display */}
-                  <div className="grid grid-cols-3 gap-3 w-full xl:w-auto">
-                    <div className="bg-slate-950 p-3 rounded-xl border border-slate-800/80 text-center min-w-[100px] flex-1">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full xl:w-auto">
+                    <div className="bg-slate-950 p-2 rounded-xl border border-slate-800/80 text-center min-w-[85px] flex-1">
                       <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider block">Base Salary</span>
-                      <strong className="text-sm font-black text-white font-mono block mt-0.5">₹{selectedStaff.salary || 18000}</strong>
+                      <strong className="text-xs font-black text-white font-mono block mt-0.5">₹{selectedStaff.salary || 18000}</strong>
                     </div>
-                    <div className="bg-slate-950 p-3 rounded-xl border border-slate-800/80 text-center min-w-[100px] flex-1">
-                      <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider block">Advance/Paid</span>
-                      <strong className="text-sm font-black text-rose-400 font-mono block mt-0.5">₹{selectedStaffTotalPaid}</strong>
+                    <div className="bg-slate-950 p-2 rounded-xl border border-slate-800/80 text-center min-w-[85px] flex-1">
+                      <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider block">Paid</span>
+                      <strong className="text-xs font-black text-emerald-400 font-mono block mt-0.5">₹{selectedStaffTotalPaid}</strong>
                     </div>
-                    <div className="bg-slate-950/90 p-3 rounded-xl border border-emerald-500/30 text-center min-w-[100px] flex-1 ring-1 ring-emerald-500/10">
-                      <span className="text-[9px] text-emerald-400 font-extrabold uppercase tracking-wider block">Net Remaining</span>
-                      <strong className="text-sm font-black text-emerald-300 font-mono block mt-0.5">₹{Math.max(0, (selectedStaff.salary || 0) - selectedStaffTotalPaid)}</strong>
+                    <div className="bg-slate-950 p-2 rounded-xl border border-rose-950/40 text-center min-w-[85px] flex-1">
+                      <span className="text-[9px] text-rose-400 font-extrabold uppercase tracking-wider block">Salary Cuts</span>
+                      <strong className="text-xs font-black text-rose-500 font-mono block mt-0.5">₹{selectedStaffTotalDeductions}</strong>
+                    </div>
+                    <div className="bg-[#111c15] p-2 rounded-xl border border-emerald-500/30 text-center min-w-[85px] flex-1 ring-1 ring-emerald-500/10">
+                      <span className="text-[9px] text-emerald-400 font-extrabold uppercase tracking-wider block">Remaining</span>
+                      <strong className="text-xs font-black text-emerald-300 font-mono block mt-0.5">₹{selectedStaffNetRemaining}</strong>
                     </div>
                   </div>
                 </div>
@@ -282,7 +354,7 @@ export default function EmployeeManagement({
                     <Phone size={14} className="text-slate-500 shrink-0" />
                     <div>
                       <span className="text-slate-500 text-[10px] block font-semibold uppercase">Mobile Number</span>
-                      <strong>{selectedStaff.phone || '7078408264'}</strong>
+                      <strong>{selectedStaff.phone || '8510002780'}</strong>
                     </div>
                   </div>
 
@@ -296,97 +368,210 @@ export default function EmployeeManagement({
                 </div>
               </div>
 
-              {/* Ledger (Hisab-Kitab) & Add Payment Entry Section */}
+              {/* Ledger (Hisab-Kitab) & Add Payment/Leave Entry Section */}
               <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
                 
                 {/* Left side of section (Form for adding entry - 2/5 width) */}
                 <div className="md:col-span-2 bg-[#0B1329]/80 border border-slate-800 p-4 rounded-xl space-y-4">
-                  <h3 className="text-xs font-extrabold text-white uppercase tracking-wider flex items-center gap-1.5">
-                    <Receipt size={14} className="text-indigo-400" />
-                    <span>Add Payment Entry</span>
-                  </h3>
-
-                  <form onSubmit={handleAddPaymentEntry} className="space-y-3.5">
-                    <div>
-                      <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Amount Paid (₹) *</label>
-                      <input
-                        type="number"
-                        required
-                        min="1"
-                        value={payAmount || ''}
-                        onChange={(e) => setPayAmount(Number(e.target.value))}
-                        placeholder="e.g. 5000"
-                        className="w-full text-xs px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Payment Date *</label>
-                      <input
-                        type="date"
-                        required
-                        value={payDate}
-                        onChange={(e) => setPayDate(e.target.value)}
-                        className="w-full text-xs px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Reason / Remarks *</label>
-                      <input
-                        type="text"
-                        required
-                        value={payReason}
-                        onChange={(e) => setPayReason(e.target.value)}
-                        placeholder="e.g. Advance, Salary, Diesel allowance"
-                        className="w-full text-xs px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500"
-                      />
-                    </div>
-
+                  {/* Tab Selectors */}
+                  <div className="flex border-b border-slate-800">
                     <button
-                      type="submit"
-                      disabled={payAmount <= 0}
-                      className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:pointer-events-none text-white text-xs font-bold rounded-lg transition-all cursor-pointer shadow-md"
+                      type="button"
+                      onClick={() => setFormTab('payment')}
+                      className={`flex-1 pb-2.5 text-3xs font-black uppercase tracking-wider text-center border-b-2 transition-all cursor-pointer ${
+                        formTab === 'payment'
+                          ? 'border-indigo-500 text-white font-extrabold'
+                          : 'border-transparent text-slate-400 hover:text-slate-200'
+                      }`}
                     >
-                      Record Payment
+                      Record Payment 💳
                     </button>
-                  </form>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormTab('leave');
+                        if (leaveDeduction === 0) {
+                          setLeaveDeduction(Math.round((selectedStaff?.salary || 18000) / 30));
+                        }
+                      }}
+                      className={`flex-1 pb-2.5 text-3xs font-black uppercase tracking-wider text-center border-b-2 transition-all cursor-pointer ${
+                        formTab === 'leave'
+                          ? 'border-rose-500 text-white font-extrabold'
+                          : 'border-transparent text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      Mark Leave (छुट्टी) 🛑
+                    </button>
+                  </div>
+
+                  {formTab === 'payment' ? (
+                    <form onSubmit={handleAddPaymentEntry} className="space-y-3.5">
+                      <div>
+                        <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Amount Paid (₹) *</label>
+                        <input
+                          type="number"
+                          required
+                          min="1"
+                          value={payAmount || ''}
+                          onChange={(e) => setPayAmount(Number(e.target.value))}
+                          placeholder="e.g. 5000"
+                          className="w-full text-xs px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Payment Date *</label>
+                        <input
+                          type="date"
+                          required
+                          value={payDate}
+                          onChange={(e) => setPayDate(e.target.value)}
+                          className="w-full text-xs px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Reason / Remarks *</label>
+                        <input
+                          type="text"
+                          required
+                          value={payReason}
+                          onChange={(e) => setPayReason(e.target.value)}
+                          placeholder="e.g. Advance, Salary, Diesel allowance"
+                          className="w-full text-xs px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={payAmount <= 0}
+                        className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:pointer-events-none text-white text-xs font-bold rounded-lg transition-all cursor-pointer shadow-md"
+                      >
+                        Record Payment
+                      </button>
+                    </form>
+                  ) : (
+                    <form onSubmit={handleAddLeaveEntry} className="space-y-3.5">
+                      <div>
+                        <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Leave Date *</label>
+                        <input
+                          type="date"
+                          required
+                          value={leaveDate}
+                          onChange={(e) => setLeaveDate(e.target.value)}
+                          className="w-full text-xs px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-950 text-white focus:outline-hidden focus:border-rose-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Reason for Leave *</label>
+                        <select
+                          value={leaveReason}
+                          onChange={(e) => setLeaveReason(e.target.value)}
+                          className="w-full text-xs px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-950 text-white focus:outline-hidden focus:border-rose-500 cursor-pointer font-semibold"
+                        >
+                          <option value="Absent without permission (बिना बताए छुट्टी)">Absent without permission (बिना बताए छुट्टी)</option>
+                          <option value="Sick Leave (बीमारी की छुट्टी)">Sick Leave (बीमारी की छुट्टी)</option>
+                          <option value="Personal Work (व्यक्तिगत काम)">Personal Work (व्यक्तिगत काम)</option>
+                          <option value="Festival / Holiday (त्यौहार / अवकाश)">Festival / Holiday (त्यौहार / अवकाश)</option>
+                          <option value="Other Reason (अन्य कारण)">Other Reason (अन्य कारण)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Custom Remarks / Notes</label>
+                        <input
+                          type="text"
+                          value={leaveRemarks}
+                          onChange={(e) => setLeaveRemarks(e.target.value)}
+                          placeholder="e.g. Urgent home visit, family function"
+                          className="w-full text-xs px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-950 text-white focus:outline-hidden focus:border-rose-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Salary Cut Amount (₹) *</label>
+                        <input
+                          type="number"
+                          required
+                          min="0"
+                          value={leaveDeduction || ''}
+                          onChange={(e) => setLeaveDeduction(Number(e.target.value))}
+                          placeholder="e.g. 500"
+                          className="w-full text-xs px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-950 text-white focus:outline-hidden focus:border-rose-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setLeaveDeduction(Math.round((selectedStaff?.salary || 18000) / 30))}
+                          className="text-[10px] text-rose-400 hover:text-rose-300 font-semibold mt-1 block hover:underline cursor-pointer"
+                        >
+                          💡 Suggest 1-day cut (₹{Math.round((selectedStaff?.salary || 18000) / 30)})
+                        </button>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={leaveDeduction < 0}
+                        className="w-full py-2.5 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 disabled:pointer-events-none text-white text-xs font-bold rounded-lg transition-all cursor-pointer shadow-md"
+                      >
+                        Deduct Salary & Log Leave
+                      </button>
+                    </form>
+                  )}
                 </div>
 
                 {/* Right side of section (Ledger list - 3/5 width) */}
                 <div className="md:col-span-3 bg-[#0B1329]/80 border border-slate-800 p-4 rounded-xl space-y-4">
-                  <h3 className="text-xs font-extrabold text-white uppercase tracking-wider block">Payment Ledger Transactions</h3>
+                  <h3 className="text-xs font-extrabold text-white uppercase tracking-wider block">Payment & Leave Ledger Transactions</h3>
                   
                   <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
                     {(!selectedStaff.ledger || selectedStaff.ledger.length === 0) ? (
                       <div className="py-12 text-center text-slate-500 border border-dashed border-slate-800 rounded-lg">
                         <AlertCircle className="mx-auto text-slate-600 mb-2" size={24} />
-                        <p className="text-2xs font-semibold">No payment entries in ledger</p>
-                        <p className="text-[10px] text-slate-500 mt-0.5">Use the payment form on the left to add a transaction.</p>
+                        <p className="text-2xs font-semibold">No transactions in ledger</p>
+                        <p className="text-[10px] text-slate-500 mt-0.5">Use the ledger form on the left to add a transaction or leave.</p>
                       </div>
                     ) : (
-                      selectedStaff.ledger.map((entry) => (
-                        <div key={entry.id} className="p-3 bg-slate-950/70 border border-slate-800 rounded-lg flex justify-between items-center text-xs">
-                          <div className="space-y-1">
-                            <strong className="text-white block font-bold">{entry.reason}</strong>
-                            <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold font-mono">
-                              <Calendar size={10} />
-                              <span>{entry.date}</span>
+                      selectedStaff.ledger.map((entry) => {
+                        const isDeduction = entry.amount < 0;
+                        return (
+                          <div key={entry.id} className={`p-3 border rounded-lg flex justify-between items-center text-xs transition-colors ${
+                            isDeduction 
+                              ? 'bg-rose-950/20 border-rose-900/40 hover:bg-rose-950/30' 
+                              : 'bg-slate-950/70 border-slate-800 hover:bg-slate-900/40'
+                          }`}>
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <strong className="text-white block font-bold">{entry.reason}</strong>
+                                {isDeduction && (
+                                  <span className="text-[8px] bg-rose-500/20 text-rose-400 font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                                    Salary Cut
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold font-mono">
+                                <Calendar size={10} />
+                                <span>{entry.date}</span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                              <strong className={`font-extrabold font-mono text-sm ${
+                                isDeduction ? 'text-rose-400' : 'text-emerald-400'
+                              }`}>
+                                {isDeduction ? `-₹${Math.abs(entry.amount)}` : `₹${entry.amount}`}
+                              </strong>
+                              <button
+                                onClick={() => handleDeleteLedgerEntry(entry.id)}
+                                className="p-1 hover:bg-rose-500/25 text-rose-400 hover:text-rose-300 rounded transition-all cursor-pointer"
+                                title="Delete transaction entry"
+                              >
+                                <Trash2 size={12} />
+                              </button>
                             </div>
                           </div>
-
-                          <div className="flex items-center gap-3">
-                            <strong className="text-emerald-400 font-extrabold font-mono text-sm">₹{entry.amount}</strong>
-                            <button
-                              onClick={() => handleDeleteLedgerEntry(entry.id)}
-                              className="p-1 hover:bg-rose-500/25 text-rose-400 hover:text-rose-300 rounded transition-all"
-                              title="Delete transaction entry"
-                            >
-                              <Trash2 size={12} />
-                            </button>
-                          </div>
-                        </div>
-                      ))
+                        );
+                      })
                     )}
                   </div>
                 </div>
@@ -453,6 +638,17 @@ export default function EmployeeManagement({
                     className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-slate-700 bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Profile Photo URL (Optional - प्रोफ़ाइल फोटो URL)</label>
+                <input
+                  type="text"
+                  value={newEmpAvatar}
+                  onChange={(e) => setNewEmpAvatar(e.target.value)}
+                  placeholder="https://images.unsplash.com/photo-..."
+                  className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-slate-700 bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500"
+                />
               </div>
 
               <div>
