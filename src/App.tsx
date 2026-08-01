@@ -144,14 +144,20 @@ export default function App() {
     );
     if (hasOldInventory || !data.inventory || data.inventory.length === 0) {
       const defaultInv = [
-        { id: 'inv-1', name: 'Premium Shampoo', category: 'shampoo', quantity: 25, unit: 'litres', minThreshold: 5, costPrice: 450, location: 'Bay 1' },
+        { id: 'inv-1', name: 'Premium Shampoo', category: 'shampoo', quantity: 25, unit: 'litres', minThreshold: 60, costPrice: 450, location: 'Bay 1' },
         { id: 'inv-2', name: 'Disposable Paper Mats', category: 'papermats', quantity: 150, unit: 'sheets', minThreshold: 30, costPrice: 5, location: 'Shelf B2' },
         { id: 'inv-3', name: 'Paper Air Freshener', category: 'paperAirFreshner', quantity: 80, unit: 'pieces', minThreshold: 20, costPrice: 15, location: 'Counter' }
       ];
       setInventory(defaultInv);
       saveStoredData({ inventory: defaultInv });
     } else {
-      setInventory(data.inventory);
+      const migrated = data.inventory.map((item: any) => {
+        if ((item.category === 'shampoo' || item.name?.toLowerCase().includes('shampoo')) && (!item.minThreshold || item.minThreshold < 60)) {
+          return { ...item, minThreshold: 60 };
+        }
+        return item;
+      });
+      setInventory(migrated);
     }
     setRecurringList(data.recurring || []);
     setWaitlist(data.waitlist || []);
@@ -558,7 +564,7 @@ export default function App() {
             <div className="space-y-1">
               {sidebarOpen && <span className="text-4xs text-slate-500 font-extrabold uppercase tracking-widest block mb-1.5 px-2.5">Business</span>}
               {[
-                { id: 'inventory', name: 'Stock & Inventory', icon: Package, badge: inventory.filter(item => (item.category === 'shampoo' || item.name.toLowerCase().includes('shampoo')) ? item.quantity < 60 : item.quantity < 5).length },
+                { id: 'inventory', name: 'Stock & Inventory', icon: Package, badge: inventory.filter(item => item.quantity < (item.minThreshold ?? 5)).length },
                 { id: 'packages', name: 'Packages', icon: Percent },
                 { id: 'team', name: 'Team Status', icon: Users },
               ].map(tab => {
@@ -842,6 +848,7 @@ export default function App() {
               appointments={appointments}
               settings={settings}
               onUpdateAppointment={handleUpdateAppointment}
+              customers={customers}
             />
           )}
 

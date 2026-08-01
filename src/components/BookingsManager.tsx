@@ -72,18 +72,18 @@ const getFormattedMessage = (customerName: string, date: string, time: string, p
 
 Your Slot has been booked successfully.
 
-Our Reaching Time ⬇️.
+Our Reaching Time⬇️
 *Time - ${formatTime(time)}
 *Date - ${formatDate(date)}
 
-Customer Support ⬇️.
+Customer Support ⬇️
 Mobile Num - ${phone}
 Email - support@drwashit.com
 Website - www.drwashit.com
 
 Download the Dr Washit - Doorstep Car Carr App Now 
 
-For Android User ⬇️.
+For Android User ⬇️
 https://play.google.com/store/apps/details?id=com.app.buntywash&pcampaignid=web_share
 
 For Apple User⬇️
@@ -123,6 +123,7 @@ export default function BookingsManager({
   const [newCustName, setNewCustName] = useState('');
   const [newCustPhone, setNewCustPhone] = useState('');
   const [newCustEmail, setNewCustEmail] = useState('');
+  const [newCustAddress, setNewCustAddress] = useState('');
   
   const [vehSize, setVehSize] = useState<'sedan' | 'suv' | 'truck_large'>('sedan');
   const [vehMake, setVehMake] = useState('');
@@ -193,6 +194,7 @@ export default function BookingsManager({
         setNewCustName(client.name);
         setNewCustPhone(client.phone || '');
         setNewCustEmail(client.email || '');
+        setNewCustAddress(client.address || '');
         if (client.vehicles && client.vehicles[0]) {
           setVehMake(client.vehicles[0].make);
         }
@@ -235,10 +237,12 @@ export default function BookingsManager({
 
     // Check if there is an existing customer with this exact name
     const existingClient = customers.find(c => c.name.toLowerCase() === clientName.toLowerCase());
+    let clientAddress = newCustAddress.trim();
     if (existingClient) {
       clientId = existingClient.id;
       if (!clientPhone && existingClient.phone) clientPhone = existingClient.phone;
       if (!clientEmail && existingClient.email) clientEmail = existingClient.email;
+      if (!clientAddress && existingClient.address) clientAddress = existingClient.address;
     }
 
     const matchedService = services.find(s => s.id === selectedServiceId);
@@ -269,6 +273,7 @@ export default function BookingsManager({
       customerName: clientName,
       customerPhone: clientPhone,
       customerEmail: clientEmail,
+      customerAddress: clientAddress || undefined,
       vehicle: vehicleObj,
       serviceId: selectedServiceId,
       serviceName: serviceNameStr,
@@ -300,6 +305,7 @@ export default function BookingsManager({
     setNewCustName('');
     setNewCustPhone('');
     setNewCustEmail('');
+    setNewCustAddress('');
     setVehMake('');
     setSelectedServiceId('');
     setBookingNotes('');
@@ -750,6 +756,18 @@ export default function BookingsManager({
                 </div>
               </div>
 
+              {/* Service Address */}
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Service Address</label>
+                <input
+                  type="text"
+                  value={newCustAddress}
+                  onChange={(e) => setNewCustAddress(e.target.value)}
+                  placeholder="Enter doorstep detailing service address"
+                  className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-sky-500"
+                />
+              </div>
+
               {/* Row 2: Vehicle Type * and Service Type * */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -778,11 +796,11 @@ export default function BookingsManager({
                     }}
                     className="w-full text-xs font-semibold rounded-lg border border-slate-200 p-2.5 bg-slate-50/50 text-slate-800 focus:outline-sky-500"
                   >
-                    <option value="">Select service</option>
+                    <option value="" className="bg-white text-slate-800">Select service</option>
                     {services
                       .filter(s => s.category !== 'add_on')
                       .map(pkg => (
-                        <option key={pkg.id} value={pkg.id}>{pkg.name}</option>
+                        <option key={pkg.id} value={pkg.id} className="bg-white text-slate-800">{pkg.name}</option>
                       ))}
                   </select>
                 </div>
@@ -838,9 +856,9 @@ export default function BookingsManager({
                     onChange={(e) => setAssignedStaffId(e.target.value)}
                     className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-sky-500 cursor-pointer h-[38px] overflow-y-auto font-semibold"
                   >
-                    <option value="">Not Assigned</option>
+                    <option value="" className="bg-white text-slate-800">Not Assigned</option>
                     {staff.map(s => (
-                      <option key={s.id} value={s.id}>
+                      <option key={s.id} value={s.id} className="bg-white text-slate-800">
                         {s.name} ({s.role === 'detailer' ? 'Employee' : s.role === 'manager' ? 'Car Washer' : s.role})
                       </option>
                     ))}

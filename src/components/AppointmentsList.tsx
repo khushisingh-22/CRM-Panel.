@@ -323,18 +323,21 @@ export default function AppointmentsList({
     let customerName = '';
     let customerPhone = '';
     let customerEmail = '';
+    let customerAddress = '';
 
     if (custType === 'new') {
       customerId = `cust-${Date.now()}`;
       customerName = newCustName;
       customerPhone = newCustPhone;
       customerEmail = newCustEmail;
+      customerAddress = newCustAddress;
     } else {
       const existing = customers.find(c => c.id === selectedCustId);
       if (existing) {
         customerName = existing.name;
         customerPhone = existing.phone;
         customerEmail = existing.email;
+        customerAddress = existing.address || '';
       } else {
         alert('Please select an existing customer or choose "New Customer".');
         return;
@@ -353,6 +356,7 @@ export default function AppointmentsList({
       customerName,
       customerPhone,
       customerEmail,
+      customerAddress: customerAddress || undefined,
       vehicle: {
         year: vehYear,
         make: vehMake,
@@ -382,6 +386,7 @@ export default function AppointmentsList({
     setNewCustName('');
     setNewCustPhone('');
     setNewCustEmail('');
+    setNewCustAddress('');
     setVehMake('');
     setVehModel('');
     setVehPlate('');
@@ -616,27 +621,6 @@ export default function AppointmentsList({
             {/* Modal Form */}
             <form onSubmit={handleBookAppointment} className="flex-1 overflow-y-auto p-6 space-y-5">
               
-              {/* AI Auto-suggestion Block */}
-              <div className="p-4 rounded-xl bg-slate-950/50 border border-indigo-500/20 space-y-2.5">
-                <label className="text-[11px] font-bold text-slate-400 block">What would you like to schedule?</label>
-                <div className="relative">
-                  <textarea
-                    value={aiInput}
-                    onChange={(e) => setAiInput(e.target.value)}
-                    placeholder="e.g., Car wash monthlypackage for Khus on next Tuesday afternoon..."
-                    className="w-full text-xs rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white placeholder-slate-500 focus:outline-sky-500/50 h-16 resize-none"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={handleAISuggestion}
-                  className="px-3.5 py-1.5 bg-indigo-650 hover:bg-indigo-550 text-white text-[11px] font-black rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
-                >
-                  <Sparkles size={12} className="text-cyan-300" />
-                  <span>Get AI Suggestions</span>
-                </button>
-              </div>
-
               {/* Customer selection toggle */}
               <div className="space-y-2.5">
                 <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block">Customer Association</label>
@@ -668,9 +652,9 @@ export default function AppointmentsList({
                     required={custType === 'existing'}
                     className="w-full text-xs font-semibold rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white focus:outline-sky-500/50"
                   >
-                    <option value="" className="text-slate-500">Choose existing client...</option>
+                    <option value="" className="text-slate-400 bg-slate-900">Choose existing client...</option>
                     {customers.map(c => (
-                      <option key={c.id} value={c.id} className="text-slate-900">{c.name} ({c.phone})</option>
+                      <option key={c.id} value={c.id} className="text-white bg-slate-900 font-semibold">{c.name} ({c.phone})</option>
                     ))}
                   </select>
                 ) : (
@@ -691,11 +675,20 @@ export default function AppointmentsList({
                       placeholder="Mobile Number"
                       className="text-xs p-2.5 border border-slate-850 rounded-lg w-full bg-slate-900 text-white placeholder-slate-500 focus:outline-sky-500/50"
                     />
+                    <div className="sm:col-span-2">
+                      <input
+                        type="text"
+                        value={newCustAddress}
+                        onChange={(e) => setNewCustAddress(e.target.value)}
+                        placeholder="Service Address"
+                        className="text-xs p-2.5 border border-slate-850 rounded-lg w-full bg-slate-900 text-white placeholder-slate-500 focus:outline-sky-500/50"
+                      />
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* Row 2: Service & Vehicle Size */}
+              {/* Row 2: Service & Vehicle Input (replacing size dropdown & year/make/model inputs) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Service Type *</label>
@@ -705,59 +698,24 @@ export default function AppointmentsList({
                     onChange={(e) => setSelectedServiceId(e.target.value)}
                     className="w-full text-xs font-semibold rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white focus:outline-sky-500/50"
                   >
-                    <option value="" className="text-slate-500">Select Core Treatment Package</option>
+                    <option value="" className="text-slate-400 bg-slate-900">Select Core Treatment Package</option>
                     {services
                       .filter(s => s.category !== 'add_on')
                       .map(pkg => (
-                        <option key={pkg.id} value={pkg.id} className="text-slate-900">{pkg.name}</option>
+                        <option key={pkg.id} value={pkg.id} className="text-white bg-slate-900 font-semibold">{pkg.name}</option>
                       ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Vehicle Size *</label>
-                  <select
-                    value={vehSize}
-                    onChange={(e) => setVehSize(e.target.value as any)}
-                    className="w-full text-xs font-semibold rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white focus:outline-sky-500/50"
-                  >
-                    <option value="sedan" className="text-slate-900">Sedan / Coupe</option>
-                    <option value="suv" className="text-slate-900">Mid-Size SUV / CUV</option>
-                    <option value="truck_large" className="text-slate-900">Truck / Large SUV</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Row 3: Vehicle Specs Year / Make / Model */}
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Vehicle Year</label>
+                  <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Vehicle *</label>
                   <input
                     type="text"
-                    value={vehYear}
-                    onChange={(e) => setVehYear(e.target.value)}
-                    placeholder="2024"
-                    className="text-xs p-2.5 border border-slate-850 rounded-lg w-full bg-slate-900 text-white placeholder-slate-500 focus:outline-sky-500/50 font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Make</label>
-                  <input
-                    type="text"
+                    required
                     value={vehMake}
                     onChange={(e) => setVehMake(e.target.value)}
-                    placeholder="e.g. Maruti"
-                    className="text-xs p-2.5 border border-slate-850 rounded-lg w-full bg-slate-900 text-white placeholder-slate-500 focus:outline-sky-500/50"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Model</label>
-                  <input
-                    type="text"
-                    value={vehModel}
-                    onChange={(e) => setVehModel(e.target.value)}
-                    placeholder="e.g. Swift"
-                    className="text-xs p-2.5 border border-slate-850 rounded-lg w-full bg-slate-900 text-white placeholder-slate-500 focus:outline-sky-500/50"
+                    placeholder="e.g. Maruti Swift (Manually type vehicle name)"
+                    className="w-full text-xs p-2.5 border border-slate-850 rounded-lg bg-slate-900 text-white placeholder-slate-500 focus:outline-sky-500/50"
                   />
                 </div>
               </div>
@@ -802,9 +760,9 @@ export default function AppointmentsList({
                     onChange={(e) => setAssignedStaffId(e.target.value)}
                     className="w-full text-xs font-semibold rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white focus:outline-sky-500/50 cursor-pointer h-[38px] overflow-y-auto"
                   >
-                    <option value="">Not Assigned</option>
+                    <option value="" className="text-slate-400 bg-slate-900">Not Assigned</option>
                     {staff.map(s => (
-                      <option key={s.id} value={s.id}>
+                      <option key={s.id} value={s.id} className="text-white bg-slate-900 font-semibold">
                         {s.name} ({s.role === 'detailer' ? 'Employee' : s.role === 'manager' ? 'Car Washer' : s.role})
                       </option>
                     ))}

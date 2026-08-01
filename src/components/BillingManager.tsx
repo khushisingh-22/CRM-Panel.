@@ -26,12 +26,13 @@ import {
   Globe,
   MessageSquare
 } from 'lucide-react';
-import { Appointment, ShopSettings } from '../types/crm';
+import { Appointment, ShopSettings, Customer } from '../types/crm';
 
 interface BillingManagerProps {
   appointments: Appointment[];
   settings: ShopSettings;
   onUpdateAppointment: (updated: Appointment) => void;
+  customers?: Customer[];
 }
 
 // Custom Dr Washit Monogram Logo (SVG)
@@ -98,7 +99,8 @@ const formatDate = (dateStr: string) => {
 export default function BillingManager({
   appointments,
   settings,
-  onUpdateAppointment
+  onUpdateAppointment,
+  customers = []
 }: BillingManagerProps) {
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(
     appointments.filter(a => a.status !== 'cancelled')[0]?.id || null
@@ -299,20 +301,17 @@ Let your car sparkle at your doorstep🚗💦✨ & thankyou for choosing *Dr Was
                   }
                 `}} />
 
-                {/* Main layout card outlined in blue color */}
-                <div className="max-w-2xl mx-auto bg-white border-4 border-blue-600 rounded-xl overflow-hidden shadow-md shadow-blue-500/10 print:border-0 print:shadow-none print:rounded-none">
+                {/* Main layout card with sleek, professional design */}
+                <div className="max-w-2xl mx-auto bg-white border border-slate-200 rounded-xl overflow-hidden shadow-md print:border-0 print:shadow-none print:rounded-none">
                   
-                  {/* Top Branding Banner: Slanted Car Wash style with company logo */}
-                  <div className="bg-gradient-to-r from-sky-400 via-sky-500 to-indigo-600 p-6 md:p-8 text-white flex justify-between items-center relative overflow-hidden">
-                    {/* Visual diagonal grid/stripes pattern in background */}
-                    <div className="absolute inset-0 opacity-10 bg-[linear-gradient(45deg,rgba(255,255,255,0.15)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.15)_50%,rgba(255,255,255,0.15)_75%,transparent_75%,transparent)] bg-[size:24px_24px]" />
-                    
+                  {/* Top Branding Banner: Clean Executive style with company logo */}
+                  <div className="bg-slate-900 p-6 md:p-8 text-white flex justify-between items-center relative overflow-hidden border-b border-slate-800">
                     <div className="relative z-10 space-y-1">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-sky-100/80 block">PREMIUM DOORSTEP DETAILING</span>
-                      <h2 className="text-3xl md:text-4xl font-black italic tracking-wider text-white font-mono leading-none">
-                        /// DR WASHIT
+                      <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400 block">PREMIUM DOORSTEP CAR DETAILING</span>
+                      <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-none uppercase">
+                        DR. WASHIT
                       </h2>
-                      <p className="text-[9px] text-sky-100/95 leading-normal max-w-sm pt-1.5 font-medium">
+                      <p className="text-[9px] text-slate-300 leading-normal max-w-sm pt-1.5 font-medium">
                         B-129.PocketB,Sector-omicron 3rd,omicron|||,greaternoida,mathurapur,uttarpradesh201310
                         <br />
                         Phone: 8510002780 | Email: support@drwashit.com
@@ -324,7 +323,7 @@ Let your car sparkle at your doorstep🚗💦✨ & thankyou for choosing *Dr Was
                     <div className="relative z-10 flex flex-col items-end gap-2 shrink-0">
                       <DrWashitLogo size={64} className="shadow-md" />
                       <div className="text-right">
-                        <span className="text-3xs font-extrabold bg-white/20 px-2 py-0.5 rounded text-white font-mono uppercase tracking-wider block">
+                        <span className="text-3xs font-extrabold bg-slate-800 px-2 py-0.5 rounded text-indigo-300 font-mono uppercase tracking-wider block border border-slate-700">
                           EST. 2024
                         </span>
                       </div>
@@ -345,8 +344,24 @@ Let your car sparkle at your doorstep🚗💦✨ & thankyou for choosing *Dr Was
                       <div className="space-y-1">
                         <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider block">INVOICE TO</span>
                         <strong className="text-xs font-black text-slate-900 block">{activeInvoice.customerName}</strong>
-                        <p className="text-3xs text-slate-500 font-medium">Mob: {activeInvoice.customerPhone}</p>
-                        {activeInvoice.customerEmail && <p className="text-3xs text-slate-500 truncate">{activeInvoice.customerEmail}</p>}
+                        {(() => {
+                          const matchedCustomer = customers.find(c => c.id === activeInvoice.customerId || c.name.toLowerCase() === activeInvoice.customerName.toLowerCase());
+                          const phone = matchedCustomer?.phone || activeInvoice.customerPhone;
+                          const email = matchedCustomer?.email || activeInvoice.customerEmail;
+                          const address = matchedCustomer?.address || activeInvoice.customerAddress;
+
+                          return (
+                            <>
+                              <p className="text-3xs text-slate-500 font-medium">Mob: {phone}</p>
+                              {email && <p className="text-3xs text-slate-500 truncate">Email: {email}</p>}
+                              {address && (
+                                <p className="text-3xs text-slate-500 font-medium mt-1 bg-slate-50 p-1 px-1.5 rounded border border-slate-100/80 leading-tight">
+                                  <strong>Address:</strong> {address}
+                                </p>
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
 
                       <div className="space-y-1 bg-slate-50 border border-slate-100/80 p-2.5 rounded-lg">
@@ -361,7 +376,7 @@ Let your car sparkle at your doorstep🚗💦✨ & thankyou for choosing *Dr Was
                     <div className="overflow-hidden rounded-lg border border-slate-100 font-sans">
                       <table className="w-full text-left border-collapse text-xs">
                         <thead>
-                          <tr className="bg-sky-600 text-white text-[10px] font-extrabold uppercase tracking-wider">
+                          <tr className="bg-slate-900 text-white text-[10px] font-extrabold uppercase tracking-wider">
                             <th className="py-2.5 px-4">PRODUCT TREATMENT</th>
                             <th className="py-2.5 px-3 text-center w-20">PRICE</th>
                             <th className="py-2.5 px-3 text-center w-16">QTY</th>
@@ -386,7 +401,7 @@ Let your car sparkle at your doorstep🚗💦✨ & thankyou for choosing *Dr Was
 
                           {/* Add-ons Rows */}
                           {activeInvoice.addOns.map(addon => (
-                            <tr key={addon.id} className="hover:bg-slate-50/50 transition-colors bg-sky-50/10">
+                            <tr key={addon.id} className="hover:bg-slate-50/50 transition-colors bg-slate-50/30">
                               <td className="py-3 px-4">
                                 <strong className="font-bold text-slate-800 block">+ {addon.name}</strong>
                                 <span className="text-3xs text-slate-400 block pt-0.5">Premium specialized treatment add-on</span>
@@ -416,30 +431,30 @@ Let your car sparkle at your doorstep🚗💦✨ & thankyou for choosing *Dr Was
                           <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider block">AUTHORISED SIGNATORY</span>
                           <div className="h-10 flex items-center justify-start py-1">
                             {/* Hand-drawn elegant D signature SVG */}
-                            <svg width="110" height="40" viewBox="0 0 100 40" fill="none" className="text-sky-600 opacity-90">
+                            <svg width="110" height="40" viewBox="0 0 100 40" fill="none" className="text-slate-700 opacity-90">
                               <path d="M20 8 C15 15, 12 35, 22 35 C32 35, 45 15, 38 8 C32 2, 22 5, 22 18 C22 28, 38 32, 50 30 C65 28, 80 25, 92 24 M42 22 C55 20, 68 18, 82 16" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                           </div>
-                          <span className="text-xs font-black text-slate-700 block font-serif italic">Dr Washit</span>
+                          <span className="text-xs font-black text-slate-800 block font-sans uppercase tracking-wider">Dr Washit</span>
                         </div>
                       </div>
 
                       {/* Mathematical computations */}
                       <div className="bg-slate-50 p-4 rounded-xl border border-slate-100/80 space-y-3 self-start text-xs">
                         <div className="flex justify-between font-medium text-slate-500 text-3xs uppercase tracking-wider">
-                          <span>Net Subtotal:</span>
-                          <span className="font-mono font-bold text-slate-700">₹{getSubtotal(activeInvoice.price).toFixed(2)}</span>
+                           <span>Net Subtotal:</span>
+                           <span className="font-mono font-bold text-slate-700">₹{getSubtotal(activeInvoice.price).toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between font-medium text-slate-500 text-3xs uppercase tracking-wider">
-                          <span>Sales Tax ({settings.taxRate || 0}%):</span>
-                          <span className="font-mono font-bold text-slate-700">₹{getTaxAmount(activeInvoice.price).toFixed(2)}</span>
+                           <span>Sales Tax ({settings.taxRate || 0}%):</span>
+                           <span className="font-mono font-bold text-slate-700">₹{getTaxAmount(activeInvoice.price).toFixed(2)}</span>
                         </div>
                         
                         <hr className="border-slate-200" />
                         
                         <div className="flex justify-between items-center text-slate-900">
                           <span className="text-xs font-black uppercase tracking-wider">TOTAL DUE:</span>
-                          <span className="text-base font-black text-sky-600 font-mono">₹{activeInvoice.price.toFixed(2)}</span>
+                          <span className="text-base font-black text-slate-900 font-mono">₹{activeInvoice.price.toFixed(2)}</span>
                         </div>
                       </div>
 

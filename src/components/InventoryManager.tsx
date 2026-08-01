@@ -46,9 +46,23 @@ export default function InventoryManager({
   const [name, setName] = useState('');
   const [category, setCategory] = useState<InventoryItem['category']>('shampoo');
   const [quantity, setQuantity] = useState('');
+  const [minThreshold, setMinThreshold] = useState('60');
   const [unit, setUnit] = useState('bottles');
   const [costPrice, setCostPrice] = useState('');
   const [location, setLocation] = useState('');
+
+  const handleCategoryChange = (newCat: InventoryItem['category']) => {
+    setCategory(newCat);
+    if (newCat === 'shampoo') {
+      setMinThreshold('60');
+    } else if (newCat === 'papermats') {
+      setMinThreshold('30');
+    } else if (newCat === 'paperAirFreshner') {
+      setMinThreshold('20');
+    } else {
+      setMinThreshold('5');
+    }
+  };
 
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +74,7 @@ export default function InventoryManager({
       category,
       quantity: Number(quantity),
       unit,
-      minThreshold: 1,
+      minThreshold: Number(minThreshold) || 5,
       costPrice: Number(costPrice || 0),
       location
     };
@@ -71,6 +85,7 @@ export default function InventoryManager({
     // Reset Form
     setName('');
     setCategory('shampoo');
+    setMinThreshold('60');
     setQuantity('');
     setUnit('bottles');
     setCostPrice('');
@@ -93,8 +108,7 @@ export default function InventoryManager({
   };
 
   const isLowStock = (item: InventoryItem) => {
-    const threshold = item.category === 'shampoo' || item.name.toLowerCase().includes('shampoo') ? 60 : 5;
-    return item.quantity < threshold;
+    return item.quantity < (item.minThreshold ?? 5);
   };
 
   const getStatus = (item: InventoryItem) => {
@@ -137,16 +151,16 @@ export default function InventoryManager({
         <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl flex items-start gap-3 text-amber-300 animate-fade-in" id="low-stock-alert-reminder">
           <AlertTriangle className="shrink-0 mt-0.5 text-amber-400" size={16} />
           <div className="text-xs space-y-1">
-            <strong className="font-extrabold block uppercase tracking-wide">⚠️ Stock Alert Warning / स्टॉक चेतावनी (Shampoo &lt; 60, Others &lt; 5)</strong>
+            <strong className="font-extrabold block uppercase tracking-wide">⚠️ Stock Alert Warning / स्टॉक चेतावनी (Low Stock Items)</strong>
             <p className="text-slate-300 font-medium leading-relaxed">
-              Shampoo stock 60 se niche ya dusri items 5 se niche hone par alert yahan dikhega:
+              Minimum limit se niche stock hone par yahan warning dikhegi:
             </p>
             <div className="flex flex-wrap gap-2 mt-2">
               {inventory.filter(isLowStock).map(item => {
-                const isShamp = item.category === 'shampoo' || item.name.toLowerCase().includes('shampoo');
+                const thresh = item.minThreshold ?? (item.category === 'shampoo' ? 60 : 5);
                 return (
                   <span key={item.id} className="bg-amber-500/20 border border-amber-500/30 text-amber-300 font-mono font-bold text-4xs px-2.5 py-1 rounded-md uppercase">
-                    {item.name}: {item.quantity} {item.unit} {isShamp ? '(Shampoo < 60)' : '(Low < 5)'}
+                    {item.name}: {item.quantity} {item.unit} (Limit: <span className="underline">{thresh}</span>)
                   </span>
                 );
               })}
@@ -240,22 +254,27 @@ export default function InventoryManager({
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => handleAdjustQuantity(item.id, -1)}
-                            className="p-1 hover:bg-slate-800 rounded bg-slate-950 text-slate-400 border border-slate-800"
-                          >
-                            <Minus size={10} />
-                          </button>
-                          <span className="font-mono font-bold text-white min-w-8 text-center">
-                            {item.quantity} {item.unit}
+                        <div className="flex flex-col items-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => handleAdjustQuantity(item.id, -1)}
+                              className="p-1 hover:bg-slate-800 rounded bg-slate-950 text-slate-400 border border-slate-800 cursor-pointer"
+                            >
+                              <Minus size={10} />
+                            </button>
+                            <span className="font-mono font-bold text-white min-w-8 text-center">
+                              {item.quantity} {item.unit}
+                            </span>
+                            <button
+                              onClick={() => handleAdjustQuantity(item.id, 1)}
+                              className="p-1 hover:bg-slate-800 rounded bg-slate-950 text-slate-400 border border-slate-800 cursor-pointer"
+                            >
+                              <Plus size={10} />
+                            </button>
+                          </div>
+                          <span className="text-[10px] text-slate-500 mt-1 block font-mono">
+                            Threshold: {item.minThreshold ?? (item.category === 'shampoo' ? 60 : 5)}
                           </span>
-                          <button
-                            onClick={() => handleAdjustQuantity(item.id, 1)}
-                            className="p-1 hover:bg-slate-800 rounded bg-slate-950 text-slate-400 border border-slate-800"
-                          >
-                            <Plus size={10} />
-                          </button>
                         </div>
                       </td>
                       <td className="py-3.5 px-4 font-mono font-semibold text-slate-400">
@@ -313,7 +332,7 @@ export default function InventoryManager({
                   <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Category</label>
                   <select
                     value={category}
-                    onChange={(e) => setCategory(e.target.value as any)}
+                    onChange={(e) => handleCategoryChange(e.target.value as any)}
                     className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden"
                   >
                     {Object.entries(categoryLabels).map(([key, val]) => (
@@ -332,6 +351,23 @@ export default function InventoryManager({
                     placeholder="e.g. 15"
                     className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500"
                   />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Alert Threshold (चेतावनी सीमा)</label>
+                  <input
+                    type="number"
+                    required
+                    value={minThreshold}
+                    onChange={(e) => setMinThreshold(e.target.value)}
+                    placeholder="e.g. 5"
+                    className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500"
+                  />
+                </div>
+                <div className="flex items-end pb-1.5 text-slate-400 text-3xs">
+                  Stock level isse niche hone par alert yahan aur tab indicator pe dikhega.
                 </div>
               </div>
 
