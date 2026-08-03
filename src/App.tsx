@@ -62,6 +62,11 @@ import ProfileManager from './components/ProfileManager';
 import HelpCenter from './components/HelpCenter';
 import PackagesManager, { BusinessPackage } from './components/PackagesManager';
 
+// Firebase Authentication and Firestore Syncing
+import { customAuth } from './lib/customAuth';
+import { loadFirebaseUserData, saveFirebaseUserField } from './utils/firebaseSync';
+import LoginScreen from './components/LoginScreen';
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [autoOpenNewBooking, setAutoOpenNewBooking] = useState(false);
@@ -131,154 +136,226 @@ export default function App() {
     root.classList.add(`text-size-${fontSize}`);
   }, [settings]);
 
-  // Load from Storage
+  // Auth state
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  // Monitor auth state and load data
   useEffect(() => {
-    const data = getStoredData();
-    const hasNewService = data.services.some(s => s.id === 'pkg-monthly-wash');
-    if (!hasNewService) {
-      setServices(DEFAULT_SERVICES);
-      saveStoredData({ services: DEFAULT_SERVICES });
-    } else {
-      setServices(data.services);
-    }
-    setCustomers(data.customers);
-    setAppointments(data.appointments);
-    const hasOldStaff = data.staff.some(s => s.id === 'stf-1' || s.name === 'Alex Rivera' || s.name === 'Marcus Chen');
-    const hasNewStaff = data.staff.some(s => s.id === 'stf-shailu' || s.id === 'stf-ashu');
-    const needsStaffUpdate = data.staff.some(s => 
-      (s.id === 'stf-shailu' && (s.salary !== 10000 || s.phone !== '9219099704')) ||
-      (s.id === 'stf-ashu' && (s.salary !== 10000 || s.phone !== '9810516620'))
-    );
-    if (hasOldStaff || !hasNewStaff || data.staff.length !== 2 || needsStaffUpdate) {
-      setStaff(DEFAULT_STAFF);
-      saveStoredData({ staff: DEFAULT_STAFF });
-    } else {
-      setStaff(data.staff);
-    }
-    const hasOldSettings = !data.settings || data.settings.phone === '800-555-WASH' || !data.settings.address || data.settings.address.includes('Oceanside');
-    if (hasOldSettings) {
-      setSettings(DEFAULT_SETTINGS);
-      saveStoredData({ settings: DEFAULT_SETTINGS });
-    } else {
-      setSettings(data.settings);
-    }
-    setLeads(data.leads);
-    setExpenses(data.expenses || []);
-    const hasOldInventory = (data.inventory || []).some((item: any) => 
-      item.category === 'chemicals' || 
-      item.category === 'coatings' || 
-      item.category === 'towels' || 
-      item.category === 'pads' || 
-      item.category === 'other' || 
-      item.name === 'Ceramic Nano Coating 50ml' || 
-      item.name === 'Premium High-Foam Suds'
-    );
-    if (hasOldInventory || !data.inventory || data.inventory.length === 0) {
-      const defaultInv = [
-        { id: 'inv-1', name: 'Premium Shampoo', category: 'shampoo', quantity: 25, unit: 'litres', minThreshold: 60, costPrice: 450, location: 'Bay 1' },
-        { id: 'inv-2', name: 'Disposable Paper Mats', category: 'papermats', quantity: 150, unit: 'sheets', minThreshold: 30, costPrice: 5, location: 'Shelf B2' },
-        { id: 'inv-3', name: 'Paper Air Freshener', category: 'paperAirFreshner', quantity: 80, unit: 'pieces', minThreshold: 20, costPrice: 15, location: 'Counter' }
-      ];
-      setInventory(defaultInv);
-      saveStoredData({ inventory: defaultInv });
-    } else {
-      const migrated = data.inventory.map((item: any) => {
-        if ((item.category === 'shampoo' || item.name?.toLowerCase().includes('shampoo')) && (!item.minThreshold || item.minThreshold < 60)) {
-          return { ...item, minThreshold: 60 };
+    const unsubscribe = customAuth.onAuthStateChanged(async (user) => {
+      if (user) {
+        setCurrentUser(user);
+        try {
+          const data = await loadFirebaseUserData(user.uid);
+          
+          // Verify & migrate services
+          const hasNewService = data.services.some((s: any) => s.id === 'pkg-monthly-wash');
+          if (!hasNewService) {
+            setServices(DEFAULT_SERVICES);
+            saveFirebaseUserField(user.uid, 'services', DEFAULT_SERVICES);
+          } else {
+            setServices(data.services);
+          }
+          
+          setCustomers(data.customers);
+          setAppointments(data.appointments);
+          
+          // Verify staff
+          const hasOldStaff = data.staff.some((s: any) => s.id === 'stf-1' || s.name === 'Alex Rivera' || s.name === 'Marcus Chen');
+          const hasNewStaff = data.staff.some((s: any) => s.id === 'stf-shailu' || s.id === 'stf-ashu');
+          const needsStaffUpdate = data.staff.some((s: any) => 
+            (s.id === 'stf-shailu' && (s.salary !== 10000 || s.phone !== '9219099704')) ||
+            (s.id === 'stf-ashu' && (s.salary !== 10000 || s.phone !== '9810516620'))
+          );
+          if (hasOldStaff || !hasNewStaff || data.staff.length !== 2 || needsStaffUpdate) {
+            setStaff(DEFAULT_STAFF);
+            saveFirebaseUserField(user.uid, 'staff', DEFAULT_STAFF);
+          } else {
+            setStaff(data.staff);
+          }
+          
+          // Verify settings
+          const hasOldSettings = !data.settings || data.settings.phone === '800-555-WASH' || !data.settings.address || data.settings.address.includes('Oceanside');
+          if (hasOldSettings) {
+            setSettings(DEFAULT_SETTINGS);
+            saveFirebaseUserField(user.uid, 'shop', DEFAULT_SETTINGS);
+          } else {
+            setSettings(data.settings);
+          }
+          
+          setLeads(data.leads);
+          setExpenses(data.expenses || []);
+          
+          // Verify inventory
+          const hasOldInventory = (data.inventory || []).some((item: any) => 
+            item.category === 'chemicals' || 
+            item.category === 'coatings' || 
+            item.category === 'towels' || 
+            item.category === 'pads' || 
+            item.category === 'other' || 
+            item.name === 'Ceramic Nano Coating 50ml' || 
+            item.name === 'Premium High-Foam Suds'
+          );
+          if (hasOldInventory || !data.inventory || data.inventory.length === 0) {
+            const defaultInv = [
+              { id: 'inv-1', name: 'Premium Shampoo', category: 'shampoo', quantity: 25, unit: 'litres', minThreshold: 60, costPrice: 450, location: 'Bay 1' },
+              { id: 'inv-2', name: 'Disposable Paper Mats', category: 'papermats', quantity: 150, unit: 'sheets', minThreshold: 30, costPrice: 5, location: 'Shelf B2' },
+              { id: 'inv-3', name: 'Paper Air Freshener', category: 'paperAirFreshner', quantity: 80, unit: 'pieces', minThreshold: 20, costPrice: 15, location: 'Counter' }
+            ];
+            setInventory(defaultInv);
+            saveFirebaseUserField(user.uid, 'inventory', defaultInv);
+          } else {
+            const migrated = data.inventory.map((item: any) => {
+              if ((item.category === 'shampoo' || item.name?.toLowerCase().includes('shampoo')) && (!item.minThreshold || item.minThreshold < 60)) {
+                return { ...item, minThreshold: 60 };
+              }
+              return item;
+            });
+            setInventory(migrated);
+          }
+          
+          setRecurringList(data.recurring || []);
+          setWaitlist(data.waitlist || []);
+          setWorkflows(data.workflows || []);
+          setAutomationSettings(data.automationSettings || {
+            autoAssignStaff: true,
+            autoSMSOnReady: true,
+            autoSMSOnConfirm: true,
+            autoInvoiceOnComplete: false,
+            reminderHours: 24
+          });
+          setProfile(data.profile || {
+            name: 'John Doe',
+            role: 'Studio Owner',
+            email: 'owner@drwashit.online',
+            phone: '800-555-WASH',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+          });
+          setPackages(data.packages || []);
+          
+        } catch (e) {
+          console.error("Error setting up data on login:", e);
         }
-        return item;
-      });
-      setInventory(migrated);
-    }
-    setRecurringList(data.recurring || []);
-    setWaitlist(data.waitlist || []);
-    setWorkflows(data.workflows || []);
-    setAutomationSettings(data.automationSettings || {
-      autoAssignStaff: true,
-      autoSMSOnReady: true,
-      autoSMSOnConfirm: true,
-      autoInvoiceOnComplete: false,
-      reminderHours: 24
+      } else {
+        setCurrentUser(null);
+      }
+      setAuthLoading(false);
     });
-    setProfile(data.profile || {
-      name: 'John Doe',
-      role: 'Studio Owner',
-      email: 'owner@drwashit.online',
-      phone: '800-555-WASH',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
-    });
-    setPackages(data.packages || []);
+
+    return () => unsubscribe();
   }, []);
 
-  // Save to Storage when modified
+  // Save to Storage when modified (sync with Local & Firebase)
   const syncServices = (updated: ServicePackage[]) => {
     setServices(updated);
     saveStoredData({ services: updated });
+    if (currentUser) {
+      saveFirebaseUserField(currentUser.uid, 'services', updated);
+    }
   };
 
   const syncCustomers = (updated: Customer[]) => {
     setCustomers(updated);
     saveStoredData({ customers: updated });
+    if (currentUser) {
+      saveFirebaseUserField(currentUser.uid, 'customers', updated);
+    }
   };
 
   const syncAppointments = (updated: Appointment[]) => {
     setAppointments(updated);
     saveStoredData({ appointments: updated });
+    if (currentUser) {
+      saveFirebaseUserField(currentUser.uid, 'appointments', updated);
+    }
   };
 
   const syncSettings = (updated: ShopSettings) => {
     setSettings(updated);
     saveStoredData({ settings: updated });
+    if (currentUser) {
+      saveFirebaseUserField(currentUser.uid, 'shop', updated);
+    }
   };
 
   const syncExpenses = (updated: any[]) => {
     setExpenses(updated);
     saveStoredData({ expenses: updated });
+    if (currentUser) {
+      saveFirebaseUserField(currentUser.uid, 'expenses', updated);
+    }
   };
 
   const syncInventory = (updated: any[]) => {
     setInventory(updated);
     saveStoredData({ inventory: updated });
+    if (currentUser) {
+      saveFirebaseUserField(currentUser.uid, 'inventory', updated);
+    }
   };
 
   const syncRecurring = (updated: any[]) => {
     setRecurringList(updated);
     saveStoredData({ recurring: updated });
+    if (currentUser) {
+      saveFirebaseUserField(currentUser.uid, 'recurring', updated);
+    }
   };
 
   const syncWaitlist = (updated: any[]) => {
     setWaitlist(updated);
     saveStoredData({ waitlist: updated });
+    if (currentUser) {
+      saveFirebaseUserField(currentUser.uid, 'waitlist', updated);
+    }
   };
 
   const syncWorkflows = (updated: any[]) => {
     setWorkflows(updated);
     saveStoredData({ workflows: updated });
+    if (currentUser) {
+      saveFirebaseUserField(currentUser.uid, 'workflows', updated);
+    }
   };
 
   const syncAutomationSettings = (updated: any) => {
     setAutomationSettings(updated);
     saveStoredData({ automationSettings: updated });
+    if (currentUser) {
+      saveFirebaseUserField(currentUser.uid, 'automation', updated);
+    }
   };
 
   const syncProfile = (updated: any) => {
     setProfile(updated);
     saveStoredData({ profile: updated });
+    if (currentUser) {
+      saveFirebaseUserField(currentUser.uid, 'profile', updated);
+    }
   };
 
   const syncStaff = (updated: Staff[]) => {
     setStaff(updated);
     saveStoredData({ staff: updated });
+    if (currentUser) {
+      saveFirebaseUserField(currentUser.uid, 'staff', updated);
+    }
   };
 
   const syncLeads = (updated: any[]) => {
     setLeads(updated);
     saveStoredData({ leads: updated });
+    if (currentUser) {
+      saveFirebaseUserField(currentUser.uid, 'leads', updated);
+    }
   };
 
   const syncPackages = (updated: BusinessPackage[]) => {
     setPackages(updated);
     saveStoredData({ packages: updated });
+    if (currentUser) {
+      saveFirebaseUserField(currentUser.uid, 'packages', updated);
+    }
   };
 
   // Appointment CRUD Handlers
@@ -505,13 +582,30 @@ export default function App() {
 
   const pendingLeads = leads.filter(l => l.status === 'new');
 
-  // Guard against unmounted defaults
-  if (!settings.shopName) {
+  // 1. Guard against Auth Loading state
+  if (authLoading) {
     return (
-      <div className="h-screen bg-[#070A13] flex items-center justify-center text-slate-400 font-medium">
+      <div className="h-screen bg-[#070A13] flex items-center justify-center text-slate-400 font-medium select-none">
         <div className="flex flex-col items-center gap-3">
           <span className="h-9 w-9 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin"></span>
-          <span className="text-xs font-bold tracking-wider uppercase text-slate-500 animate-pulse">Initializing CRM Environment...</span>
+          <span className="text-xs font-bold tracking-wider uppercase text-slate-500 animate-pulse">Checking Secure Session...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Guard against No Authenticated User
+  if (!currentUser) {
+    return <LoginScreen onLoginSuccess={() => {}} />;
+  }
+
+  // 3. Guard against unmounted defaults when logged in but data still fetching
+  if (!settings || !settings.shopName) {
+    return (
+      <div className="h-screen bg-[#070A13] flex items-center justify-center text-slate-400 font-medium select-none">
+        <div className="flex flex-col items-center gap-3">
+          <span className="h-9 w-9 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin"></span>
+          <span className="text-xs font-bold tracking-wider uppercase text-slate-500 animate-pulse">Syncing Workshop Database...</span>
         </div>
       </div>
     );
@@ -689,11 +783,9 @@ export default function App() {
 
             {/* Sign Out Button */}
             <button
-              onClick={() => {
-                const confirm = window.confirm("Are you sure you want to sign out?");
-                if (confirm) {
-                  window.location.reload();
-                }
+              onClick={async () => {
+                await customAuth.signOut();
+                window.location.reload();
               }}
               className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-rose-950/40 rounded-lg text-slate-300 hover:text-rose-400 text-xs font-bold transition-all cursor-pointer"
             >

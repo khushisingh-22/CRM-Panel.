@@ -225,3 +225,4 @@ export const DEFAULT_SETTINGS: ShopSettings = {
   theme: 'dark',
   fontSize: 'medium'
 };
+ 
