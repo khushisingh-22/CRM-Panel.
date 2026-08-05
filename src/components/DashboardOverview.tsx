@@ -42,6 +42,7 @@ interface DashboardOverviewProps {
   onNavigate: (tab: string) => void;
   onSelectJob: (jobId: string) => void;
   onUpdateAppointment?: (updated: Appointment) => void;
+  currentUser?: any;
 }
 
 export default function DashboardOverview({
@@ -53,7 +54,8 @@ export default function DashboardOverview({
   inventory,
   onNavigate,
   onSelectJob,
-  onUpdateAppointment
+  onUpdateAppointment,
+  currentUser
 }: DashboardOverviewProps) {
   // Local date helper
   const getRelativeDate = (offsetDays: number): string => {
@@ -390,70 +392,134 @@ export default function DashboardOverview({
       </div>
 
       {/* KPI Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4" id="kpi-dashboard-grid">
-        {/* Card 1: Daily Profit */}
-        <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Daily Profit</span>
-            <span className="text-2xl font-extrabold text-[#38bdf8] font-mono">₹{dailyProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            <span className="text-slate-500 text-3xs font-medium block">Today's net earnings</span>
+      {currentUser?.role === 'employee' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4" id="kpi-dashboard-grid-employee">
+          {/* Card 1: Active Jobs Queue */}
+          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Active Jobs Queue</span>
+              <span className="text-2xl font-extrabold text-[#38bdf8] font-mono">{activeJobs.length}</span>
+              <span className="text-slate-500 text-3xs font-medium block">Jobs currently being serviced</span>
+            </div>
+            <div className="p-3 bg-sky-500/10 text-[#38bdf8] rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
+              <Car size={20} />
+            </div>
           </div>
-          <div className="p-3 bg-sky-500/10 text-[#38bdf8] rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
-            ₹
+
+          {/* Card 2: Upcoming Scheduled Jobs */}
+          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Scheduled Jobs</span>
+              <span className="text-2xl font-extrabold text-indigo-400 font-mono">{scheduledJobs.length}</span>
+              <span className="text-slate-500 text-3xs font-medium block">Upcoming bookings today/later</span>
+            </div>
+            <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
+              <Calendar size={20} />
+            </div>
+          </div>
+
+          {/* Card 3: Completed Jobs */}
+          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Completed Jobs</span>
+              <span className="text-2xl font-extrabold text-emerald-400 font-mono">{completedJobs.length}</span>
+              <span className="text-slate-500 text-3xs font-medium block">Successfully finished tasks</span>
+            </div>
+            <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
+              <CheckCircle size={20} />
+            </div>
+          </div>
+
+          {/* Card 4: Low Stock Alerts */}
+          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Low Stock Alerts</span>
+              <span className={`text-2xl font-extrabold font-mono ${lowStockCount > 0 ? 'text-amber-400' : 'text-slate-300'}`}>{lowStockCount}</span>
+              <span className="text-slate-500 text-3xs font-medium block">{lowStockCount === 0 ? 'All shampoo/mats in stock' : `${lowStockCount} items need stock`}</span>
+            </div>
+            <div className="p-3 bg-amber-500/10 text-amber-400 rounded-lg flex items-center justify-center h-11 w-11 shrink-0">
+              <Package size={22} />
+            </div>
+          </div>
+
+          {/* Card 5: Online Booking Requests */}
+          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Booking Requests</span>
+              <span className="text-2xl font-extrabold text-pink-400 font-mono">{pendingLeadsCount}</span>
+              <span className="text-slate-500 text-3xs font-medium block">New self-booking requests</span>
+            </div>
+            <div className="p-3 bg-pink-500/10 text-pink-400 rounded-lg flex items-center justify-center h-11 w-11 shrink-0">
+              <Zap size={20} />
+            </div>
           </div>
         </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4" id="kpi-dashboard-grid">
+          {/* Card 1: Daily Profit */}
+          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Daily Profit</span>
+              <span className="text-2xl font-extrabold text-[#38bdf8] font-mono">₹{dailyProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span className="text-slate-500 text-3xs font-medium block">Today's net earnings</span>
+            </div>
+            <div className="p-3 bg-sky-500/10 text-[#38bdf8] rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
+              ₹
+            </div>
+          </div>
 
-        {/* Card 2: Total Profit */}
-        <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Total Profit</span>
-            <span className="text-2xl font-extrabold text-emerald-400 font-mono">₹{totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            <span className="text-slate-500 text-3xs font-medium block">₹{totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} this month</span>
+          {/* Card 2: Total Profit */}
+          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Total Profit</span>
+              <span className="text-2xl font-extrabold text-emerald-400 font-mono">₹{totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span className="text-slate-500 text-3xs font-medium block">₹{totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} this month</span>
+            </div>
+            <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
+              ₹
+            </div>
           </div>
-          <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
-            ₹
+
+          {/* Card 3: Total Revenue */}
+          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Total Revenue</span>
+              <span className="text-2xl font-extrabold text-sky-400 font-mono">₹{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span className="text-slate-500 text-3xs font-medium block">₹{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} this month</span>
+            </div>
+            <div className="p-3 bg-sky-500/10 text-sky-400 rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
+              ₹
+            </div>
           </div>
+
+          {/* Card 4: Low Stock Alerts */}
+          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Low Stock Alerts</span>
+              <span className={`text-2xl font-extrabold font-mono ${lowStockCount > 0 ? 'text-amber-400' : 'text-slate-300'}`}>{lowStockCount}</span>
+              <span className="text-slate-500 text-3xs font-medium block">{lowStockCount === 0 ? 'all items in stock' : `${lowStockCount} items need stock`}</span>
+            </div>
+            <div className="p-3 bg-amber-500/10 text-amber-400 rounded-lg flex items-center justify-center h-11 w-11 shrink-0">
+              <Package size={22} />
+            </div>
+          </div>
+
+          {/* Card 5: Pending Client Payments */}
+          <button
+            onClick={() => setShowPendingListModal(true)}
+            className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-rose-500/20 hover:border-rose-500/50 transition-all shadow-xs flex items-center justify-between text-left cursor-pointer w-full group relative overflow-hidden"
+          >
+            <div className="space-y-1">
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Pending Payments</span>
+              <span className="text-2xl font-extrabold text-rose-400 font-mono">₹{pendingPaymentsTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span className="text-slate-500 text-3xs font-medium block group-hover:text-rose-300 transition-colors">Click to view list →</span>
+            </div>
+            <div className="p-3 bg-rose-500/10 text-rose-400 group-hover:bg-rose-500/20 transition-all rounded-lg flex items-center justify-center h-11 w-11 shrink-0">
+              <CreditCard size={22} />
+            </div>
+          </button>
         </div>
-
-        {/* Card 3: Total Revenue */}
-        <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Total Revenue</span>
-            <span className="text-2xl font-extrabold text-sky-400 font-mono">₹{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            <span className="text-slate-500 text-3xs font-medium block">₹{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} this month</span>
-          </div>
-          <div className="p-3 bg-sky-500/10 text-sky-400 rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
-            ₹
-          </div>
-        </div>
-
-        {/* Card 4: Low Stock Alerts */}
-        <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Low Stock Alerts</span>
-            <span className={`text-2xl font-extrabold font-mono ${lowStockCount > 0 ? 'text-amber-400' : 'text-slate-300'}`}>{lowStockCount}</span>
-            <span className="text-slate-500 text-3xs font-medium block">{lowStockCount === 0 ? 'all items in stock' : `${lowStockCount} items need stock`}</span>
-          </div>
-          <div className="p-3 bg-amber-500/10 text-amber-400 rounded-lg flex items-center justify-center h-11 w-11 shrink-0">
-            <Package size={22} />
-          </div>
-        </div>
-
-        {/* Card 5: Pending Client Payments */}
-        <button
-          onClick={() => setShowPendingListModal(true)}
-          className="bg-[#131D35] p-5 rounded-xl border border-rose-500/20 hover:border-rose-500/50 transition-all shadow-xs flex items-center justify-between text-left cursor-pointer w-full group relative overflow-hidden"
-        >
-          <div className="space-y-1">
-            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Pending Payments</span>
-            <span className="text-2xl font-extrabold text-rose-400 font-mono">₹{pendingPaymentsTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            <span className="text-slate-500 text-3xs font-medium block group-hover:text-rose-300 transition-colors">Click to view list →</span>
-          </div>
-          <div className="p-3 bg-rose-500/10 text-rose-400 group-hover:bg-rose-500/20 transition-all rounded-lg flex items-center justify-center h-11 w-11 shrink-0">
-            <CreditCard size={22} />
-          </div>
-        </button>
-      </div>
+      )}
 
       {/* Quick Actions Container */}
       <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs space-y-4">
@@ -462,7 +528,7 @@ export default function DashboardOverview({
           {/* New Booking Button */}
           <button
             onClick={() => onNavigate('bookings_new')}
-            className="p-4 h-24 rounded-xl flex flex-col items-center justify-center gap-2 transition-all cursor-pointer text-center bg-[#0ea5e9] hover:bg-[#38bdf8] text-white font-semibold text-xs border-0 shadow-sm shadow-sky-500/10 animate-fade-in"
+            className="p-4 h-24 rounded-xl flex flex-col items-center justify-center gap-2 transition-all duration-300 cursor-pointer text-center bg-[#0ea5e9] hover:bg-[#38bdf8] hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:shadow-sky-500/20 text-white font-semibold text-xs border-0 shadow-sm shadow-sky-500/10 animate-fade-in"
           >
             <Plus size={20} className="stroke-[2.5]" />
             <span>New Booking</span>
@@ -471,7 +537,7 @@ export default function DashboardOverview({
           {/* AI Calendar Button */}
           <button
             onClick={() => onNavigate('appointments')}
-            className="p-4 h-24 rounded-xl flex flex-col items-center justify-center gap-2 transition-all cursor-pointer text-center bg-[#18223c] hover:bg-slate-800/80 border border-slate-800 text-slate-300 hover:text-white font-medium text-xs"
+            className="p-4 h-24 rounded-xl flex flex-col items-center justify-center gap-2 transition-all duration-300 cursor-pointer text-center bg-[#18223c] hover:bg-slate-800/80 hover:-translate-y-1 hover:scale-[1.02] border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-medium text-xs"
           >
             <Calendar size={18} />
             <span>Calendar</span>
@@ -480,7 +546,7 @@ export default function DashboardOverview({
           {/* Clients Button */}
           <button
             onClick={() => onNavigate('crm')}
-            className="p-4 h-24 rounded-xl flex flex-col items-center justify-center gap-2 transition-all cursor-pointer text-center bg-[#18223c] hover:bg-slate-800/80 border border-slate-800 text-slate-300 hover:text-white font-medium text-xs"
+            className="p-4 h-24 rounded-xl flex flex-col items-center justify-center gap-2 transition-all duration-300 cursor-pointer text-center bg-[#18223c] hover:bg-slate-800/80 hover:-translate-y-1 hover:scale-[1.02] border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-medium text-xs"
           >
             <Users size={18} />
             <span>Clients</span>
@@ -490,229 +556,289 @@ export default function DashboardOverview({
 
       {/* Main Charts & Analytics Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" id="dashboard-charts-row">
-        {/* Line Chart: Revenue Trend */}
-        <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs lg:col-span-2 space-y-4 text-slate-100">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5 flex items-center gap-2">
-              <TrendingUp size={18} className="text-sky-400" />
-              <div>
-                <h3 className="text-base font-bold text-white">Revenue Trend</h3>
-                <p className="text-xs text-slate-400">Monthly revenue analytics trend</p>
+        {currentUser?.role === 'employee' ? (
+          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs lg:col-span-2 space-y-4 text-slate-100">
+            <div className="flex items-center justify-between border-b border-slate-800/40 pb-3">
+              <div className="space-y-0.5 flex items-center gap-2">
+                <Car size={18} className="text-[#38bdf8]" />
+                <div>
+                  <h3 className="text-base font-bold text-white">Workshop Queue</h3>
+                  <p className="text-xs text-slate-400">Current detailing schedule & progress</p>
+                </div>
               </div>
-            </div>
-            
-            {/* Functional dropdown */}
-            <div className="relative">
               <button
-                onClick={() => setShowRevenueDropdown(!showRevenueDropdown)}
-                className="flex items-center gap-1.5 text-[10px] font-bold text-slate-200 bg-slate-900/80 border border-slate-700/60 rounded-lg px-2.5 py-1.5 cursor-pointer hover:bg-slate-800 hover:border-slate-600 transition-all"
+                onClick={() => onNavigate('appointments')}
+                className="text-3xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors uppercase tracking-wider"
               >
-                <span>{revenueRangeLabels[revenueRange]}</span>
-                <ChevronDown size={12} className={`text-slate-400 transition-transform duration-200 ${showRevenueDropdown ? 'rotate-180' : ''}`} />
+                Go to Calendar →
               </button>
-              
-              {showRevenueDropdown && (
-                <>
-                  <div className="fixed inset-0 z-30" onClick={() => setShowRevenueDropdown(false)} />
-                  <div className="absolute right-0 mt-1.5 w-36 bg-slate-900 border border-slate-700 rounded-lg shadow-xl z-40 py-1 origin-top-right animate-scale-up-corner">
-                    {(['1m', '3m', '6m', 'all'] as const).map((opt) => (
+            </div>
+
+            <div className="space-y-3 max-h-[14rem] overflow-y-auto scrollbar-thin pr-1">
+              {appointments.filter(a => a.status !== 'cancelled' && a.status !== 'completed').length === 0 ? (
+                <div className="text-center py-12 text-slate-500">
+                  <p className="text-xs font-semibold">No active detailing jobs in queue</p>
+                  <p className="text-4xs text-slate-500 mt-1">All scheduled work is completed or cancelled.</p>
+                </div>
+              ) : (
+                appointments.filter(a => a.status !== 'cancelled' && a.status !== 'completed').map(apt => (
+                  <div key={apt.id} className="flex items-center justify-between p-3 bg-slate-900/60 rounded-xl border border-slate-800/40 text-xs">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <strong className="font-bold text-white text-xs">{apt.customerName}</strong>
+                        <span className={`px-2 py-0.5 rounded-full text-4xs font-bold uppercase tracking-wider ${
+                          apt.status === 'in_progress' ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/20' :
+                          apt.status === 'ready' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' :
+                          'bg-sky-500/15 text-sky-400 border border-sky-500/20'
+                        }`}>
+                          {apt.status.replace('_', ' ')}
+                        </span>
+                      </div>
+                      <p className="text-3xs text-slate-400">
+                        {apt.vehicle?.size} • {apt.vehicle?.model} • {apt.serviceName}
+                      </p>
+                    </div>
+                    <div className="text-right flex items-center gap-3">
+                      <div>
+                        <span className="text-3xs text-slate-400 block font-mono">{apt.date}</span>
+                        <span className="text-3xs text-indigo-400 font-bold block font-mono">{apt.time}</span>
+                      </div>
                       <button
-                        key={opt}
-                        onClick={() => {
-                          setRevenueRange(opt);
-                          setShowRevenueDropdown(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 text-[10px] font-semibold transition-colors flex items-center justify-between ${
-                          revenueRange === opt
-                            ? 'bg-sky-500/10 text-sky-400'
-                            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                        }`}
+                        onClick={() => onSelectJob(apt.id)}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-4xs font-bold transition-all cursor-pointer"
                       >
-                        <span>{revenueRangeLabels[opt]}</span>
-                        {revenueRange === opt && <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />}
+                        View Checklist
                       </button>
-                    ))}
+                    </div>
                   </div>
-                </>
+                ))
               )}
             </div>
           </div>
-
-          {/* Interactive Custom SVG Line and Area Chart */}
-          <div className="relative h-52 w-full pt-2">
-            {/* Tooltip Overlay */}
-            {hoveredIndex !== null && (
-              <div
-                style={{
-                  left: `${((trendPoints[hoveredIndex].x) / chartWidth) * 100}%`,
-                  top: `${((trendPoints[hoveredIndex].y - 12) / chartHeight) * 100}%`,
-                }}
-                className="absolute -translate-x-1/2 -translate-y-full bg-slate-900/95 border border-slate-700/80 text-white rounded-lg p-2.5 shadow-xl z-20 whitespace-nowrap pointer-events-none transition-all duration-150 backdrop-blur-xs"
-              >
-                <div className="flex flex-col gap-0.5 text-left">
-                  <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">
-                    {revenueTrendData[hoveredIndex].label} Revenue
-                  </span>
-                  <span className="text-sm font-extrabold text-white font-mono">
-                    ₹{revenueTrendData[hoveredIndex].amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </span>
-                  <span className="text-[9px] text-slate-400">
-                    {revenueTrendData[hoveredIndex].amount > 28 ? 'Completed customer jobs' : 'Standard baseline flow'}
-                  </span>
+        ) : (
+          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs lg:col-span-2 space-y-4 text-slate-100">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5 flex items-center gap-2">
+                <TrendingUp size={18} className="text-sky-400" />
+                <div>
+                  <h3 className="text-base font-bold text-white">Revenue Trend</h3>
+                  <p className="text-xs text-slate-400">Monthly revenue analytics trend</p>
                 </div>
-                {/* Tooltip caret */}
-                <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
               </div>
-            )}
+              
+              {/* Functional dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowRevenueDropdown(!showRevenueDropdown)}
+                  className="flex items-center gap-1.5 text-[10px] font-bold text-slate-200 bg-slate-900/80 border border-slate-700/60 rounded-lg px-2.5 py-1.5 cursor-pointer hover:bg-slate-800 hover:border-slate-600 transition-all"
+                >
+                  <span>{revenueRangeLabels[revenueRange]}</span>
+                  <ChevronDown size={12} className={`text-slate-400 transition-transform duration-200 ${showRevenueDropdown ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {showRevenueDropdown && (
+                  <>
+                    <div className="fixed inset-0 z-30" onClick={() => setShowRevenueDropdown(false)} />
+                    <div className="absolute right-0 mt-1.5 w-36 bg-slate-900 border border-slate-700 rounded-lg shadow-xl z-40 py-1 origin-top-right animate-scale-up-corner">
+                      {(['1m', '3m', '6m', 'all'] as const).map((opt) => (
+                        <button
+                          key={opt}
+                          onClick={() => {
+                            setRevenueRange(opt);
+                            setShowRevenueDropdown(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 text-[10px] font-semibold transition-colors flex items-center justify-between ${
+                            revenueRange === opt
+                              ? 'bg-sky-500/10 text-sky-400'
+                              : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                          }`}
+                        >
+                          <span>{revenueRangeLabels[opt]}</span>
+                          {revenueRange === opt && <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
 
-            {/* SVG Graph */}
-            <svg
-              className="w-full h-full overflow-visible"
-              viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-              preserveAspectRatio="none"
-            >
-              <defs>
-                <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.0" />
-                </linearGradient>
-              </defs>
-
-              {/* Grid Lines */}
-              {[
-                0,
-                Math.round(maxTrendRevenue * 0.25),
-                Math.round(maxTrendRevenue * 0.5),
-                Math.round(maxTrendRevenue * 0.75),
-                maxTrendRevenue
-              ].map((value, idx) => {
-                const ratio = idx / 4;
-                const y = chartHeight - paddingBottom - (ratio * graphHeight);
-                return (
-                  <g key={idx} className="opacity-70">
-                    <line
-                      x1={paddingLeft}
-                      y1={y}
-                      x2={chartWidth - paddingRight}
-                      y2={y}
-                      stroke="#1e293b"
-                      strokeWidth="1"
-                    />
-                    <text
-                      x={paddingLeft - 10}
-                      y={y + 3}
-                      textAnchor="end"
-                      className="fill-slate-400 text-[10px] font-mono font-medium"
-                    >
-                      {value}
-                    </text>
-                  </g>
-                );
-              })}
-
-              {/* Area path with gradient fill */}
-              <path
-                d={trendAreaPath}
-                fill="url(#chartGradient)"
-                className="transition-all duration-300"
-              />
-
-              {/* Line path */}
-              <path
-                d={trendLinePath}
-                fill="none"
-                stroke="#0ea5e9"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-
-              {/* Hover vertical dotted line */}
+            {/* Interactive Custom SVG Line and Area Chart */}
+            <div className="relative h-52 w-full pt-2">
+              {/* Tooltip Overlay */}
               {hoveredIndex !== null && (
-                <line
-                  x1={trendPoints[hoveredIndex].x}
-                  y1={paddingTop}
-                  x2={trendPoints[hoveredIndex].x}
-                  y2={chartHeight - paddingBottom}
-                  stroke="#38bdf8"
-                  strokeWidth="1.5"
-                  strokeDasharray="4 4"
-                />
+                <div
+                  style={{
+                    left: `${((trendPoints[hoveredIndex].x) / chartWidth) * 100}%`,
+                    top: `${((trendPoints[hoveredIndex].y - 12) / chartHeight) * 100}%`,
+                  }}
+                  className="absolute -translate-x-1/2 -translate-y-full bg-slate-900/95 border border-slate-700/80 text-white rounded-lg p-2.5 shadow-xl z-20 whitespace-nowrap pointer-events-none transition-all duration-150 backdrop-blur-xs"
+                >
+                  <div className="flex flex-col gap-0.5 text-left">
+                    <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">
+                      {revenueTrendData[hoveredIndex].label} Revenue
+                    </span>
+                    <span className="text-sm font-extrabold text-white font-mono">
+                      ₹{revenueTrendData[hoveredIndex].amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                    <span className="text-[9px] text-slate-400">
+                      {revenueTrendData[hoveredIndex].amount > 28 ? 'Completed customer jobs' : 'Standard baseline flow'}
+                    </span>
+                  </div>
+                  {/* Tooltip caret */}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                </div>
               )}
 
-              {/* X Axis Labels */}
-              {revenueTrendData.map((data, idx) => {
-                const isCurrentMonth = new Date().getMonth() === data.month;
-                const x = trendPoints[idx].x;
-                const y = chartHeight - paddingBottom + 16;
-                return (
-                  <text
-                    key={idx}
-                    x={x}
-                    y={y}
-                    textAnchor="middle"
-                    className={`text-[10px] font-semibold ${
-                      isCurrentMonth ? 'fill-sky-400 font-bold' : 'fill-slate-400'
-                    }`}
-                  >
-                    {data.label}
-                  </text>
-                );
-              })}
+              {/* SVG Graph */}
+              <svg
+                className="w-full h-full overflow-visible"
+                viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+                preserveAspectRatio="none"
+              >
+                <defs>
+                  <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.0" />
+                  </linearGradient>
+                </defs>
 
-              {/* Data points */}
-              {trendPoints.map((p, idx) => {
-                const isHovered = hoveredIndex === idx;
-                const isCurrentMonth = new Date().getMonth() === (revenueTrendData[idx] as any).month;
-                return (
-                  <g key={idx}>
-                    {isHovered && (
+                {/* Grid Lines */}
+                {[
+                  0,
+                  Math.round(maxTrendRevenue * 0.25),
+                  Math.round(maxTrendRevenue * 0.5),
+                  Math.round(maxTrendRevenue * 0.75),
+                  maxTrendRevenue
+                ].map((value, idx) => {
+                  const ratio = idx / 4;
+                  const y = chartHeight - paddingBottom - (ratio * graphHeight);
+                  return (
+                    <g key={idx} className="opacity-70">
+                      <line
+                        x1={paddingLeft}
+                        y1={y}
+                        x2={chartWidth - paddingRight}
+                        y2={y}
+                        stroke="#1e293b"
+                        strokeWidth="1"
+                      />
+                      <text
+                        x={paddingLeft - 10}
+                        y={y + 3}
+                        textAnchor="end"
+                        className="fill-slate-400 text-[10px] font-mono font-medium"
+                      >
+                        {value}
+                      </text>
+                    </g>
+                  );
+                })}
+
+                {/* Area path with gradient fill */}
+                <path
+                  d={trendAreaPath}
+                  fill="url(#chartGradient)"
+                  className="transition-all duration-300"
+                />
+
+                {/* Line path */}
+                <path
+                  d={trendLinePath}
+                  fill="none"
+                  stroke="#0ea5e9"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+
+                {/* Hover vertical dotted line */}
+                {hoveredIndex !== null && (
+                  <line
+                    x1={trendPoints[hoveredIndex].x}
+                    y1={paddingTop}
+                    x2={trendPoints[hoveredIndex].x}
+                    y2={chartHeight - paddingBottom}
+                    stroke="#38bdf8"
+                    strokeWidth="1.5"
+                    strokeDasharray="4 4"
+                  />
+                )}
+
+                {/* X Axis Labels */}
+                {revenueTrendData.map((data, idx) => {
+                  const isCurrentMonth = new Date().getMonth() === data.month;
+                  const x = trendPoints[idx].x;
+                  const y = chartHeight - paddingBottom + 16;
+                  return (
+                    <text
+                      key={idx}
+                      x={x}
+                      y={y}
+                      textAnchor="middle"
+                      className={`text-[10px] font-semibold ${
+                        isCurrentMonth ? 'fill-sky-400 font-bold' : 'fill-slate-400'
+                      }`}
+                    >
+                      {data.label}
+                    </text>
+                  );
+                })}
+
+                {/* Data points */}
+                {trendPoints.map((p, idx) => {
+                  const isHovered = hoveredIndex === idx;
+                  const isCurrentMonth = new Date().getMonth() === (revenueTrendData[idx] as any).month;
+                  return (
+                    <g key={idx}>
+                      {isHovered && (
+                        <circle
+                          cx={p.x}
+                          cy={p.y}
+                          r="8"
+                          className="fill-sky-500/20 animate-ping"
+                        />
+                      )}
                       <circle
                         cx={p.x}
                         cy={p.y}
-                        r="8"
-                        className="fill-sky-500/20 animate-ping"
+                        r={isHovered ? "5.5" : "3.5"}
+                        className={`stroke-white stroke-[1.5] transition-all duration-150 ${
+                          isHovered
+                            ? 'fill-sky-500'
+                            : isCurrentMonth
+                              ? 'fill-sky-400'
+                              : 'fill-slate-500'
+                        }`}
                       />
-                    )}
-                    <circle
-                      cx={p.x}
-                      cy={p.y}
-                      r={isHovered ? "5.5" : "3.5"}
-                      className={`stroke-white stroke-[1.5] transition-all duration-150 ${
-                        isHovered
-                          ? 'fill-sky-500'
-                          : isCurrentMonth
-                            ? 'fill-sky-400'
-                            : 'fill-slate-500'
-                      }`}
-                    />
-                  </g>
-                );
-              })}
+                    </g>
+                  );
+                })}
 
-              {/* Interactive Transparent Hover Targets */}
-              {trendPoints.map((p, idx) => {
-                const sliceWidth = graphWidth / (revenueTrendData.length - 1);
-                return (
-                  <rect
-                    key={idx}
-                    x={p.x - sliceWidth / 2}
-                    y={paddingTop}
-                    width={sliceWidth}
-                    height={graphHeight}
-                    fill="transparent"
-                    className="cursor-pointer"
-                    onMouseEnter={() => setHoveredIndex(idx)}
-                    onMouseLeave={() => setHoveredIndex(null)}
-                  />
-                );
-              })}
-            </svg>
+                {/* Interactive Transparent Hover Targets */}
+                {trendPoints.map((p, idx) => {
+                  const sliceWidth = graphWidth / (revenueTrendData.length - 1);
+                  return (
+                    <rect
+                      key={idx}
+                      x={p.x - sliceWidth / 2}
+                      y={paddingTop}
+                      width={sliceWidth}
+                      height={graphHeight}
+                      fill="transparent"
+                      className="cursor-pointer"
+                      onMouseEnter={() => setHoveredIndex(idx)}
+                      onMouseLeave={() => setHoveredIndex(null)}
+                    />
+                  );
+                })}
+              </svg>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Bar Chart: Booking Activity */}
-        <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs space-y-4 text-slate-100 relative">
+        <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs space-y-4 text-slate-100 relative">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5 flex items-center gap-2">
               <Calendar size={18} className="text-sky-400" />
@@ -908,58 +1034,107 @@ export default function DashboardOverview({
         </div>
 
         {/* Quick Stats */}
-        <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs lg:col-span-2 space-y-4 text-slate-100 flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <Users size={18} className="text-[#f97316]" />
-              Quick Stats
-            </h3>
-          </div>
-
-          <div className="space-y-2.5 flex-1 flex flex-col justify-center py-2">
-            {/* Row 1: Total Bookings */}
-            <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
-              <span className="text-slate-300 font-semibold">Total Bookings</span>
-              <span className="font-extrabold text-white font-mono text-sm">{appointments.length}</span>
+        {currentUser?.role === 'employee' ? (
+          <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs lg:col-span-2 space-y-4 text-slate-100 flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Users size={18} className="text-[#f97316]" />
+                Quick Stats
+              </h3>
             </div>
 
-            {/* Row 2: Total Clients */}
-            <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
-              <span className="text-slate-300 font-semibold">Total Clients</span>
-              <span className="font-extrabold text-white font-mono text-sm">{customers.length}</span>
-            </div>
+            <div className="space-y-2.5 flex-1 flex flex-col justify-center py-2">
+              {/* Row 1: Total Bookings */}
+              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
+                <span className="text-slate-300 font-semibold">Total Bookings</span>
+                <span className="font-extrabold text-white font-mono text-sm">{appointments.length}</span>
+              </div>
 
-            {/* Row 3: Monthly Profit */}
-            <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
-              <span className="text-slate-300 font-semibold">Monthly Profit</span>
-              <span className="font-extrabold text-[#10b981] font-mono text-sm">₹{totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </div>
+              {/* Row 2: Total Clients */}
+              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
+                <span className="text-slate-300 font-semibold">Total Clients</span>
+                <span className="font-extrabold text-white font-mono text-sm">{customers.length}</span>
+              </div>
 
-            {/* Row 4: Monthly Revenue */}
-            <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
-              <span className="text-slate-300 font-semibold">Monthly Revenue</span>
-              <span className="font-extrabold text-[#38bdf8] font-mono text-sm">₹{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </div>
+              {/* Row 3: Active Detailing Jobs */}
+              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
+                <span className="text-slate-300 font-semibold">Active Detailing Jobs</span>
+                <span className="font-extrabold text-sky-400 font-mono text-sm">{activeJobs.length}</span>
+              </div>
 
-            {/* Row 5: Monthly Expenses */}
-            <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
-              <span className="text-slate-300 font-semibold">Monthly Expenses</span>
-              <span className="font-extrabold text-rose-500 font-mono text-sm">₹{totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </div>
+              {/* Row 4: Scheduled Upcoming */}
+              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
+                <span className="text-slate-300 font-semibold">Scheduled Upcoming</span>
+                <span className="font-extrabold text-indigo-400 font-mono text-sm">{scheduledJobs.length}</span>
+              </div>
 
-            {/* Row 6: Profit Margin */}
-            <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
-              <span className="text-slate-300 font-semibold">Profit Margin</span>
-              <span className="font-extrabold text-white font-mono text-sm">{(totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0).toFixed(1)}%</span>
-            </div>
+              {/* Row 5: Low Stock Items */}
+              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
+                <span className="text-slate-300 font-semibold">Low Stock Alerts</span>
+                <span className="font-extrabold text-amber-400 font-mono text-sm">{lowStockCount}</span>
+              </div>
 
-            {/* Row 7: Average Job Value */}
-            <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
-              <span className="text-slate-300 font-semibold">Average Job Value</span>
-              <span className="font-extrabold text-white font-mono text-sm">₹{averageJobValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              {/* Row 6: Pending Requests */}
+              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
+                <span className="text-slate-300 font-semibold">New Requests Pending</span>
+                <span className="font-extrabold text-pink-400 font-mono text-sm">{pendingLeadsCount}</span>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs lg:col-span-2 space-y-4 text-slate-100 flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Users size={18} className="text-[#f97316]" />
+                Quick Stats
+              </h3>
+            </div>
+
+            <div className="space-y-2.5 flex-1 flex flex-col justify-center py-2">
+              {/* Row 1: Total Bookings */}
+              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
+                <span className="text-slate-300 font-semibold">Total Bookings</span>
+                <span className="font-extrabold text-white font-mono text-sm">{appointments.length}</span>
+              </div>
+
+              {/* Row 2: Total Clients */}
+              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
+                <span className="text-slate-300 font-semibold">Total Clients</span>
+                <span className="font-extrabold text-white font-mono text-sm">{customers.length}</span>
+              </div>
+
+              {/* Row 3: Monthly Profit */}
+              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
+                <span className="text-slate-300 font-semibold">Monthly Profit</span>
+                <span className="font-extrabold text-[#10b981] font-mono text-sm">₹{totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+
+              {/* Row 4: Monthly Revenue */}
+              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
+                <span className="text-slate-300 font-semibold">Monthly Revenue</span>
+                <span className="font-extrabold text-[#38bdf8] font-mono text-sm">₹{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+
+              {/* Row 5: Monthly Expenses */}
+              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
+                <span className="text-slate-300 font-semibold">Monthly Expenses</span>
+                <span className="font-extrabold text-rose-500 font-mono text-sm">₹{totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+
+              {/* Row 6: Profit Margin */}
+              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
+                <span className="text-slate-300 font-semibold">Profit Margin</span>
+                <span className="font-extrabold text-white font-mono text-sm">{(totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0).toFixed(1)}%</span>
+              </div>
+
+              {/* Row 7: Average Job Value */}
+              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
+                <span className="text-slate-300 font-semibold">Average Job Value</span>
+                <span className="font-extrabold text-white font-mono text-sm">₹{averageJobValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Pending Payments Modal */}
