@@ -76,6 +76,7 @@ export default function ServicesCatalog({
   const categories = {
     full_detail: 'Full Detail Packages',
     interior: 'Interior Only Specials',
+    exterior: 'Exterior Washing',
     ceramic: 'Ceramic Coatings & Coatings',
     add_on: 'A la Carte Add-ons'
   };

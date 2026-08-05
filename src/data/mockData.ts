@@ -7,122 +7,33 @@ import { ServicePackage, Customer, Appointment, Staff, ShopSettings } from '../t
 
 export const DEFAULT_SERVICES: ServicePackage[] = [
   {
-    id: 'pkg-monthly-wash',
-    name: 'Car Wash Monthly Package',
-    description: 'Unlimited or structured premium monthly washing subscriptions with priority bay access.',
+    id: 'pkg-basic-ext-int',
+    name: 'Basic (Exterior + Interior)',
+    description: 'Essential outer body wash with premium foam shampoo and clean cabin vacuuming & dusting.',
     durationMin: 45,
     pricing: {
-      sedan: 1499,
-      suv: 1999,
-      truck_large: 2499
+      sedan: 499,
+      suv: 499,
+      truck_large: 499
     },
     category: 'full_detail',
     features: [
-      '4 Hand Washes per Month',
-      'Vacuuming & Dusting',
-      'Tire Dressing & Polish',
-      'Priority Scheduling'
-    ]
-  },
-  {
-    id: 'pkg-dry-cleaning',
-    name: 'Dry Cleaning',
-    description: 'Complete deep-extraction shampooing and dry clean for seats, mats, carpets, roof headliner, and door pads.',
-    durationMin: 180,
-    pricing: {
-      sedan: 1999,
-      suv: 2499,
-      truck_large: 2999
-    },
-    category: 'interior',
-    features: [
-      'Upholstery Stain Removal',
-      'Hot-Water Soil Extraction',
-      'Anti-Bacterial Dry Polish',
-      'Odor Neutralizer'
-    ]
-  },
-  {
-    id: 'pkg-special-care',
-    name: 'Special Car Care',
-    description: 'Comprehensive premium detailing treatment including paint correction, high-gloss sealant glaze, and engine-bay conditioning.',
-    durationMin: 240,
-    pricing: {
-      sedan: 2999,
-      suv: 3999,
-      truck_large: 4999
-    },
-    category: 'ceramic',
-    features: [
-      'Single-stage Machine Glazing',
-      'Teflon/Ceramic Spray Shield',
-      'Engine Dress & Guard',
-      'Chassis Underwash'
-    ]
-  },
-  {
-    id: 'pkg-bike-scooty',
-    name: 'Bike and Scooty',
-    description: 'Complete foaming, degreasing, detail wash, and polishing for two-wheelers.',
-    durationMin: 30,
-    pricing: {
-      sedan: 199,
-      suv: 249,
-      truck_large: 299
-    },
-    category: 'full_detail',
-    features: [
-      'Foam Jet Body Wash',
-      'Chain Cleaning & Lube',
-      'Chrome & Paint Polish',
+      'Active Foam Pressure Wash',
+      'Underbody Mud Flush',
+      'Interior Cabin Vacuum & Dusting',
+      'Dashboard & Console Wipe',
       'Tire Gloss'
     ]
   },
   {
-    id: 'pkg-shine-cost',
-    name: 'Shine and Cost',
-    description: 'Quick wax application and external spray wax booster for maximum gloss at budget-friendly cost.',
+    id: 'pkg-exterior-wash',
+    name: 'Exterior Wash',
+    description: 'Thorough external foam washing, microfiber hand drying, windshield care, and wheel de-griming.',
     durationMin: 30,
     pricing: {
-      sedan: 499,
-      suv: 699,
-      truck_large: 899
-    },
-    category: 'exterior',
-    features: [
-      'Gloss-Enhancing Hand Wax',
-      'Glass Water Repellent Coating',
-      'Tire Edge Restoration',
-      'Budget-Optimized Value'
-    ]
-  },
-  {
-    id: 'pkg-interior-basic',
-    name: 'Interior',
-    description: 'Deep detailing of interior cabin including dusting, vacuuming, dashboard dressing, and door cleaning.',
-    durationMin: 60,
-    pricing: {
-      sedan: 799,
-      suv: 999,
-      truck_large: 1199
-    },
-    category: 'interior',
-    features: [
-      'Full Cabin High-Power Vacuum',
-      'Dashboard Clean & Protect',
-      'Console & Cup Holder Scrub',
-      'Windows Streak-Free Polish'
-    ]
-  },
-  {
-    id: 'pkg-exterior-basic',
-    name: 'Exterior',
-    description: 'Thorough exterior foam washing, microfiber hand drying, windshield care, and wheel de-griming.',
-    durationMin: 45,
-    pricing: {
-      sedan: 499,
-      suv: 599,
-      truck_large: 699
+      sedan: 399,
+      suv: 399,
+      truck_large: 399
     },
     category: 'exterior',
     features: [
@@ -133,40 +44,40 @@ export const DEFAULT_SERVICES: ServicePackage[] = [
     ]
   },
   {
-    id: 'pkg-interior-exterior-wash',
-    name: 'Interior+Exterior Wash',
-    description: 'Complete detailing package including premium vacuuming, dashboard restoration, foam body washing, and tire glazing.',
-    durationMin: 75,
+    id: 'pkg-dry-cleaning',
+    name: 'Dry Cleaning',
+    description: 'Complete deep-extraction shampooing and dry clean for seats, mats, carpets, roof headliner, and door pads.',
+    durationMin: 180,
     pricing: {
-      sedan: 999,
-      suv: 1299,
-      truck_large: 1599
+      sedan: 1999,
+      suv: 1999,
+      truck_large: 1999
     },
-    category: 'full_detail',
+    category: 'interior',
     features: [
-      'Foam Jet Exterior Wash',
-      'Underbody Mud Flush',
-      'Interior Cabin Dusting & Vacuum',
-      'Dashboard & Console Detailing',
-      'Streak-free Glass Polishing'
+      'Upholstery Stain Removal',
+      'Hot-Water Soil Extraction',
+      'Anti-Bacterial Dry Polish',
+      'Odor Neutralizer'
     ]
   },
   {
-    id: 'pkg-basic-wash',
-    name: 'Basic Wash',
-    description: 'Essential outer body wash with premium car shampoo and gentle micro-drying.',
-    durationMin: 20,
+    id: 'pkg-deep-clean',
+    name: 'Deep Clean',
+    description: 'Comprehensive detailed treatment for the entire car, both inside and out, restoring it to pristine condition.',
+    durationMin: 120,
     pricing: {
-      sedan: 299,
-      suv: 399,
-      truck_large: 499
+      sedan: 999,
+      suv: 999,
+      truck_large: 999
     },
-    category: 'exterior',
+    category: 'full_detail',
     features: [
-      'Exterior Water Spray Wash',
-      'Foam Shampoo Wipe',
-      'Clean Water Rinse',
-      'Microfiber Wipe Dry'
+      'Engine Bay Detailing',
+      'Rubbing & Buffing Wax',
+      'Deep Carpet Shampooing',
+      'Dashboard Dressing & Polish',
+      'AC Vents Disinfection'
     ]
   }
 ];
@@ -225,4 +136,3 @@ export const DEFAULT_SETTINGS: ShopSettings = {
   theme: 'dark',
   fontSize: 'medium'
 };
- 

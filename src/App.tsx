@@ -145,14 +145,18 @@ export default function App() {
     const unsubscribe = customAuth.onAuthStateChanged(async (user) => {
       if (user) {
         setCurrentUser(user);
+        if (user.role === 'employee') {
+          setActiveTab('dashboard');
+        }
         try {
-          const data = await loadFirebaseUserData(user.uid);
+          const targetUid = user.adminUid || user.uid;
+          const data = await loadFirebaseUserData(targetUid);
           
           // Verify & migrate services
-          const hasNewService = data.services.some((s: any) => s.id === 'pkg-monthly-wash');
-          if (!hasNewService) {
+          const hasNewService = data.services && data.services.some((s: any) => s.id === 'pkg-basic-ext-int');
+          if (!hasNewService || data.services.length !== 4) {
             setServices(DEFAULT_SERVICES);
-            saveFirebaseUserField(user.uid, 'services', DEFAULT_SERVICES);
+            saveFirebaseUserField(targetUid, 'services', DEFAULT_SERVICES);
           } else {
             setServices(data.services);
           }
@@ -169,7 +173,7 @@ export default function App() {
           );
           if (hasOldStaff || !hasNewStaff || data.staff.length !== 2 || needsStaffUpdate) {
             setStaff(DEFAULT_STAFF);
-            saveFirebaseUserField(user.uid, 'staff', DEFAULT_STAFF);
+            saveFirebaseUserField(targetUid, 'staff', DEFAULT_STAFF);
           } else {
             setStaff(data.staff);
           }
@@ -178,7 +182,7 @@ export default function App() {
           const hasOldSettings = !data.settings || data.settings.phone === '800-555-WASH' || !data.settings.address || data.settings.address.includes('Oceanside');
           if (hasOldSettings) {
             setSettings(DEFAULT_SETTINGS);
-            saveFirebaseUserField(user.uid, 'shop', DEFAULT_SETTINGS);
+            saveFirebaseUserField(targetUid, 'shop', DEFAULT_SETTINGS);
           } else {
             setSettings(data.settings);
           }
@@ -203,7 +207,7 @@ export default function App() {
               { id: 'inv-3', name: 'Paper Air Freshener', category: 'paperAirFreshner', quantity: 80, unit: 'pieces', minThreshold: 20, costPrice: 15, location: 'Counter' }
             ];
             setInventory(defaultInv);
-            saveFirebaseUserField(user.uid, 'inventory', defaultInv);
+            saveFirebaseUserField(targetUid, 'inventory', defaultInv);
           } else {
             const migrated = data.inventory.map((item: any) => {
               if ((item.category === 'shampoo' || item.name?.toLowerCase().includes('shampoo')) && (!item.minThreshold || item.minThreshold < 60)) {
@@ -250,7 +254,7 @@ export default function App() {
     setServices(updated);
     saveStoredData({ services: updated });
     if (currentUser) {
-      saveFirebaseUserField(currentUser.uid, 'services', updated);
+      saveFirebaseUserField(currentUser.adminUid || currentUser.uid, 'services', updated);
     }
   };
 
@@ -258,7 +262,7 @@ export default function App() {
     setCustomers(updated);
     saveStoredData({ customers: updated });
     if (currentUser) {
-      saveFirebaseUserField(currentUser.uid, 'customers', updated);
+      saveFirebaseUserField(currentUser.adminUid || currentUser.uid, 'customers', updated);
     }
   };
 
@@ -266,7 +270,7 @@ export default function App() {
     setAppointments(updated);
     saveStoredData({ appointments: updated });
     if (currentUser) {
-      saveFirebaseUserField(currentUser.uid, 'appointments', updated);
+      saveFirebaseUserField(currentUser.adminUid || currentUser.uid, 'appointments', updated);
     }
   };
 
@@ -274,7 +278,7 @@ export default function App() {
     setSettings(updated);
     saveStoredData({ settings: updated });
     if (currentUser) {
-      saveFirebaseUserField(currentUser.uid, 'shop', updated);
+      saveFirebaseUserField(currentUser.adminUid || currentUser.uid, 'shop', updated);
     }
   };
 
@@ -282,7 +286,7 @@ export default function App() {
     setExpenses(updated);
     saveStoredData({ expenses: updated });
     if (currentUser) {
-      saveFirebaseUserField(currentUser.uid, 'expenses', updated);
+      saveFirebaseUserField(currentUser.adminUid || currentUser.uid, 'expenses', updated);
     }
   };
 
@@ -290,7 +294,7 @@ export default function App() {
     setInventory(updated);
     saveStoredData({ inventory: updated });
     if (currentUser) {
-      saveFirebaseUserField(currentUser.uid, 'inventory', updated);
+      saveFirebaseUserField(currentUser.adminUid || currentUser.uid, 'inventory', updated);
     }
   };
 
@@ -298,7 +302,7 @@ export default function App() {
     setRecurringList(updated);
     saveStoredData({ recurring: updated });
     if (currentUser) {
-      saveFirebaseUserField(currentUser.uid, 'recurring', updated);
+      saveFirebaseUserField(currentUser.adminUid || currentUser.uid, 'recurring', updated);
     }
   };
 
@@ -306,7 +310,7 @@ export default function App() {
     setWaitlist(updated);
     saveStoredData({ waitlist: updated });
     if (currentUser) {
-      saveFirebaseUserField(currentUser.uid, 'waitlist', updated);
+      saveFirebaseUserField(currentUser.adminUid || currentUser.uid, 'waitlist', updated);
     }
   };
 
@@ -314,7 +318,7 @@ export default function App() {
     setWorkflows(updated);
     saveStoredData({ workflows: updated });
     if (currentUser) {
-      saveFirebaseUserField(currentUser.uid, 'workflows', updated);
+      saveFirebaseUserField(currentUser.adminUid || currentUser.uid, 'workflows', updated);
     }
   };
 
@@ -322,7 +326,7 @@ export default function App() {
     setAutomationSettings(updated);
     saveStoredData({ automationSettings: updated });
     if (currentUser) {
-      saveFirebaseUserField(currentUser.uid, 'automation', updated);
+      saveFirebaseUserField(currentUser.adminUid || currentUser.uid, 'automation', updated);
     }
   };
 
@@ -330,7 +334,7 @@ export default function App() {
     setProfile(updated);
     saveStoredData({ profile: updated });
     if (currentUser) {
-      saveFirebaseUserField(currentUser.uid, 'profile', updated);
+      saveFirebaseUserField(currentUser.adminUid || currentUser.uid, 'profile', updated);
     }
   };
 
@@ -338,7 +342,7 @@ export default function App() {
     setStaff(updated);
     saveStoredData({ staff: updated });
     if (currentUser) {
-      saveFirebaseUserField(currentUser.uid, 'staff', updated);
+      saveFirebaseUserField(currentUser.adminUid || currentUser.uid, 'staff', updated);
     }
   };
 
@@ -346,7 +350,7 @@ export default function App() {
     setLeads(updated);
     saveStoredData({ leads: updated });
     if (currentUser) {
-      saveFirebaseUserField(currentUser.uid, 'leads', updated);
+      saveFirebaseUserField(currentUser.adminUid || currentUser.uid, 'leads', updated);
     }
   };
 
@@ -354,7 +358,7 @@ export default function App() {
     setPackages(updated);
     saveStoredData({ packages: updated });
     if (currentUser) {
-      saveFirebaseUserField(currentUser.uid, 'packages', updated);
+      saveFirebaseUserField(currentUser.adminUid || currentUser.uid, 'packages', updated);
     }
   };
 
@@ -567,6 +571,13 @@ export default function App() {
 
   // Nav support helper
   const handleNavigate = (tabId: string) => {
+    // Admin only views list
+    const adminOnlyTabs = ['employee_ledger', 'billing', 'settings', 'expenses', 'inventory', 'packages', 'services', 'workflows', 'automations'];
+    if (currentUser?.role === 'employee' && adminOnlyTabs.includes(tabId)) {
+      console.warn(`Blocked unauthorized navigation to: ${tabId}`);
+      return;
+    }
+
     if (tabId === 'bookings_new') {
       setActiveTab('bookings');
       setAutoOpenNewBooking(true);
@@ -656,9 +667,11 @@ export default function App() {
                 { id: 'appointments', name: 'Calendar', icon: Calendar },
                 { id: 'bookings', name: 'Bookings', icon: ClipboardCheck },
                 { id: 'crm', name: 'Clients', icon: Users },
-                { id: 'employee_ledger', name: 'Employee Ledger', icon: ClipboardList },
-                { id: 'billing', name: 'Invoices & Billing', icon: CreditCard },
-              ] as Array<{ id: string; name: string; icon: any; badge?: number }>).map(tab => {
+                { id: 'employee_ledger', name: 'Employee Ledger', icon: ClipboardList, adminOnly: true },
+                { id: 'billing', name: 'Invoices & Billing', icon: CreditCard, adminOnly: true },
+              ] as Array<{ id: string; name: string; icon: any; badge?: number; adminOnly?: boolean }>)
+                .filter(tab => !tab.adminOnly || currentUser?.role !== 'employee')
+                .map(tab => {
                 const active = activeTab === tab.id;
                 const Icon = tab.icon;
                 return (
@@ -688,11 +701,13 @@ export default function App() {
             {/* Business & Inventory Section */}
             <div className="space-y-1">
               {sidebarOpen && <span className="text-4xs text-slate-500 font-extrabold uppercase tracking-widest block mb-1.5 px-2.5">Business</span>}
-              {[
-                { id: 'inventory', name: 'Stock & Inventory', icon: Package, badge: inventory.filter(item => item.quantity < (item.minThreshold ?? 5)).length },
-                { id: 'packages', name: 'Packages', icon: Percent },
+              {([
+                { id: 'inventory', name: 'Stock & Inventory', icon: Package, badge: inventory.filter(item => item.quantity < (item.minThreshold ?? 5)).length, adminOnly: true },
+                { id: 'packages', name: 'Packages', icon: Percent, adminOnly: true },
                 { id: 'team', name: 'Team Status', icon: Users },
-              ].map(tab => {
+              ] as Array<{ id: string; name: string; icon: any; badge?: number; adminOnly?: boolean }>)
+                .filter(tab => !tab.adminOnly || currentUser?.role !== 'employee')
+                .map(tab => {
                 const active = activeTab === tab.id;
                 const Icon = tab.icon;
                 return (
@@ -722,11 +737,13 @@ export default function App() {
             {/* Resources / Settings */}
             <div className="space-y-1">
               {sidebarOpen && <span className="text-4xs text-slate-500 font-extrabold uppercase tracking-widest block mb-1.5 px-2.5">Resources</span>}
-              {[
-                { id: 'profile', name: 'Owner Profile', icon: User },
-                { id: 'settings', name: 'Settings', icon: Settings },
+              {([
+                { id: 'profile', name: currentUser?.role === 'employee' ? 'My Profile' : 'Owner Profile', icon: User },
+                { id: 'settings', name: 'Settings', icon: Settings, adminOnly: true },
                 { id: 'help', name: 'FAQ & Help Center', icon: HelpCircle },
-              ].map(tab => {
+              ] as Array<{ id: string; name: string; icon: any; adminOnly?: boolean }>)
+                .filter(tab => !tab.adminOnly || currentUser?.role !== 'employee')
+                .map(tab => {
                 const active = activeTab === tab.id;
                 const Icon = tab.icon;
                 return (
@@ -773,13 +790,15 @@ export default function App() {
             </button>
 
             {/* Settings Button */}
-            <button
-              onClick={() => handleNavigate('settings')}
-              className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-slate-800/60 rounded-lg text-slate-300 hover:text-white text-xs font-bold transition-all cursor-pointer"
-            >
-              <Settings size={15} className="text-slate-400" />
-              <span>Settings</span>
-            </button>
+            {currentUser?.role !== 'employee' && (
+              <button
+                onClick={() => handleNavigate('settings')}
+                className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-slate-800/60 rounded-lg text-slate-300 hover:text-white text-xs font-bold transition-all cursor-pointer"
+              >
+                <Settings size={15} className="text-slate-400" />
+                <span>Settings</span>
+              </button>
+            )}
 
             {/* Sign Out Button */}
             <button
@@ -874,16 +893,16 @@ export default function App() {
             <div 
               onClick={() => handleNavigate('profile')}
               className="flex items-center gap-2 cursor-pointer hover:opacity-85 transition-all duration-200"
-              title="View Owner Profile"
+              title={currentUser?.role === 'employee' ? 'View My Profile' : 'View Owner Profile'}
             >
               <img
-                src={profile.avatar}
-                alt={profile.name}
+                src={currentUser?.avatar || profile.avatar}
+                alt={currentUser?.name || profile.name}
                 className="h-8 w-8 rounded-full object-cover border border-indigo-500/20 bg-slate-950"
               />
               <div className="hidden sm:block text-left select-none">
-                <span className="text-xs font-bold text-white block leading-tight">{profile.name}</span>
-                <span className="text-4xs text-indigo-400 font-semibold block uppercase tracking-wider">{profile.role}</span>
+                <span className="text-xs font-bold text-white block leading-tight">{currentUser?.name || profile.name}</span>
+                <span className="text-4xs text-indigo-400 font-semibold block uppercase tracking-wider">{currentUser?.role === 'employee' ? 'Employee' : profile.role}</span>
               </div>
             </div>
 
@@ -903,6 +922,7 @@ export default function App() {
               onNavigate={handleNavigate}
               onSelectJob={handleSelectJobFromOutside}
               onUpdateAppointment={handleUpdateAppointment}
+              currentUser={currentUser}
             />
           )}
 
@@ -959,6 +979,7 @@ export default function App() {
             <EmployeeManagement
               staffList={staff}
               onUpdateStaffList={syncStaff}
+              currentUser={currentUser}
             />
           )}
 

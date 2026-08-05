@@ -186,7 +186,7 @@ export default function BookingPortal({
             </div>
             <div className="py-2 flex justify-between">
               <span className="text-slate-500">Estimated Price:</span>
-              <span className="font-mono font-extrabold text-indigo-600">${calculateTotal()}</span>
+              <span className="font-mono font-extrabold text-indigo-600">{settings.currencySymbol || '₹'}{calculateTotal()}</span>
             </div>
           </div>
 
@@ -292,7 +292,7 @@ export default function BookingPortal({
                           <div className="flex justify-between items-start gap-2">
                             <strong className="text-xs font-bold text-slate-900 block">{pkg.name}</strong>
                             <span className="text-xs font-mono font-extrabold text-slate-950 shrink-0">
-                              ${pkg.pricing[vehSize]}
+                              {settings.currencySymbol || '₹'}{pkg.pricing[vehSize]}
                             </span>
                           </div>
                           <p className="text-3xs text-slate-500 mt-0.5 leading-relaxed">{pkg.description}</p>
@@ -323,7 +323,7 @@ export default function BookingPortal({
                       >
                         <span className="text-3xs truncate">{addon.name}</span>
                         <span className="text-3xs font-bold font-mono text-slate-900 shrink-0">
-                          +${addon.pricing[vehSize]}
+                          +{settings.currencySymbol || '₹'}{addon.pricing[vehSize]}
                         </span>
                       </div>
                     );
@@ -410,7 +410,7 @@ export default function BookingPortal({
                     <strong className="font-semibold text-white truncate max-w-[150px]">
                       {services.find(s => s.id === selectedServiceId)?.name}
                     </strong>
-                    <span className="font-mono font-bold">${getSelectedServicePrice()}</span>
+                    <span className="font-mono font-bold">{settings.currencySymbol || '₹'}{getSelectedServicePrice()}</span>
                   </div>
                 </div>
 
@@ -423,7 +423,7 @@ export default function BookingPortal({
                       return (
                         <div key={addonId} className="flex justify-between items-center text-3xs">
                           <span className="text-slate-300 truncate max-w-[150px]">{item?.name}</span>
-                          <span className="font-mono text-slate-300">+${item?.pricing[vehSize]}</span>
+                          <span className="font-mono text-slate-300">+{settings.currencySymbol || '₹'}{item?.pricing[vehSize]}</span>
                         </div>
                       );
                     })}
@@ -449,11 +449,11 @@ export default function BookingPortal({
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between font-medium text-slate-400 text-2xs">
                   <span>Subtotal:</span>
-                  <span className="font-mono font-bold">${calculateSubtotal()}</span>
+                  <span className="font-mono font-bold">{settings.currencySymbol || '₹'}{calculateSubtotal()}</span>
                 </div>
                 <div className="flex justify-between font-medium text-slate-400 text-2xs">
                   <span>Est. Sales Tax ({settings.taxRate}%):</span>
-                  <span className="font-mono">${calculateTax()}</span>
+                  <span className="font-mono">{settings.currencySymbol || '₹'}{calculateTax()}</span>
                 </div>
               </div>
 
@@ -461,7 +461,7 @@ export default function BookingPortal({
 
               <div className="flex justify-between items-center">
                 <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Quote:</span>
-                <strong className="text-xl font-mono font-black text-indigo-400">${calculateTotal()}</strong>
+                <strong className="text-xl font-mono font-black text-indigo-400">{settings.currencySymbol || '₹'}{calculateTotal()}</strong>
               </div>
             </div>
 
