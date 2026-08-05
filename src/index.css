@@ -16,7 +16,7 @@ html.text-size-large {
 }
 
 /* -----------------------------------------
-   LIGHT MODE STYLING OVERRIDES
+   LIGHT MODE STYLING OVERRIDES (Cool Grey & Soft Teal)
    ----------------------------------------- */
 html.light {
   color-scheme: light;
@@ -25,21 +25,21 @@ html.light {
 html.light body,
 html.light #drwashit-crm-app,
 html.light div#settings-management-root {
-  background-color: #f8fafc !important; /* slate-50 */
-  color: #0f172a !important; /* slate-900 */
+  background-color: #f8fafc !important; /* Soft Cool Grey */
+  color: #0f172a !important; /* Deep Slate Charcoal */
 }
 
-/* Override background colors of panels/cards */
+/* Override background colors of panels/cards to Pure White with Soft Diffused Drop Shadows */
 html.light .bg-\[\#070A13\],
 html.light .bg-\[\#091124\],
 html.light .bg-\[\#111827\],
+html.light .bg-[#070A13],
 html.light .bg-slate-950,
 html.light .bg-slate-900,
 html.light .bg-slate-950\/40,
 html.light .bg-slate-950\/20,
-html.light .bg-slate-950\/50,
-html.light .bg-[#070A13] {
-  background-color: #f1f5f9 !important; /* slate-100 */
+html.light .bg-slate-950\/50 {
+  background-color: #f8fafc !important; /* Soft Cool Grey background */
   color: #0f172a !important;
 }
 
@@ -48,14 +48,18 @@ html.light .bg-\[\#111C36\],
 html.light .bg-slate-900\/50,
 html.light .bg-[#0B1329],
 html.light .bg-[#111C36],
+html.light .bg-[#131D35],
 html.light .bg-slate-800,
 html.light .bg-slate-800\/50,
 html.light .bg-slate-800\/20,
 html.light .bg-slate-800\/30,
-html.light .bg-slate-950\/10 {
-  background-color: #ffffff !important;
+html.light .bg-slate-950\/10,
+html.light div[class*="bg-slate-900"],
+html.light div[class*="bg-[#131D35]"] {
+  background-color: #ffffff !important; /* Pure White Surface */
   color: #0f172a !important;
-  border-color: #e2e8f0 !important;
+  border-color: #e2e8f0 !important; /* Subtle Borders */
+  box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.08), 0 2px 8px -1px rgba(148, 163, 184, 0.04) !important; /* Soft diffused shadow */
 }
 
 /* Sidebar and navigation overrides */
@@ -64,6 +68,7 @@ html.light header {
   background-color: #ffffff !important;
   border-right-color: #e2e8f0 !important;
   border-bottom-color: #e2e8f0 !important;
+  box-shadow: 1px 0 10px rgba(148, 163, 184, 0.05) !important;
 }
 
 html.light aside button {
@@ -75,22 +80,31 @@ html.light aside button:hover {
   color: #0f172a !important;
 }
 
+/* Primary Accents mapped to Corporate Blue / Slate Navy */
 html.light aside button.bg-indigo-600,
 html.light aside button.bg-indigo-600\/10,
-html.light aside button[class*="bg-indigo"] {
-  background-color: #4f46e5 !important;
+html.light aside button[class*="bg-indigo"],
+html.light button.bg-indigo-600,
+html.light a.bg-indigo-600 {
+  background-color: #2563eb !important; /* Corporate Blue */
   color: #ffffff !important;
 }
+html.light button.bg-indigo-600:hover,
+html.light a.bg-indigo-600:hover {
+  background-color: #1e3a8a !important; /* Slate Navy Hover */
+}
 
-/* Text colors */
+/* Text Colors */
 html.light .text-white,
 html.light .text-slate-100,
 html.light .text-slate-50,
 html.light .text-slate-200,
 html.light .text-slate-300,
 html.light .text-indigo-400,
-html.light .text-sky-400 {
-  color: #0f172a !important; /* force high contrast dark text */
+html.light .text-sky-400,
+html.light .text-indigo-300,
+html.light .text-indigo-200 {
+  color: #0f172a !important; /* Force high contrast dark text */
 }
 
 html.light .text-slate-400,
@@ -98,25 +112,27 @@ html.light .text-slate-500 {
   color: #475569 !important; /* slate-600 */
 }
 
-html.light .text-indigo-300,
-html.light .text-indigo-200 {
-  color: #4f46e5 !important;
+/* Secondary Teal Accents in Light Mode */
+html.light .text-cyan-400,
+html.light .text-cyan-500,
+html.light .text-sky-400,
+html.light .text-teal-400 {
+  color: #0d9488 !important; /* Soft Teal secondary */
 }
 
-/* Accent texts like status labels or icons, keep their color but adjust background if necessary */
+/* Status Colors (Light Mode) */
 html.light .text-emerald-400,
 html.light .text-emerald-500 {
-  color: #059669 !important; /* dark emerald */
+  color: #10b981 !important; /* Emerald Green */
 }
-
 html.light .text-amber-400,
 html.light .text-amber-500 {
-  color: #d97706 !important; /* dark amber */
+  color: #f59e0b !important; /* Amber Gold */
 }
-
 html.light .text-rose-400,
-html.light .text-rose-500 {
-  color: #dc2626 !important; /* dark rose */
+html.light .text-rose-500,
+html.light .text-red-500 {
+  color: #ef4444 !important; /* Crimson Red */
 }
 
 /* Borders */
@@ -134,34 +150,31 @@ html.light input,
 html.light select,
 html.light textarea {
   background-color: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
+  border: 1px solid #e2e8f0 !important;
   color: #0f172a !important;
 }
-
 html.light input::placeholder,
 html.light textarea::placeholder {
   color: #94a3b8 !important;
 }
-
 html.light input:focus,
 html.light select:focus,
 html.light textarea:focus {
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1) !important;
 }
 
 /* Modals & Dialogs */
 html.light .fixed.inset-0.bg-slate-950\/60 {
-  background-color: rgba(15, 23, 42, 0.4) !important;
+  background-color: rgba(15, 23, 42, 0.3) !important;
 }
 
 /* Tabs */
 html.light .border-b-2.border-sky-500 {
-  border-bottom-color: #3b82f6 !important;
-  color: #3b82f6 !important;
+  border-bottom-color: #2563eb !important;
+  color: #2563eb !important;
   background-color: #eff6ff !important;
 }
-
 html.light .border-transparent.text-slate-400:hover {
   background-color: #f1f5f9 !important;
   color: #0f172a !important;
@@ -181,18 +194,134 @@ html.light ::-webkit-scrollbar-thumb:hover {
 
 /* Custom visual badges */
 html.light .bg-indigo-500\/10 {
-  background-color: #e0e7ff !important;
-  color: #4f46e5 !important;
+  background-color: #eff6ff !important;
+  color: #2563eb !important;
 }
 html.light .bg-emerald-500\/10 {
-  background-color: #d1fae5 !important;
-  color: #065f46 !important;
+  background-color: #ecfdf5 !important;
+  color: #10b981 !important;
 }
 html.light .bg-rose-500\/10 {
-  background-color: #fee2e2 !important;
-  color: #991b1b !important;
+  background-color: #fef2f2 !important;
+  color: #ef4444 !important;
 }
 html.light .bg-amber-500\/10 {
-  background-color: #fef3c7 !important;
-  color: #92400e !important;
+  background-color: #fffbeb !important;
+  color: #f59e0b !important;
+}
+
+
+/* -----------------------------------------
+   DARK MODE STYLING OVERRIDES (Charcoal Navy & Royal Blue)
+   ----------------------------------------- */
+html:not(.light) body,
+html:not(.light) #drwashit-crm-app,
+html:not(.light) div#settings-management-root,
+html:not(.light) div#login-container {
+  background-color: #0b0f19 !important; /* Deep Charcoal Navy */
+  color: #f1f5f9 !important; /* Soft Off-White */
+}
+
+html:not(.light) .bg-\[\#070A13\],
+html:not(.light) .bg-\[\#091124\],
+html:not(.light) .bg-[#070A13],
+html:not(.light) .bg-slate-950 {
+  background-color: #0b0f19 !important; /* Deep Charcoal Navy */
+}
+
+html:not(.light) .bg-\[\#0B1329\],
+html:not(.light) .bg-\[\#111C36\],
+html:not(.light) .bg-[#0B1329],
+html:not(.light) .bg-[#111C36],
+html:not(.light) .bg-[#131D35],
+html:not(.light) .bg-[#131d35],
+html:not(.light) .bg-slate-900,
+html:not(.light) .bg-slate-900\/50,
+html:not(.light) .bg-slate-800,
+html:not(.light) div[class*="bg-[#131D35]"],
+html:not(.light) div[class*="bg-slate-900"] {
+  background-color: #1e293b !important; /* Muted Dark Slate */
+  color: #f1f5f9 !important;
+  border-color: #334155 !important; /* Faint Borders */
+  box-shadow: none !important; /* No heavy shadows for clean line-depth */
+}
+
+/* Sidebar & Header (Dark Mode) */
+html:not(.light) aside,
+html:not(.light) header {
+  background-color: #1e293b !important;
+  border-right-color: #334155 !important;
+  border-bottom-color: #334155 !important;
+}
+
+/* Primary Accents mapped to Vibrant Royal Blue */
+html:not(.light) .bg-indigo-600,
+html:not(.light) .bg-indigo-500,
+html:not(.light) aside button.bg-indigo-600,
+html:not(.light) button.bg-indigo-600,
+html:not(.light) a.bg-indigo-600 {
+  background-color: #3b82f6 !important; /* Vibrant Royal Blue */
+  color: #ffffff !important;
+}
+html:not(.light) .bg-indigo-600:hover,
+html:not(.light) .bg-indigo-500:hover,
+html:not(.light) button.bg-indigo-600:hover,
+html:not(.light) a.bg-indigo-600:hover {
+  background-color: #2563eb !important;
+}
+
+/* Text Highlights mapped to Royal Blue and Cyan/Teal */
+html:not(.light) .text-indigo-400,
+html:not(.light) .text-indigo-300,
+html:not(.light) .text-indigo-500 {
+  color: #3b82f6 !important; /* Vibrant Royal Blue */
+}
+
+html:not(.light) .text-cyan-400,
+html:not(.light) .text-cyan-500,
+html:not(.light) .text-sky-400 {
+  color: #14b8a6 !important; /* Clean Cyan/Teal */
+}
+
+/* Status colors in Dark Mode */
+html:not(.light) .text-emerald-400,
+html:not(.light) .text-emerald-500 {
+  color: #10b981 !important; /* Emerald Green */
+}
+html:not(.light) .text-amber-400,
+html:not(.light) .text-amber-500 {
+  color: #f59e0b !important; /* Amber Gold */
+}
+html:not(.light) .text-rose-400,
+html:not(.light) .text-rose-500,
+html:not(.light) .text-red-500 {
+  color: #ef4444 !important; /* Crimson Red */
+}
+
+/* Faint Borders in Dark Mode */
+html:not(.light) .border-slate-800,
+html:not(.light) .border-slate-800\/60,
+html:not(.light) .border-slate-800\/80,
+html:not(.light) .border-slate-800\/40,
+html:not(.light) .border-slate-700,
+html:not(.light) .border-slate-600 {
+  border-color: #334155 !important;
+}
+
+/* Custom visual badges (Dark Mode) */
+html:not(.light) .bg-indigo-500\/10 {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  color: #3b82f6 !important;
+}
+html:not(.light) .bg-emerald-500\/10 {
+  background-color: rgba(16, 185, 129, 0.1) !important;
+  color: #10b981 !important;
+}
+html:not(.light) .bg-rose-500\/10 {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+}
+html:not(.light) .bg-amber-500\/10 {
+  background-color: rgba(245, 158, 11, 0.1) !important;
+  color: #f59e0b !important;
 }

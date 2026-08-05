@@ -153,25 +153,18 @@ export default function App() {
           const data = await loadFirebaseUserData(targetUid);
           
           // Verify & migrate services
-          const hasNewService = data.services && data.services.some((s: any) => s.id === 'pkg-basic-ext-int');
-          if (!hasNewService || data.services.length !== 4) {
+          if (!data.services || data.services.length === 0) {
             setServices(DEFAULT_SERVICES);
             saveFirebaseUserField(targetUid, 'services', DEFAULT_SERVICES);
           } else {
             setServices(data.services);
           }
           
-          setCustomers(data.customers);
-          setAppointments(data.appointments);
+          setCustomers(data.customers || []);
+          setAppointments(data.appointments || []);
           
           // Verify staff
-          const hasOldStaff = data.staff.some((s: any) => s.id === 'stf-1' || s.name === 'Alex Rivera' || s.name === 'Marcus Chen');
-          const hasNewStaff = data.staff.some((s: any) => s.id === 'stf-shailu' || s.id === 'stf-ashu');
-          const needsStaffUpdate = data.staff.some((s: any) => 
-            (s.id === 'stf-shailu' && (s.salary !== 10000 || s.phone !== '9219099704')) ||
-            (s.id === 'stf-ashu' && (s.salary !== 10000 || s.phone !== '9810516620'))
-          );
-          if (hasOldStaff || !hasNewStaff || data.staff.length !== 2 || needsStaffUpdate) {
+          if (!data.staff || data.staff.length === 0) {
             setStaff(DEFAULT_STAFF);
             saveFirebaseUserField(targetUid, 'staff', DEFAULT_STAFF);
           } else {
@@ -179,28 +172,18 @@ export default function App() {
           }
           
           // Verify settings
-          const hasOldSettings = !data.settings || data.settings.phone === '800-555-WASH' || !data.settings.address || data.settings.address.includes('Oceanside');
-          if (hasOldSettings) {
+          if (!data.settings) {
             setSettings(DEFAULT_SETTINGS);
             saveFirebaseUserField(targetUid, 'shop', DEFAULT_SETTINGS);
           } else {
             setSettings(data.settings);
           }
           
-          setLeads(data.leads);
+          setLeads(data.leads || []);
           setExpenses(data.expenses || []);
           
           // Verify inventory
-          const hasOldInventory = (data.inventory || []).some((item: any) => 
-            item.category === 'chemicals' || 
-            item.category === 'coatings' || 
-            item.category === 'towels' || 
-            item.category === 'pads' || 
-            item.category === 'other' || 
-            item.name === 'Ceramic Nano Coating 50ml' || 
-            item.name === 'Premium High-Foam Suds'
-          );
-          if (hasOldInventory || !data.inventory || data.inventory.length === 0) {
+          if (!data.inventory || data.inventory.length === 0) {
             const defaultInv = [
               { id: 'inv-1', name: 'Premium Shampoo', category: 'shampoo', quantity: 25, unit: 'litres', minThreshold: 60, costPrice: 450, location: 'Bay 1' },
               { id: 'inv-2', name: 'Disposable Paper Mats', category: 'papermats', quantity: 150, unit: 'sheets', minThreshold: 30, costPrice: 5, location: 'Shelf B2' },
@@ -209,13 +192,7 @@ export default function App() {
             setInventory(defaultInv);
             saveFirebaseUserField(targetUid, 'inventory', defaultInv);
           } else {
-            const migrated = data.inventory.map((item: any) => {
-              if ((item.category === 'shampoo' || item.name?.toLowerCase().includes('shampoo')) && (!item.minThreshold || item.minThreshold < 60)) {
-                return { ...item, minThreshold: 60 };
-              }
-              return item;
-            });
-            setInventory(migrated);
+            setInventory(data.inventory);
           }
           
           setRecurringList(data.recurring || []);
