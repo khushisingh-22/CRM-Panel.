@@ -119,7 +119,7 @@ export default function ProfileManager({
           </div>
 
           <p className="text-3xs text-slate-500 max-w-xs">
-            This card represents the studio owner profile. Click the profile image or camera icon above to upload a photo from your computer.
+            This card represents the Business  owner profile. Click the profile image or camera icon above to upload a photo from your computer.
           </p>
         </div>
 
@@ -171,7 +171,7 @@ export default function ProfileManager({
               </div>
 
               <div className="space-y-1">
-                <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Direct Business Phone</label>
+                <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block"> Business Phone</label>
                 <input
                   type="tel"
                   required

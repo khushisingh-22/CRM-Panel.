@@ -54,7 +54,7 @@ export default function SettingsPanel({
   const [currency, setCurrency] = useState(settings.currencySymbol === '₹' ? 'INR (₹)' : 'USD ($)');
   const [depositRate, setDepositRate] = useState('10');
   const [paymentTerms, setPaymentTerms] = useState('Payment due within 30 days');
-  const [logoUrl, setLogoUrl] = useState<string>('https://images.unsplash.com/photo-1618641986557-1ecd230959aa?w=150&auto=format&fit=crop&q=80');
+  const [logoUrl, setLogoUrl] = useState<string>(settings.logoUrl || 'https://images.unsplash.com/photo-1618641986557-1ecd230959aa?w=150&auto=format&fit=crop&q=80');
 
   // --- SMS Templates (Tags Tab) ---
   const [bookingConfirmed, setBookingConfirmed] = useState(settings.smsTemplates.bookingConfirmed);
@@ -128,7 +128,8 @@ export default function SettingsPanel({
         reviewRequest
       },
       theme: selectedTheme,
-      fontSize: fontSize as any
+      fontSize: fontSize as any,
+      logoUrl
     };
 
     onUpdateSettings(updated);

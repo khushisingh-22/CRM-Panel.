@@ -134,5 +134,6 @@ export const DEFAULT_SETTINGS: ShopSettings = {
     reviewRequest: 'Thank you for choosing {shop_name}, {customer_name}! We would love to hear your feedback. Please leave us a review here: https://g.page/drwashit - Thank you!'
   },
   theme: 'dark',
-  fontSize: 'medium'
+  fontSize: 'medium',
+  logoUrl: 'https://images.unsplash.com/photo-1618641986557-1ecd230959aa?w=150&auto=format&fit=crop&q=80'
 };

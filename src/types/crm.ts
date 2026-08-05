@@ -109,4 +109,5 @@ export interface ShopSettings {
   };
   theme?: 'light' | 'dark' | 'system';
   fontSize?: 'small' | 'medium' | 'large';
+  logoUrl?: string;
 }

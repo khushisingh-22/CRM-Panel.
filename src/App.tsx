@@ -636,12 +636,18 @@ export default function App() {
           {/* Logo brand */}
           <div className="h-16 border-b border-slate-800/60 px-4 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2 min-w-0">
-              <span className="h-7 w-7 bg-indigo-600 hover:bg-indigo-500 transition-colors rounded-lg flex items-center justify-center shrink-0 shadow-md">
-                <Car className="text-white shrink-0 stroke-[2.5]" size={16} />
-              </span>
+              {settings.logoUrl ? (
+                <div className="h-7 w-7 rounded-lg overflow-hidden border border-slate-700/80 flex items-center justify-center shrink-0 shadow-md">
+                  <img src={settings.logoUrl} alt="Logo" className="h-full w-full object-cover" />
+                </div>
+              ) : (
+                <span className="h-7 w-7 bg-indigo-600 hover:bg-indigo-500 transition-colors rounded-lg flex items-center justify-center shrink-0 shadow-md">
+                  <Car className="text-white shrink-0 stroke-[2.5]" size={16} />
+                </span>
+              )}
               {sidebarOpen && (
                 <div className="min-w-0">
-                  <strong className="text-sm font-black text-white block tracking-tight truncate">Dr. WashIt</strong>
+                  <strong className="text-sm font-black text-white block tracking-tight truncate">{settings.shopName || 'Dr. WashIt'}</strong>
                   <span className="text-4xs text-cyan-400 font-bold uppercase tracking-wider block">CRM Pro Edition</span>
                 </div>
               )}
@@ -1010,6 +1016,7 @@ export default function App() {
 
           {activeTab === 'settings' && (
             <SettingsPanel
+              key={`${settings.phone || ''}-${settings.logoUrl || ''}`}
               settings={settings}
               onUpdateSettings={syncSettings}
             />
@@ -1068,6 +1075,7 @@ export default function App() {
 
           {activeTab === 'automations' && (
             <AutomationsManager
+              key={automationSettings.reminderHours || 'automations'}
               automationSettings={automationSettings}
               onUpdateSettings={syncAutomationSettings}
             />
@@ -1075,6 +1083,7 @@ export default function App() {
 
           {activeTab === 'profile' && (
             <ProfileManager
+              key={profile.email || 'profile'}
               profile={profile}
               onUpdateProfile={syncProfile}
             />
