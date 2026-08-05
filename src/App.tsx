@@ -962,7 +962,6 @@ export default function App() {
             <EmployeeManagement
               staffList={staff}
               onUpdateStaffList={syncStaff}
-              currentUser={currentUser}
             />
           )}
 

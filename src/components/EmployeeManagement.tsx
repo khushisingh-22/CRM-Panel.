@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Users,
   Plus,
@@ -19,7 +19,8 @@ import {
   ChevronRight,
   TrendingUp,
   AlertCircle,
-  X
+  X,
+  Shield
 } from 'lucide-react';
 import { Staff, StaffLedgerEntry } from '../types/crm';
 
@@ -342,11 +343,11 @@ export default function EmployeeManagement({
                         </span>
                         
                         <input
-                          type="file"
-                          ref={fileInputRef}
-                          onChange={(e) => handleFileChange(e, 'selected')}
-                          accept="image/*"
-                          className="hidden"
+                           type="file"
+                           ref={fileInputRef}
+                           onChange={(e) => handleFileChange(e, 'selected')}
+                           accept="image/*"
+                           className="hidden"
                         />
 
                         <button
