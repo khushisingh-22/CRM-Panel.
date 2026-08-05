@@ -1,31 +1,46 @@
 import React, { useState } from 'react';
 import { customAuth } from '../lib/customAuth';
-import { Mail, Lock, Sparkles, Shield, User, Loader2 } from 'lucide-react';
+import { Mail, Lock, Sparkles, Shield, User, Loader2, Eye, EyeOff } from 'lucide-react';
 
 interface LoginScreenProps {
   onLoginSuccess: (uid: string) => void;
 }
 
 export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'reset'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [accessCode, setAccessCode] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [clickCount, setClickCount] = useState(0);
+  const [showSignup, setShowSignup] = useState(() => {
+    return typeof window !== 'undefined' && window.location.search.includes('signup=true');
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showAccessCode, setShowAccessCode] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
 
     try {
-      if (isSignUp) {
+      if (authMode === 'signup') {
         if (password.length < 6) {
           throw new Error('Password must be at least 6 characters long.');
         }
-        const user = await customAuth.createUserWithEmailAndPassword(email, password, name);
+        const user = await customAuth.createUserWithEmailAndPassword(email, password, name, accessCode);
         onLoginSuccess(user.uid);
+      } else if (authMode === 'reset') {
+        await customAuth.resetPassword(email, password, accessCode);
+        setSuccess('Password updated successfully! You can now log in with your new password.');
+        setPassword('');
+        setAccessCode('');
+        setAuthMode('login');
       } else {
         const user = await customAuth.signInWithEmailAndPassword(email, password);
         onLoginSuccess(user.uid);
@@ -59,7 +74,17 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       <div className="w-full max-w-md space-y-6 relative z-10">
         
         {/* Brand Header */}
-        <div className="text-center space-y-2 animate-fade-in">
+        <div 
+          className="text-center space-y-2 animate-fade-in cursor-pointer select-none"
+          onClick={() => {
+            const nextCount = clickCount + 1;
+            setClickCount(nextCount);
+            if (nextCount >= 5) {
+              setShowSignup(true);
+              setSuccess('Developer Mode: Create Account tab unlocked!');
+            }
+          }}
+        >
           <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 mb-2">
             <Sparkles size={28} />
           </div>
@@ -77,27 +102,44 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           {/* Sign In / Sign Up Selector Tabs */}
           <div className="flex border-b border-slate-800">
             <button
-              onClick={() => { setIsSignUp(false); setError(''); }}
+              onClick={() => { setAuthMode('login'); setError(''); setSuccess(''); }}
               className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 text-center ${
-                !isSignUp ? 'border-sky-500 text-sky-400 font-extrabold' : 'border-transparent text-slate-400 hover:text-slate-200'
+                authMode === 'login' ? 'border-sky-500 text-sky-400 font-extrabold' : 'border-transparent text-slate-400 hover:text-slate-200'
               }`}
             >
               Log In
             </button>
+            {showSignup && (
+              <button
+                onClick={() => { setAuthMode('signup'); setError(''); setSuccess(''); }}
+                className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 text-center ${
+                  authMode === 'signup' ? 'border-sky-500 text-sky-400 font-extrabold' : 'border-transparent text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Create Account
+              </button>
+            )}
             <button
-              onClick={() => { setIsSignUp(true); setError(''); }}
+              onClick={() => { setAuthMode('reset'); setError(''); setSuccess(''); }}
               className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 text-center ${
-                isSignUp ? 'border-sky-500 text-sky-400 font-extrabold' : 'border-transparent text-slate-400 hover:text-slate-200'
+                authMode === 'reset' ? 'border-sky-500 text-sky-400 font-extrabold' : 'border-transparent text-slate-400 hover:text-slate-200'
               }`}
             >
-              Create Account
+              Reset Pass
             </button>
           </div>
+
+          {success && (
+            <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-xs flex items-start gap-2 leading-relaxed">
+              <span className="mt-0.5 font-bold">✓</span>
+              <span>{success}</span>
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             
-            {isSignUp && (
+            {authMode === 'signup' && (
               <div className="space-y-1.5">
                 <label className="text-3xs text-slate-400 font-extrabold uppercase tracking-widest block">Full Name</label>
                 <div className="relative">
@@ -134,21 +176,75 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-3xs text-slate-400 font-extrabold uppercase tracking-widest block">Password</label>
+              <label className="text-3xs text-slate-400 font-extrabold uppercase tracking-widest block">
+                {authMode === 'reset' ? 'New Password' : 'Password'}
+              </label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-3 flex items-center text-slate-500">
                   <Lock size={15} />
                 </span>
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:outline-hidden focus:border-sky-500/50 transition-all placeholder:text-slate-600"
+                  className="w-full text-xs pl-9 pr-10 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:outline-hidden focus:border-sky-500/50 transition-all placeholder:text-slate-600"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-3 flex items-center text-slate-500 hover:text-slate-300"
+                >
+                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
               </div>
             </div>
+
+            {(authMode === 'signup' || authMode === 'reset') && (
+              <div className="space-y-1.5">
+                <label className="text-3xs text-slate-400 font-extrabold uppercase tracking-widest block">
+                  CRM Access Code
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-3 flex items-center text-slate-500">
+                    <Shield size={15} />
+                  </span>
+                  <input
+                    type={showAccessCode ? 'text' : 'password'}
+                    required
+                    value={accessCode}
+                    onChange={(e) => setAccessCode(e.target.value)}
+                    placeholder="Enter workshop master access code"
+                    className="w-full text-xs pl-9 pr-10 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:outline-hidden focus:border-sky-500/50 transition-all placeholder:text-slate-600"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowAccessCode(!showAccessCode)}
+                    className="absolute inset-y-0 right-3 flex items-center text-slate-500 hover:text-slate-300"
+                  >
+                    {showAccessCode ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+                <p className="text-4xs text-slate-500 mt-1 italic leading-normal">
+                  {authMode === 'reset' 
+                    ? 'Enter the master CRM access code to authorize your password reset.'
+                    : 'Ask the workshop owner for the secure CRM master signup code.'}
+                </p>
+              </div>
+            )}
+
+            {authMode === 'login' && (
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={() => { setAuthMode('reset'); setError(''); setSuccess(''); }}
+                  className="text-4xs text-sky-400 hover:text-sky-300 font-bold uppercase tracking-wider transition-colors"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+            )}
 
             {error && (
               <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-xs flex items-start gap-2 animate-shake">
@@ -166,10 +262,18 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               {loading ? (
                 <>
                   <Loader2 size={14} className="animate-spin" />
-                  {isSignUp ? 'Creating Account...' : 'Logging In...'}
+                  {authMode === 'signup' 
+                    ? 'Creating Account...' 
+                    : authMode === 'reset' 
+                    ? 'Resetting Password...' 
+                    : 'Logging In...'}
                 </>
               ) : (
-                isSignUp ? 'Create Account & Open CRM' : 'Log In'
+                authMode === 'signup' 
+                  ? 'Create Account & Open CRM' 
+                  : authMode === 'reset' 
+                  ? 'Update Password' 
+                  : 'Log In'
               )}
             </button>
           </form>

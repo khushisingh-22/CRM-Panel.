@@ -1,9 +1,11 @@
-import { db, doc, getDoc, setDoc } from './firebase';
+import { db, doc, getDoc, setDoc, collection, getDocs, query, where } from './firebase';
 
 export interface CustomUser {
   uid: string;
   email: string;
   name?: string;
+  role?: string;
+  adminUid?: string;
 }
 
 type AuthStateCallback = (user: CustomUser | null) => void;
@@ -50,13 +52,19 @@ class CustomAuthManager {
     });
   }
 
-  async createUserWithEmailAndPassword(email: string, password: string, name?: string): Promise<CustomUser> {
+  async createUserWithEmailAndPassword(email: string, password: string, name?: string, accessCode?: string): Promise<CustomUser> {
     const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail || !password) {
       throw new Error('Email and password are required.');
     }
     if (password.length < 6) {
       throw new Error('Password must be at least 6 characters long.');
+    }
+
+    const codeValue = accessCode ? accessCode.trim().toUpperCase() : '';
+
+    if (codeValue !== 'DRWASHIT2026' && codeValue !== 'DRWASHIT') {
+      throw new Error('Invalid CRM authorization code. Please enter the master access code (e.g. DRWASHIT or DRWASHIT2026).');
     }
 
     const accountRef = doc(db, 'crm_accounts', cleanEmail);
@@ -67,14 +75,16 @@ class CustomAuthManager {
     }
 
     const uid = 'usr_' + Math.random().toString(36).substring(2, 15);
-    const newUser: CustomUser = { uid, email: cleanEmail, name };
+    const newUser: CustomUser = { uid, email: cleanEmail, name, role: 'admin', adminUid: uid };
 
-    // Save the credentials in Firestore (for private CRM, storing password simply is fine or we can hash it)
+    // Save the credentials in Firestore
     await setDoc(accountRef, {
       uid,
       email: cleanEmail,
-      password: password, // Simple plain-text password check since it's a private app, but fully cloud synced
+      password: password,
       name: name || '',
+      role: 'admin',
+      adminUid: uid,
       createdAt: new Date().toISOString()
     });
 
@@ -83,6 +93,35 @@ class CustomAuthManager {
     this.emitStateChange();
 
     return newUser;
+  }
+
+  async resetPassword(email: string, password: string, accessCode: string): Promise<void> {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !password) {
+      throw new Error('Email and new password are required.');
+    }
+    if (password.length < 6) {
+      throw new Error('New password must be at least 6 characters long.');
+    }
+
+    const codeValue = accessCode ? accessCode.trim().toUpperCase() : '';
+    if (codeValue !== 'DRWASHIT2026' && codeValue !== 'DRWASHIT') {
+      throw new Error('Invalid master authentication code. You must enter the correct authorization code (e.g. DRWASHIT or DRWASHIT2026) to reset your password.');
+    }
+
+    const accountRef = doc(db, 'crm_accounts', cleanEmail);
+    const docSnap = await getDoc(accountRef);
+
+    if (!docSnap.exists()) {
+      throw new Error('No account found with this email.');
+    }
+
+    // Update the password in Firestore
+    await setDoc(accountRef, {
+      ...docSnap.data(),
+      password: password,
+      updatedAt: new Date().toISOString()
+    });
   }
 
   async signInWithEmailAndPassword(email: string, password: string): Promise<CustomUser> {
@@ -106,7 +145,9 @@ class CustomAuthManager {
     const user: CustomUser = {
       uid: accountData.uid,
       email: accountData.email,
-      name: accountData.name
+      name: accountData.name,
+      role: accountData.role || 'admin',
+      adminUid: accountData.adminUid || accountData.uid
     };
 
     this.currentUser = user;
