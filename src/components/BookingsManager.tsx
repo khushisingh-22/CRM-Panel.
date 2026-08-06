@@ -28,7 +28,8 @@ import {
   Send,
   ExternalLink
 } from 'lucide-react';
-import { Appointment, Customer, ServicePackage, Staff } from '../types/crm';
+import { Appointment, Customer, ServicePackage, Staff, ShopSettings } from '../types/crm';
+import { sendWhatsAppMessage } from '../utils/whatsapp';
 
 interface BookingsManagerProps {
   appointments: Appointment[];
@@ -41,6 +42,7 @@ interface BookingsManagerProps {
   onNavigate: (tab: string) => void;
   autoOpenNewBooking?: boolean;
   onClearAutoOpenNewBooking?: () => void;
+  settings: ShopSettings;
 }
 
 const formatDate = (dateStr: string) => {
@@ -103,7 +105,8 @@ export default function BookingsManager({
   onDeleteAppointment,
   onNavigate,
   autoOpenNewBooking = false,
-  onClearAutoOpenNewBooking
+  onClearAutoOpenNewBooking,
+  settings
 }: BookingsManagerProps) {
   // Search & Filters State
   const [search, setSearch] = useState('');
@@ -149,6 +152,28 @@ export default function BookingsManager({
   });
   const [uploadedPhotos, setUploadedPhotos] = useState<string>('');
 
+  // Look up existing customer dynamically based on Name or Mobile input
+  const trimmedPhoneInput = newCustPhone.replace(/\D/g, '');
+  const trimmedNameInput = newCustName.trim().toLowerCase();
+
+  const matchedClient = (trimmedNameInput.length >= 3 || trimmedPhoneInput.length >= 5)
+    ? customers.find(c => {
+        const cPhoneNorm = c.phone ? c.phone.replace(/\D/g, '') : '';
+        const cNameNorm = c.name ? c.name.trim().toLowerCase() : '';
+
+        const phoneMatch = trimmedPhoneInput.length >= 5 && (cPhoneNorm === trimmedPhoneInput || cPhoneNorm.endsWith(trimmedPhoneInput) || trimmedPhoneInput.endsWith(cPhoneNorm));
+        const nameMatch = trimmedNameInput.length >= 3 && (cNameNorm === trimmedNameInput || cNameNorm.includes(trimmedNameInput) || trimmedNameInput.includes(cNameNorm));
+
+        return phoneMatch || nameMatch;
+      })
+    : null;
+
+  // Check if current form inputs are already fully matching the found client
+  const isAlreadyFilled = matchedClient &&
+    newCustName.trim().toLowerCase() === matchedClient.name.trim().toLowerCase() &&
+    newCustPhone.trim().replace(/\D/g, '') === (matchedClient.phone || '').trim().replace(/\D/g, '') &&
+    (!matchedClient.address || newCustAddress.trim().toLowerCase() === matchedClient.address.trim().toLowerCase());
+
   // Simulated Client SMS notification popup state
   const [smsAlert, setSmsAlert] = useState<{
     show: boolean;
@@ -156,6 +181,9 @@ export default function BookingsManager({
     phone: string;
     message: string;
   } | null>(null);
+
+  const [whatsappSending, setWhatsappSending] = useState(false);
+  const [whatsappResult, setWhatsappResult] = useState<{ success: boolean; text: string } | null>(null);
 
   // Form State for editing customer/booking info
   const [editingApt, setEditingApt] = useState<Appointment | null>(null);
@@ -315,6 +343,18 @@ export default function BookingsManager({
 
     // Select the newly created booking
     setSelectedAptId(newAppointment.id);
+  };
+
+  const handleSendBackgroundWhatsApp = async (phone: string, message: string) => {
+    setWhatsappSending(true);
+    setWhatsappResult(null);
+    const res = await sendWhatsAppMessage(settings, phone, message);
+    setWhatsappSending(false);
+    if (res.success) {
+      setWhatsappResult({ success: true, text: 'Sent successfully from Business Number (8510002780)!' });
+    } else {
+      setWhatsappResult({ success: false, text: `API Failed: ${res.error || 'Gateway Error'}` });
+    }
   };
 
   // Open Edit Customer/Booking Info modal
@@ -756,6 +796,44 @@ export default function BookingsManager({
                 </div>
               </div>
 
+              {/* Dynamic Existing Client Alert & Auto-Fill option */}
+              {matchedClient && !isAlreadyFilled && (
+                <div className="bg-sky-50 border border-sky-250 rounded-xl p-4 flex items-start gap-3 animate-fade-in shadow-xs transition-all">
+                  <div className="p-2 bg-sky-100 text-sky-600 rounded-lg shrink-0 mt-0.5">
+                    <User size={16} />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <h4 className="text-xs font-bold text-sky-950 flex items-center gap-1.5">
+                      <span>Existing Client Found!</span>
+                      <span className="bg-sky-200/60 text-sky-800 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">CRM Match</span>
+                    </h4>
+                    <p className="text-2xs text-sky-800 leading-relaxed font-medium">
+                      We found an existing client named <strong className="font-bold">{matchedClient.name}</strong> with phone <strong className="font-bold">{matchedClient.phone || 'N/A'}</strong>. Would you like to auto-fill their number, address, and vehicle details?
+                    </p>
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewCustName(matchedClient.name);
+                          if (matchedClient.phone) setNewCustPhone(matchedClient.phone);
+                          if (matchedClient.email) setNewCustEmail(matchedClient.email);
+                          if (matchedClient.address) setNewCustAddress(matchedClient.address);
+                          if (matchedClient.vehicles && matchedClient.vehicles.length > 0) {
+                            const mainVehicle = matchedClient.vehicles[0];
+                            setVehMake(`${mainVehicle.year ? mainVehicle.year + ' ' : ''}${mainVehicle.make}${mainVehicle.model ? ' ' + mainVehicle.model : ''}`.trim());
+                            setVehSize(mainVehicle.size || 'sedan');
+                          }
+                        }}
+                        className="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-[10px] font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-xs hover:shadow-sm hover:scale-[1.01]"
+                      >
+                        <Check size={12} className="stroke-[2.5]" />
+                        <span>Yes, Auto-Fill Details</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Service Address */}
               <div>
                 <label className="text-xs font-bold text-slate-700 block mb-1">Service Address</label>
@@ -1080,7 +1158,10 @@ export default function BookingsManager({
               <span className="text-xs font-black text-white">{smsAlert.clientName} ({smsAlert.phone})</span>
             </div>
             <button 
-              onClick={() => setSmsAlert(null)}
+              onClick={() => {
+                setSmsAlert(null);
+                setWhatsappResult(null);
+              }}
               className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
             >
               <X size={14} />
@@ -1089,29 +1170,75 @@ export default function BookingsManager({
           <div className="bg-slate-950/80 p-3 rounded-lg border border-slate-900 text-xs font-medium text-emerald-400 leading-relaxed font-mono mb-3">
             "{smsAlert.message}"
           </div>
+
+          {/* WhatsApp Action Result */}
+          {whatsappResult && (
+            <div className={`p-2.5 rounded-lg text-xs font-bold mb-3 ${whatsappResult.success ? 'bg-emerald-950 border border-emerald-800/40 text-emerald-400' : 'bg-rose-950 border border-rose-800/40 text-rose-400'}`}>
+              {whatsappResult.text}
+            </div>
+          )}
+
           <div className="flex flex-col gap-2">
-            <div className="flex gap-2">
+            {settings.whatsappMode === 'api' ? (
+              <div className="flex flex-col gap-1.5">
+                <button
+                  type="button"
+                  disabled={whatsappSending}
+                  onClick={() => handleSendBackgroundWhatsApp(smsAlert.phone, smsAlert.message)}
+                  className="w-full text-center py-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800/60 text-[10px] font-bold uppercase tracking-wider rounded text-white transition-colors cursor-pointer flex items-center justify-center gap-1"
+                >
+                  {whatsappSending ? (
+                    <span>Sending from Business Line...</span>
+                  ) : (
+                    <>
+                      <Send size={10} />
+                      <span>Send from Business No ({settings.whatsappBusinessPhone || '8510002780'})</span>
+                    </>
+                  )}
+                </button>
+                <div className="text-[9px] text-slate-400 text-center font-medium">
+                  Dispatches in background from official business line.
+                </div>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <a
+                  href={`https://wa.me/${smsAlert.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(smsAlert.message)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 text-center py-2 bg-emerald-600 hover:bg-emerald-500 text-[10px] font-bold uppercase tracking-wider rounded text-white transition-colors cursor-pointer flex items-center justify-center gap-1"
+                >
+                  <ExternalLink size={10} />
+                  <span>Open in WhatsApp (Real Chat)</span>
+                </a>
+              </div>
+            )}
+
+            <div className="flex gap-1.5 pt-1.5 border-t border-slate-800/60 mt-1">
               <a
                 href={`sms:${smsAlert.phone}?body=${encodeURIComponent(smsAlert.message)}`}
-                className="flex-1 text-center py-2 bg-sky-600 hover:bg-sky-500 text-[10px] font-bold uppercase tracking-wider rounded text-white transition-colors cursor-pointer flex items-center justify-center gap-1"
+                className="flex-1 text-center py-1.5 bg-sky-600/20 hover:bg-sky-600/30 border border-sky-500/20 text-[9px] font-bold uppercase tracking-wider rounded text-sky-400 transition-colors cursor-pointer flex items-center justify-center gap-1"
               >
-                <Send size={10} />
-                <span>Open in Message Box (SMS)</span>
+                <Send size={9} />
+                <span>Backup SMS</span>
               </a>
-            </div>
-            <div className="flex gap-2">
-              <a
-                href={`https://wa.me/${smsAlert.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(smsAlert.message)}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex-1 text-center py-2 bg-emerald-600 hover:bg-emerald-500 text-[10px] font-bold uppercase tracking-wider rounded text-white transition-colors cursor-pointer flex items-center justify-center gap-1"
-              >
-                <ExternalLink size={10} />
-                <span>Open in WhatsApp (Real Chat)</span>
-              </a>
+              {settings.whatsappMode === 'api' && (
+                <a
+                  href={`https://wa.me/${smsAlert.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(smsAlert.message)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-center py-1.5 px-2 bg-slate-800/40 hover:bg-slate-800 text-[9px] font-bold uppercase tracking-wider rounded text-slate-400 transition-colors cursor-pointer border border-slate-800 flex items-center gap-1"
+                >
+                  <ExternalLink size={9} />
+                  <span>Manual Link</span>
+                </a>
+              )}
               <button
-                onClick={() => setSmsAlert(null)}
-                className="px-3 py-2 bg-slate-800 hover:bg-slate-750 text-[10px] font-bold uppercase tracking-wider rounded text-slate-300 transition-colors cursor-pointer"
+                onClick={() => {
+                  setSmsAlert(null);
+                  setWhatsappResult(null);
+                }}
+                className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-750 text-[9px] font-bold uppercase tracking-wider rounded text-slate-300 transition-colors cursor-pointer"
               >
                 Close
               </button>

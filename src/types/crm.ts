@@ -110,4 +110,9 @@ export interface ShopSettings {
   theme?: 'light' | 'dark' | 'system';
   fontSize?: 'small' | 'medium' | 'large';
   logoUrl?: string;
+  whatsappMode?: 'direct' | 'api';
+  whatsappProvider?: 'ultramsg' | 'custom';
+  whatsappInstanceId?: string;
+  whatsappToken?: string;
+  whatsappBusinessPhone?: string;
 }

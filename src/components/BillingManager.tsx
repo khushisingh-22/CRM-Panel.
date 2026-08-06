@@ -27,6 +27,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { Appointment, ShopSettings, Customer } from '../types/crm';
+import { sendWhatsAppMessage } from '../utils/whatsapp';
 
 interface BillingManagerProps {
   appointments: Appointment[];
@@ -107,6 +108,9 @@ export default function BillingManager({
   );
 
   const activeInvoice = appointments.find(a => a.id === selectedInvoiceId);
+
+  const [billingSending, setBillingSending] = useState(false);
+  const [billingResult, setBillingResult] = useState<{ success: boolean; text: string } | null>(null);
 
   // Billing Math
   const getSubtotal = (price: number) => {
@@ -209,9 +213,15 @@ export default function BillingManager({
                 </div>
 
                 <div className="flex items-center gap-1.5 ml-auto">
+                  {billingResult && (
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded ${billingResult.success ? 'bg-emerald-950/85 text-emerald-400 border border-emerald-900/40' : 'bg-rose-950/85 text-rose-400 border border-rose-900/40'}`}>
+                      {billingResult.text}
+                    </span>
+                  )}
+
                   {/* WhatsApp send button */}
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       let cleanPhone = activeInvoice.customerPhone.replace(/[^0-9]/g, '');
                       if (cleanPhone.length === 10) cleanPhone = '91' + cleanPhone;
                       
@@ -241,13 +251,27 @@ https://apps.apple.com/in/app/dr-washit/id6756914622
 
 Let your car sparkle at your doorstep🚗💦✨ & thankyou for choosing *Dr Washit*`;
                       
-                      window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(formattedMsg)}`, '_blank');
+                      if (settings.whatsappMode === 'api') {
+                        setBillingSending(true);
+                        setBillingResult(null);
+                        const res = await sendWhatsAppMessage(settings, activeInvoice.customerPhone, formattedMsg);
+                        setBillingSending(false);
+                        if (res.success) {
+                          setBillingResult({ success: true, text: 'Sent successfully from Business No (8510002780)!' });
+                          setTimeout(() => setBillingResult(null), 5000);
+                        } else {
+                          setBillingResult({ success: false, text: `API Failed: ${res.error || 'Error'}` });
+                        }
+                      } else {
+                        window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(formattedMsg)}`, '_blank');
+                      }
                     }}
-                    className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-3xs font-extrabold uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer"
-                    title="Send Invoice details directly on WhatsApp"
+                    disabled={billingSending}
+                    className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 text-white rounded text-3xs font-extrabold uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer"
+                    title={settings.whatsappMode === 'api' ? "Send Invoice via Background WhatsApp Gateway" : "Send Invoice details directly on WhatsApp"}
                   >
                     <MessageSquare size={10} />
-                    <span>Send WhatsApp</span>
+                    <span>{billingSending ? 'Sending...' : settings.whatsappMode === 'api' ? 'Send Background WhatsApp' : 'Send WhatsApp'}</span>
                   </button>
 
                   {/* SMS Message Box button */}

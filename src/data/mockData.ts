@@ -135,5 +135,10 @@ export const DEFAULT_SETTINGS: ShopSettings = {
   },
   theme: 'dark',
   fontSize: 'medium',
-  logoUrl: 'https://images.unsplash.com/photo-1618641986557-1ecd230959aa?w=150&auto=format&fit=crop&q=80'
+  logoUrl: 'https://images.unsplash.com/photo-1618641986557-1ecd230959aa?w=150&auto=format&fit=crop&q=80',
+  whatsappMode: 'direct',
+  whatsappProvider: 'ultramsg',
+  whatsappInstanceId: '',
+  whatsappToken: '',
+  whatsappBusinessPhone: '8510002780'
 };

@@ -921,6 +921,7 @@ export default function App() {
               onNavigate={handleNavigate}
               autoOpenNewBooking={autoOpenNewBooking}
               onClearAutoOpenNewBooking={() => setAutoOpenNewBooking(false)}
+              settings={settings}
             />
           )}
 

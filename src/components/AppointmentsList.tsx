@@ -169,6 +169,27 @@ export default function AppointmentsList({
   const [bookingPrice, setBookingPrice] = useState<number>(0);
   const [aiInput, setAiInput] = useState('');
 
+  // Dynamic Existing Client Lookup inside Create New Client
+  const trimmedPhoneInput = newCustPhone.replace(/\D/g, '');
+  const trimmedNameInput = newCustName.trim().toLowerCase();
+
+  const matchedClient = (trimmedNameInput.length >= 3 || trimmedPhoneInput.length >= 5)
+    ? customers.find(c => {
+        const cPhoneNorm = c.phone ? c.phone.replace(/\D/g, '') : '';
+        const cNameNorm = c.name ? c.name.trim().toLowerCase() : '';
+
+        const phoneMatch = trimmedPhoneInput.length >= 5 && (cPhoneNorm === trimmedPhoneInput || cPhoneNorm.endsWith(trimmedPhoneInput) || trimmedPhoneInput.endsWith(cPhoneNorm));
+        const nameMatch = trimmedNameInput.length >= 3 && (cNameNorm === trimmedNameInput || cNameNorm.includes(trimmedNameInput) || trimmedNameInput.includes(cNameNorm));
+
+        return phoneMatch || nameMatch;
+      })
+    : null;
+
+  const isAlreadyFilled = matchedClient &&
+    newCustName.trim().toLowerCase() === matchedClient.name.trim().toLowerCase() &&
+    newCustPhone.trim().replace(/\D/g, '') === (matchedClient.phone || '').trim().replace(/\D/g, '') &&
+    (!matchedClient.address || newCustAddress.trim().toLowerCase() === matchedClient.address.trim().toLowerCase());
+
   // Synchronize bookingPrice when service or vehicle size changes
   React.useEffect(() => {
     setBookingPrice(calculateTotalPrice());
@@ -684,6 +705,56 @@ export default function AppointmentsList({
                         className="text-xs p-2.5 border border-slate-850 rounded-lg w-full bg-slate-900 text-white placeholder-slate-500 focus:outline-sky-500/50"
                       />
                     </div>
+
+                    {/* Dynamic Existing Client Alert & Auto-Fill option */}
+                    {matchedClient && !isAlreadyFilled && (
+                      <div className="sm:col-span-2 bg-[#1e293b]/60 border border-slate-800 rounded-xl p-3.5 flex items-start gap-3 animate-fade-in transition-all">
+                        <div className="p-2 bg-slate-900 text-cyan-400 rounded-lg shrink-0 mt-0.5">
+                          <User size={14} />
+                        </div>
+                        <div className="flex-1 space-y-1 text-left">
+                          <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                            <span>Existing Client Found!</span>
+                            <span className="bg-cyan-500/15 text-cyan-400 text-[8px] font-extrabold px-1.5 py-0.5 rounded-full border border-cyan-500/25 uppercase tracking-wider">CRM Match</span>
+                          </h4>
+                          <p className="text-[10px] text-slate-300 leading-relaxed font-medium">
+                            We found an existing client named <strong className="font-bold text-white">{matchedClient.name}</strong> with phone <strong className="font-bold text-white">{matchedClient.phone || 'N/A'}</strong>. Would you like to use this client?
+                          </p>
+                          <div className="pt-2 flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCustType('existing');
+                                setSelectedCustId(matchedClient.id);
+                              }}
+                              className="px-2.5 py-1.5 bg-cyan-600 hover:bg-cyan-505 text-white text-[10px] font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-xs hover:bg-cyan-500 hover:scale-[1.01]"
+                            >
+                              <Check size={10} className="stroke-[2.5]" />
+                              <span>Switch to Existing Client</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setNewCustName(matchedClient.name);
+                                if (matchedClient.phone) setNewCustPhone(matchedClient.phone);
+                                if (matchedClient.email) setNewCustEmail(matchedClient.email);
+                                if (matchedClient.address) setNewCustAddress(matchedClient.address);
+                                if (matchedClient.vehicles && matchedClient.vehicles.length > 0) {
+                                  const mainVehicle = matchedClient.vehicles[0];
+                                  setVehMake(`${mainVehicle.year ? mainVehicle.year + ' ' : ''}${mainVehicle.make}${mainVehicle.model ? ' ' + mainVehicle.model : ''}`.trim());
+                                  setVehSize(mainVehicle.size || 'sedan');
+                                  if (mainVehicle.color) setVehColor(mainVehicle.color);
+                                  if (mainVehicle.licensePlate) setVehPlate(mainVehicle.licensePlate);
+                                }
+                              }}
+                              className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 border border-slate-700"
+                            >
+                              <span>Auto-Fill Details Only</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
