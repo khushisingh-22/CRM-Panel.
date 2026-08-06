@@ -19,7 +19,8 @@ import {
   X,
   CreditCard,
   FileText,
-  Sparkles
+  Sparkles,
+  AlertCircle
 } from 'lucide-react';
 import { Appointment, Customer, ServicePackage, Staff } from '../types/crm';
 
@@ -190,6 +191,19 @@ export default function AppointmentsList({
     newCustPhone.trim().replace(/\D/g, '') === (matchedClient.phone || '').trim().replace(/\D/g, '') &&
     (!matchedClient.address || newCustAddress.trim().toLowerCase() === matchedClient.address.trim().toLowerCase());
 
+  // Check if there is an existing customer with the same phone but a different name (conflict)
+  const isPhoneConflict = (() => {
+    const cleanInputPhone = newCustPhone.replace(/\D/g, '');
+    if (cleanInputPhone.length < 5) return null;
+    return customers.find(c => {
+      const cPhoneNorm = c.phone ? c.phone.replace(/\D/g, '') : '';
+      if (cPhoneNorm.length < 5) return false;
+      const phoneMatch = cPhoneNorm === cleanInputPhone || cPhoneNorm.endsWith(cleanInputPhone) || cleanInputPhone.endsWith(cPhoneNorm);
+      const nameMismatch = c.name.trim().toLowerCase() !== newCustName.trim().toLowerCase();
+      return phoneMatch && nameMismatch;
+    });
+  })();
+
   // Synchronize bookingPrice when service or vehicle size changes
   React.useEffect(() => {
     setBookingPrice(calculateTotalPrice());
@@ -347,6 +361,12 @@ export default function AppointmentsList({
     let customerAddress = '';
 
     if (custType === 'new') {
+      // Check if the phone number is already registered under a different name
+      if (isPhoneConflict) {
+        alert(`⚠️ Alert: The mobile number "${newCustPhone}" is already registered under the name "${isPhoneConflict.name}".\n\nYou cannot create a client/booking with the same number but a different name ("${newCustName}"). Please correct the name or use the existing client.`);
+        return;
+      }
+
       customerId = `cust-${Date.now()}`;
       customerName = newCustName;
       customerPhone = newCustPhone;
@@ -707,7 +727,44 @@ export default function AppointmentsList({
                     </div>
 
                     {/* Dynamic Existing Client Alert & Auto-Fill option */}
-                    {matchedClient && !isAlreadyFilled && (
+                    {isPhoneConflict ? (
+                      <div className="sm:col-span-2 bg-rose-950/50 border border-rose-800/40 rounded-xl p-3.5 flex items-start gap-3 animate-fade-in transition-all">
+                        <div className="p-2 bg-rose-950 text-rose-400 rounded-lg shrink-0 mt-0.5 border border-rose-900/30">
+                          <AlertCircle size={14} />
+                        </div>
+                        <div className="flex-1 space-y-1 text-left">
+                          <h4 className="text-xs font-bold text-rose-350 flex items-center gap-1.5">
+                            <span>Duplicate Mobile Number Alert!</span>
+                            <span className="bg-rose-950 text-rose-400 text-[8px] font-extrabold px-1.5 py-0.5 rounded-full border border-rose-800/20 uppercase tracking-wider">Conflict</span>
+                          </h4>
+                          <p className="text-[10px] text-rose-200 leading-relaxed font-medium">
+                            The mobile number <strong className="font-bold text-white">{newCustPhone}</strong> is already registered under the name <strong className="font-bold text-white">{isPhoneConflict.name}</strong>. You cannot register this phone number under a different name.
+                          </p>
+                          <div className="pt-2 flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setNewCustName(isPhoneConflict.name);
+                                if (isPhoneConflict.phone) setNewCustPhone(isPhoneConflict.phone);
+                                if (isPhoneConflict.email) setNewCustEmail(isPhoneConflict.email);
+                                if (isPhoneConflict.address) setNewCustAddress(isPhoneConflict.address);
+                                if (isPhoneConflict.vehicles && isPhoneConflict.vehicles.length > 0) {
+                                  const mainVehicle = isPhoneConflict.vehicles[0];
+                                  setVehMake(`${mainVehicle.year ? mainVehicle.year + ' ' : ''}${mainVehicle.make}${mainVehicle.model ? ' ' + mainVehicle.model : ''}`.trim());
+                                  setVehSize(mainVehicle.size || 'sedan');
+                                  if (mainVehicle.color) setVehColor(mainVehicle.color);
+                                  if (mainVehicle.licensePlate) setVehPlate(mainVehicle.licensePlate);
+                                }
+                              }}
+                              className="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-xs"
+                            >
+                              <Check size={10} className="stroke-[2.5]" />
+                              <span>Use existing client '{isPhoneConflict.name}'</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : matchedClient && !isAlreadyFilled ? (
                       <div className="sm:col-span-2 bg-[#1e293b]/60 border border-slate-800 rounded-xl p-3.5 flex items-start gap-3 animate-fade-in transition-all">
                         <div className="p-2 bg-slate-900 text-cyan-400 rounded-lg shrink-0 mt-0.5">
                           <User size={14} />
@@ -754,7 +811,7 @@ export default function AppointmentsList({
                           </div>
                         </div>
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 )}
               </div>

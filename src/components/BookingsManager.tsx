@@ -174,6 +174,19 @@ export default function BookingsManager({
     newCustPhone.trim().replace(/\D/g, '') === (matchedClient.phone || '').trim().replace(/\D/g, '') &&
     (!matchedClient.address || newCustAddress.trim().toLowerCase() === matchedClient.address.trim().toLowerCase());
 
+  // Check if there is an existing customer with the same phone but a different name (conflict)
+  const isPhoneConflict = (() => {
+    const cleanInputPhone = newCustPhone.replace(/\D/g, '');
+    if (cleanInputPhone.length < 5) return null;
+    return customers.find(c => {
+      const cPhoneNorm = c.phone ? c.phone.replace(/\D/g, '') : '';
+      if (cPhoneNorm.length < 5) return false;
+      const phoneMatch = cPhoneNorm === cleanInputPhone || cPhoneNorm.endsWith(cleanInputPhone) || cleanInputPhone.endsWith(cPhoneNorm);
+      const nameMismatch = c.name.trim().toLowerCase() !== newCustName.trim().toLowerCase();
+      return phoneMatch && nameMismatch;
+    });
+  })();
+
   // Simulated Client SMS notification popup state
   const [smsAlert, setSmsAlert] = useState<{
     show: boolean;
@@ -258,10 +271,17 @@ export default function BookingsManager({
   const handleCreateBooking = (e: React.FormEvent) => {
     e.preventDefault();
 
-    let clientId = `cust-${Date.now()}`;
     let clientName = newCustName.trim();
     let clientPhone = newCustPhone.trim() || '7078408264';
     let clientEmail = newCustEmail.trim();
+
+    // Check if the phone number is already registered under a different name
+    if (isPhoneConflict) {
+      alert(`⚠️ Alert: The mobile number "${clientPhone}" is already registered under the name "${isPhoneConflict.name}".\n\nYou cannot create a client/booking with the same number but a different name ("${clientName}"). Please correct the name or use the existing client.`);
+      return;
+    }
+
+    let clientId = `cust-${Date.now()}`;
 
     // Check if there is an existing customer with this exact name
     const existingClient = customers.find(c => c.name.toLowerCase() === clientName.toLowerCase());
@@ -797,7 +817,42 @@ export default function BookingsManager({
               </div>
 
               {/* Dynamic Existing Client Alert & Auto-Fill option */}
-              {matchedClient && !isAlreadyFilled && (
+              {isPhoneConflict ? (
+                <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-start gap-3 animate-fade-in shadow-xs transition-all">
+                  <div className="p-2 bg-rose-100 text-rose-600 rounded-lg shrink-0 mt-0.5">
+                    <AlertCircle size={16} />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <h4 className="text-xs font-bold text-rose-950 flex items-center gap-1.5">
+                      <span>Duplicate Mobile Number Alert!</span>
+                      <span className="bg-rose-200/60 text-rose-800 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Conflict</span>
+                    </h4>
+                    <p className="text-2xs text-rose-800 leading-relaxed font-medium">
+                      The mobile number <strong className="font-bold">{newCustPhone}</strong> is already registered under the name <strong className="font-bold">{isPhoneConflict.name}</strong>. You cannot register the same mobile number under a different name.
+                    </p>
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewCustName(isPhoneConflict.name);
+                          if (isPhoneConflict.phone) setNewCustPhone(isPhoneConflict.phone);
+                          if (isPhoneConflict.email) setNewCustEmail(isPhoneConflict.email);
+                          if (isPhoneConflict.address) setNewCustAddress(isPhoneConflict.address);
+                          if (isPhoneConflict.vehicles && isPhoneConflict.vehicles.length > 0) {
+                            const mainVehicle = isPhoneConflict.vehicles[0];
+                            setVehMake(`${mainVehicle.year ? mainVehicle.year + ' ' : ''}${mainVehicle.make}${mainVehicle.model ? ' ' + mainVehicle.model : ''}`.trim());
+                            setVehSize(mainVehicle.size || 'sedan');
+                          }
+                        }}
+                        className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-xs hover:shadow-sm"
+                      >
+                        <Check size={12} className="stroke-[2.5]" />
+                        <span>Use existing client '{isPhoneConflict.name}'</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : matchedClient && !isAlreadyFilled ? (
                 <div className="bg-sky-50 border border-sky-250 rounded-xl p-4 flex items-start gap-3 animate-fade-in shadow-xs transition-all">
                   <div className="p-2 bg-sky-100 text-sky-600 rounded-lg shrink-0 mt-0.5">
                     <User size={16} />
@@ -832,7 +887,7 @@ export default function BookingsManager({
                     </div>
                   </div>
                 </div>
-              )}
+              ) : null}
 
               {/* Service Address */}
               <div>

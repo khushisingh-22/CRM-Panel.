@@ -19,7 +19,9 @@ import {
   Trash2,
   Calendar,
   RefreshCw,
-  Info
+  Info,
+  AlertCircle,
+  Check
 } from 'lucide-react';
 import { Customer, Appointment } from '../types/crm';
 
@@ -55,6 +57,19 @@ export default function CustomerCRM({
   const [custAddress, setCustAddress] = useState('');
   const [custNotes, setCustNotes] = useState('');
 
+  // Check if there is a conflict: same phone number but different name
+  const crmPhoneConflict = (() => {
+    const cleanPhone = custPhone.replace(/\D/g, '');
+    if (cleanPhone.length < 5) return null;
+    return customers.find(c => {
+      const cPhoneNorm = c.phone ? c.phone.replace(/\D/g, '') : '';
+      if (cPhoneNorm.length < 5) return false;
+      const phoneMatch = cPhoneNorm === cleanPhone || cPhoneNorm.endsWith(cleanPhone) || cleanPhone.endsWith(cPhoneNorm);
+      const nameMismatch = c.name.trim().toLowerCase() !== custName.trim().toLowerCase();
+      return phoneMatch && nameMismatch;
+    });
+  })();
+
   const filteredCustomers = customers.filter(c => {
     const matchesSearch = 
       c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -69,6 +84,12 @@ export default function CustomerCRM({
 
   const handleCreateCustomer = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check if the phone number is already registered under a different name
+    if (crmPhoneConflict) {
+      alert(`⚠️ Alert: The mobile number "${custPhone}" is already registered under the name "${crmPhoneConflict.name}".\n\nYou cannot create a client with the same number but a different name ("${custName}"). Please correct the name or edit the existing client.`);
+      return;
+    }
 
     // Map the combined "Vehicle Type" to make/model
     const vehicleTypeStr = custVehicleType.trim() || 'Toyota';
@@ -378,6 +399,42 @@ export default function CustomerCRM({
                   />
                 </div>
               </div>
+
+              {crmPhoneConflict && (
+                <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-start gap-3 animate-fade-in shadow-xs transition-all text-left">
+                  <div className="p-2 bg-rose-100 text-rose-600 rounded-lg shrink-0 mt-0.5">
+                    <AlertCircle size={16} />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <h4 className="text-xs font-bold text-rose-950 flex items-center gap-1.5">
+                      <span>Duplicate Mobile Number Alert!</span>
+                      <span className="bg-rose-200/60 text-rose-800 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Conflict</span>
+                    </h4>
+                    <p className="text-2xs text-rose-800 leading-relaxed font-medium">
+                      The mobile number <strong className="font-bold">{custPhone}</strong> is already registered under the name <strong className="font-bold">{crmPhoneConflict.name}</strong>. You cannot register the same mobile number under a different name.
+                    </p>
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCustName(crmPhoneConflict.name);
+                          if (crmPhoneConflict.phone) setCustPhone(crmPhoneConflict.phone);
+                          if (crmPhoneConflict.email) setCustEmail(crmPhoneConflict.email);
+                          if (crmPhoneConflict.address) setCustAddress(crmPhoneConflict.address);
+                          if (crmPhoneConflict.notes) setCustNotes(crmPhoneConflict.notes);
+                          if (crmPhoneConflict.vehicles && crmPhoneConflict.vehicles.length > 0) {
+                            setCustVehicleType(crmPhoneConflict.vehicles[0].make);
+                          }
+                        }}
+                        className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-xs hover:shadow-sm"
+                      >
+                        <Check size={12} className="stroke-[2.5]" />
+                        <span>Use existing client name '{crmPhoneConflict.name}'</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Row 2: Email & Vehicle Type */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
