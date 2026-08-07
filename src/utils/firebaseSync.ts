@@ -16,7 +16,7 @@ import {
 } from '../data/mockData';
 
 const DEFAULT_PACKAGES = [
-  { id: 'pkg-default-1', name: '4 Wash In a Month', originalPrice: 34234, packagePrice: 2342, duration: '0h', status: true }
+  { id: 'pkg-default-1', name: '4 Wash In a Month', originalPrice: 1399, packagePrice: 1399, duration: '0h', status: true }
 ];
 
 const DEFAULT_INVENTORY = [

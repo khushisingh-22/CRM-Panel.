@@ -69,13 +69,13 @@ export default function PackagesManager({
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !originalPrice || !packagePrice) return;
+    if (!name || !originalPrice) return;
 
     const newPkg: BusinessPackage = {
       id: `pkg-${Date.now()}`,
       name,
       originalPrice: Number(originalPrice),
-      packagePrice: Number(packagePrice),
+      packagePrice: Number(originalPrice),
       duration,
       status
     };
@@ -86,7 +86,7 @@ export default function PackagesManager({
 
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingPackageId || !name || !originalPrice || !packagePrice) return;
+    if (!editingPackageId || !name || !originalPrice) return;
 
     const updated = packages.map(pkg => {
       if (pkg.id === editingPackageId) {
@@ -94,7 +94,7 @@ export default function PackagesManager({
           ...pkg,
           name,
           originalPrice: Number(originalPrice),
-          packagePrice: Number(packagePrice),
+          packagePrice: Number(originalPrice),
           duration,
           status
         };
@@ -154,7 +154,7 @@ export default function PackagesManager({
       </div>
 
       {/* Info Card / Total KPI */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl flex items-center gap-4">
           <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-lg flex items-center justify-center">
             <Package size={20} />
@@ -162,24 +162,6 @@ export default function PackagesManager({
           <div>
             <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Total Active Packages</span>
             <strong className="text-lg font-black text-white">{packages.filter(p => p.status).length}</strong>
-          </div>
-        </div>
-        
-        <div className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl flex items-center gap-4">
-          <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-lg flex items-center justify-center">
-            <Percent size={20} />
-          </div>
-          <div>
-            <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Average Discount Saving</span>
-            <strong className="text-lg font-black text-white">
-              {packages.length > 0
-                ? Math.round(
-                    packages.reduce((acc, p) => acc + (1 - p.packagePrice / (p.originalPrice || 1)) * 100, 0) /
-                      packages.length
-                  )
-                : 0}
-              %
-            </strong>
           </div>
         </div>
 
@@ -212,9 +194,7 @@ export default function PackagesManager({
             <thead>
               <tr className="border-b border-slate-800 text-3xs font-extrabold uppercase tracking-widest text-slate-400 bg-slate-950/40">
                 <th className="px-6 py-4">Package Name</th>
-                <th className="px-6 py-4">Original Price</th>
-                <th className="px-6 py-4">Package Price</th>
-                <th className="px-6 py-4">Discount</th>
+                <th className="px-6 py-4">Price</th>
                 <th className="px-6 py-4">Duration</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-right">Actions</th>
@@ -223,7 +203,7 @@ export default function PackagesManager({
             <tbody className="divide-y divide-slate-800/40 text-xs font-medium">
               {filteredPackages.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-slate-500 font-semibold">
+                  <td colSpan={5} className="px-6 py-12 text-center text-slate-500 font-semibold">
                     No service packages found. Click "New Package" to create one.
                   </td>
                 </tr>
@@ -231,13 +211,7 @@ export default function PackagesManager({
                 filteredPackages.map(pkg => (
                   <tr key={pkg.id} className="hover:bg-slate-800/10 transition-colors group">
                     <td className="px-6 py-4 font-black text-white">{pkg.name}</td>
-                    <td className="px-6 py-4 font-mono text-slate-400">₹{pkg.originalPrice.toLocaleString()}</td>
-                    <td className="px-6 py-4 font-mono font-bold text-indigo-400">₹{pkg.packagePrice.toLocaleString()}</td>
-                    <td className="px-6 py-4">
-                      <span className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 text-4xs font-bold uppercase px-2 py-0.5 rounded-full">
-                        {calculateDiscount(pkg.originalPrice, pkg.packagePrice)}
-                      </span>
-                    </td>
+                    <td className="px-6 py-4 font-mono font-bold text-indigo-400">₹{pkg.originalPrice.toLocaleString()}</td>
                     <td className="px-6 py-4 font-semibold text-slate-300">{pkg.duration}</td>
                     <td className="px-6 py-4">
                       {/* Active Toggle Switch */}
@@ -301,41 +275,18 @@ export default function PackagesManager({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-4xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Original Price (₹) *</label>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    placeholder="34234"
-                    value={originalPrice}
-                    onChange={e => setOriginalPrice(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-hidden focus:border-indigo-500 font-mono font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="text-4xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Package Price (₹) *</label>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    placeholder="2342"
-                    value={packagePrice}
-                    onChange={e => setPackagePrice(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-hidden focus:border-indigo-500 font-mono font-bold"
-                  />
-                </div>
+              <div>
+                <label className="text-4xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Price (₹) *</label>
+                <input
+                  type="number"
+                  required
+                  min="0"
+                  placeholder="1399"
+                  value={originalPrice}
+                  onChange={e => setOriginalPrice(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-hidden focus:border-indigo-500 font-mono font-bold"
+                />
               </div>
-
-              {originalPrice && packagePrice && (
-                <div className="bg-indigo-500/10 border border-indigo-500/20 px-3 py-2.5 rounded-lg flex items-center justify-between text-2xs font-semibold text-indigo-300">
-                  <span>Saving Discount Percentage:</span>
-                  <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold px-2.5 py-0.5 rounded-full font-mono">
-                    {calculateDiscount(Number(originalPrice), Number(packagePrice))}
-                  </span>
-                </div>
-              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -414,41 +365,18 @@ export default function PackagesManager({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-4xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Original Price (₹) *</label>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    placeholder="34234"
-                    value={originalPrice}
-                    onChange={e => setOriginalPrice(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-hidden focus:border-indigo-500 font-mono font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="text-4xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Package Price (₹) *</label>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    placeholder="2342"
-                    value={packagePrice}
-                    onChange={e => setPackagePrice(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-hidden focus:border-indigo-500 font-mono font-bold"
-                  />
-                </div>
+              <div>
+                <label className="text-4xs font-bold text-slate-400 uppercase tracking-widest block mb-1">Price (₹) *</label>
+                <input
+                  type="number"
+                  required
+                  min="0"
+                  placeholder="1399"
+                  value={originalPrice}
+                  onChange={e => setOriginalPrice(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-hidden focus:border-indigo-500 font-mono font-bold"
+                />
               </div>
-
-              {originalPrice && packagePrice && (
-                <div className="bg-indigo-500/10 border border-indigo-500/20 px-3 py-2.5 rounded-lg flex items-center justify-between text-2xs font-semibold text-indigo-300">
-                  <span>Saving Discount Percentage:</span>
-                  <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold px-2.5 py-0.5 rounded-full font-mono">
-                    {calculateDiscount(Number(originalPrice), Number(packagePrice))}
-                  </span>
-                </div>
-              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>

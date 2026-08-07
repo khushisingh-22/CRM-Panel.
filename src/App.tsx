@@ -227,7 +227,18 @@ export default function App() {
             phone: '800-555-WASH',
             avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
           });
-          setPackages(data.packages || []);
+          const initialPackages = data.packages && data.packages.length > 0 ? data.packages.map((p: any) => {
+            if (p.id === 'pkg-default-1' && p.originalPrice === 34234) {
+              return { ...p, originalPrice: 1399, packagePrice: 1399 };
+            }
+            return p;
+          }) : [
+            { id: 'pkg-default-1', name: '4 Wash In a Month', originalPrice: 1399, packagePrice: 1399, duration: '0h', status: true }
+          ];
+          setPackages(initialPackages);
+          if (!data.packages || data.packages.length === 0 || data.packages.some((p: any) => p.id === 'pkg-default-1' && p.originalPrice === 34234)) {
+            saveFirebaseUserField(targetUid, 'packages', initialPackages);
+          }
           
         } catch (e) {
           console.error("Error setting up data on login:", e);
