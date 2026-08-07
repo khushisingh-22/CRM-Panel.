@@ -262,10 +262,10 @@ export default function CustomerCRM({
                     <div className="flex justify-between items-center text-xs font-bold text-slate-400">
                       <div className="flex items-center gap-1.5">
                         <Briefcase size={14} className="text-slate-500" />
-                        <span>{client.totalJobs} jobs</span>
+                        <span>{client.totalJobs} Wash</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <span className="text-slate-500">Spend:</span>
+                        <span className="text-slate-500">Earn:</span>
                         <span className="text-emerald-400 font-mono">₹{client.lifetimeSpend}</span>
                       </div>
                     </div>
@@ -541,11 +541,11 @@ export default function CustomerCRM({
                   <span className="font-bold text-slate-200">{selectedCustomer.address || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-800/40">
-                  <span className="text-slate-400">Total Visits:</span>
-                  <span className="font-bold text-slate-200">{selectedCustomer.totalJobs} jobs</span>
+                  <span className="text-slate-400">Total Wash:</span>
+                  <span className="font-bold text-slate-200">{selectedCustomer.totalJobs}</span>
                 </div>
                 <div className="flex justify-between py-1">
-                  <span className="text-slate-400">Lifetime Spend:</span>
+                  <span className="text-slate-400">Total Cost Earn:</span>
                   <span className="font-bold text-emerald-400 font-mono">₹{selectedCustomer.lifetimeSpend}</span>
                 </div>
               </div>
