@@ -70,8 +70,23 @@ import LoginScreen from './components/LoginScreen';
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [autoOpenNewBooking, setAutoOpenNewBooking] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
   const [showNotifications, setShowNotifications] = useState(false);
+
+  // Resize listener to auto close sidebar on smaller screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    // Initial sync
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Core CRM states
   const [services, setServices] = useState<ServicePackage[]>([]);
@@ -561,6 +576,11 @@ export default function App() {
     } else {
       setActiveTab(tabId);
     }
+
+    // Auto-close sidebar on mobile/tablet after navigating
+    if (window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
   };
 
   const handleSelectJobFromOutside = (jobId: string | null) => {
@@ -602,11 +622,21 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#070A13] flex text-slate-100 font-sans" id="drwashit-crm-app">
       
+      {/* Sidebar Overlay Backdrop for Mobile */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 bg-slate-950/70 z-40 lg:hidden backdrop-blur-xs transition-opacity duration-300"
+        />
+      )}
+      
       {/* Navigation Sidebar */}
       <aside
         className={`${
-          sidebarOpen ? 'w-64' : 'w-16'
-        } shrink-0 bg-[#0B1329] border-r border-slate-800/60 text-slate-400 flex flex-col justify-between transition-all duration-300 z-30 select-none`}
+          sidebarOpen 
+            ? 'w-64 translate-x-0' 
+            : 'w-16 lg:translate-x-0 lg:w-16 -translate-x-full'
+        } fixed lg:static inset-y-0 left-0 bg-[#0B1329] border-r border-slate-800/60 text-slate-400 flex flex-col justify-between transition-all duration-300 z-50 lg:z-30 select-none`}
         id="side-navigation-panel"
       >
         <div className="flex flex-col h-full overflow-hidden">
@@ -632,11 +662,18 @@ export default function App() {
             
             {/* Collapse toggle */}
             <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
+              onClick={() => {
+                if (window.innerWidth < 1024) {
+                  setSidebarOpen(false);
+                } else {
+                  setSidebarOpen(!sidebarOpen);
+                }
+              }}
               className="p-1.5 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer text-slate-400"
               id="sidebar-toggle-btn"
             >
-              <Menu size={16} />
+              <X size={16} className="block lg:hidden" />
+              <Menu size={16} className="hidden lg:block" />
             </button>
           </div>
 
@@ -755,10 +792,17 @@ export default function App() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         
         {/* Top Navbar with deep dark layout */}
-        <header className="h-16 border-b border-slate-800/60 bg-[#0B1329] px-6 flex items-center justify-between shrink-0 select-none">
+        <header className="h-16 border-b border-slate-800/60 bg-[#0B1329] px-4 md:px-6 flex items-center justify-between shrink-0 select-none">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-extrabold text-white">{settings.shopName}</span>
-            <span className="bg-indigo-500/10 text-indigo-400 text-4xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider border border-indigo-500/20">Active Workspace</span>
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-1.5 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer text-slate-400 lg:hidden"
+              title="Toggle Menu"
+            >
+              <Menu size={18} />
+            </button>
+            <span className="text-sm font-extrabold text-white truncate max-w-[120px] sm:max-w-none">{settings.shopName}</span>
+            <span className="bg-indigo-500/10 text-indigo-400 text-4xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider border border-indigo-500/20 hidden sm:inline-block">Active Workspace</span>
           </div>
 
           <div className="flex items-center gap-4 relative">
