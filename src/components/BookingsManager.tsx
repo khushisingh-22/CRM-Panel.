@@ -80,7 +80,7 @@ Our Reaching Time⬇️
 
 Customer Support ⬇️
 Mobile Num - ${phone}
-Email - support@drwashit.com
+Email - info.drwashit@gmail.com
 Website - www.drwashit.com
 
 Download the Dr Washit - Doorstep Car Carr App Now 
@@ -670,15 +670,29 @@ export default function BookingsManager({
                           >
                             <Send size={10} />
                           </a>
-                          <a
-                            href={`https://wa.me/${apt.customerPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(getFormattedMessage(apt.customerName, apt.date, apt.time, apt.customerPhone))}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="p-1 hover:bg-slate-800 rounded text-emerald-400 hover:text-emerald-300 transition-colors"
-                            title="Send Free WhatsApp Chat"
-                          >
-                            <ExternalLink size={10} />
-                          </a>
+                          {settings.whatsappMode === 'api' ? (
+                            <button
+                              onClick={() => {
+                                const msg = getFormattedMessage(apt.customerName, apt.date, apt.time, apt.customerPhone);
+                                handleSendBackgroundWhatsApp(apt.customerPhone, msg);
+                              }}
+                              disabled={whatsappSending}
+                              className="p-1 hover:bg-slate-800 rounded text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer"
+                              title="Send Background WhatsApp via API"
+                            >
+                              <MessageSquare size={10} />
+                            </button>
+                          ) : (
+                            <a
+                              href={`https://wa.me/${apt.customerPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(getFormattedMessage(apt.customerName, apt.date, apt.time, apt.customerPhone))}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="p-1 hover:bg-slate-800 rounded text-emerald-400 hover:text-emerald-300 transition-colors"
+                              title="Send Free WhatsApp Chat (Direct Redirect)"
+                            >
+                              <ExternalLink size={10} />
+                            </a>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1256,7 +1270,7 @@ export default function BookingsManager({
                 </div>
               </div>
             ) : (
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-1.5">
                 <a
                   href={`https://wa.me/${smsAlert.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(smsAlert.message)}`}
                   target="_blank"
@@ -1266,6 +1280,10 @@ export default function BookingsManager({
                   <ExternalLink size={10} />
                   <span>Open in WhatsApp (Real Chat)</span>
                 </a>
+                <div className="text-[9px] text-slate-400 text-center font-semibold leading-normal p-2 bg-amber-500/5 rounded-lg border border-amber-500/20 mt-1 text-left">
+                  <span className="text-amber-400 font-bold block mb-0.5">⚠️ Important Note:</span>
+                  Direct mode opens WhatsApp Web using your own browser account. To send messages automatically from the company's official business line (<span className="text-emerald-400">8510002780</span>), please go to <strong className="text-indigo-400">Settings</strong> and change the Dispatch Mode to <strong className="text-emerald-400">"Automated API Gateway"</strong>.
+                </div>
               </div>
             )}
 

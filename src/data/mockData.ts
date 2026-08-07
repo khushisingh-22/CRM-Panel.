@@ -123,7 +123,7 @@ export const DEFAULT_LEADS: any[] = [];
 export const DEFAULT_SETTINGS: ShopSettings = {
   shopName: 'Dr Washit',
   phone: '8510002780',
-  email: 'support@drwashit.com',
+  email: 'info.drwashit@gmail.com',
   address: 'B-129, Pocket B, Sector-omicron 3rd, omicron III, Greater Noida, Mathurapur, Uttar Pradesh - 201310',
   taxRate: 0,
   currencySymbol: '₹',

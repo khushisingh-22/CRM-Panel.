@@ -237,7 +237,7 @@ Your Booking Invoice from *Dr Washit* has been generated successfully.
 
 Customer Support ⬇️
 Mobile Num - 8510002780
-Email - support@drwashit.com
+Email - info.drwashit@gmail.com
 Website - www.drwashit.com
 
 Download the Dr Washit - Doorstep Car Care App Now 
@@ -338,7 +338,7 @@ Let your car sparkle at your doorstep🚗💦✨ & thankyou for choosing *Dr Was
                       <p className="text-[9px] text-slate-300 leading-normal max-w-sm pt-1.5 font-medium">
                         B-129.PocketB,Sector-omicron 3rd,omicron|||,greaternoida,mathurapur,uttarpradesh201310
                         <br />
-                        Phone: 8510002780 | Email: support@drwashit.com
+                        Phone: 8510002780 | Email: info.drwashit@gmail.com
                         <br />
                         <span className="font-extrabold text-white tracking-wider">GSTIN: 09DRWSH8510M1Z5</span>
                       </p>
@@ -496,7 +496,7 @@ Let your car sparkle at your doorstep🚗💦✨ & thankyou for choosing *Dr Was
                       </span>
                       <span className="flex items-center gap-1">
                         <Mail size={10} className="text-sky-400" />
-                        <span>support@drwashit.com</span>
+                        <span>info.drwashit@gmail.com</span>
                       </span>
                       <span className="flex items-center gap-1">
                         <Globe size={10} className="text-sky-400" />
