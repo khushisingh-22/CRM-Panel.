@@ -23,11 +23,12 @@ import {
   AlertCircle,
   Check
 } from 'lucide-react';
-import { Customer, Appointment } from '../types/crm';
+import { Customer, Appointment, Staff } from '../types/crm';
 
 interface CustomerCRMProps {
   customers: Customer[];
   appointments: Appointment[];
+  staff?: Staff[];
   onAddCustomer: (customer: Customer) => void;
   onUpdateCustomer: (customer: Customer) => void;
   onDeleteCustomer?: (id: string) => void;
@@ -37,6 +38,7 @@ interface CustomerCRMProps {
 export default function CustomerCRM({
   customers,
   appointments,
+  staff = [],
   onAddCustomer,
   onUpdateCustomer,
   onDeleteCustomer,
@@ -557,20 +559,73 @@ export default function CustomerCRM({
                 </div>
               )}
 
-              {selectedCustHistory.length > 0 && (
-                <div className="space-y-2">
-                  <strong className="text-[10px] text-slate-400 block uppercase tracking-wider">Detaling Jobs Log ({selectedCustHistory.length})</strong>
-                  <div className="max-h-32 overflow-y-auto space-y-1.5 pr-1">
-                    {selectedCustHistory.map(job => (
-                      <div key={job.id} className="p-2 bg-slate-950/50 rounded border border-slate-800 text-[11px] flex justify-between items-center">
-                        <div>
-                          <span className="font-bold text-slate-200 block">{job.serviceName}</span>
-                          <span className="text-slate-400 font-mono text-[9px]">{job.date}</span>
+              {selectedCustHistory.length > 0 ? (
+                <div className="space-y-3 pt-2">
+                  <strong className="text-[10px] text-slate-400 block uppercase tracking-wider font-extrabold">
+                    Car Wash & Detailing History ({selectedCustHistory.length})
+                  </strong>
+                  <div className="max-h-60 overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-slate-800">
+                    {selectedCustHistory.map(job => {
+                      const staffMember = job.assignedTo ? staff.find(s => s.id === job.assignedTo) : null;
+                      const staffName = staffMember ? staffMember.name : 'Not Assigned';
+                      
+                      // Status styling
+                      let statusBadge = '';
+                      if (job.status === 'completed') {
+                        statusBadge = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+                      } else if (job.status === 'in_progress') {
+                        statusBadge = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+                      } else if (job.status === 'scheduled') {
+                        statusBadge = 'bg-sky-500/10 text-sky-400 border-sky-500/20';
+                      } else if (job.status === 'cancelled') {
+                        statusBadge = 'bg-red-500/10 text-red-400 border-red-500/20';
+                      } else {
+                        statusBadge = 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+                      }
+
+                      return (
+                        <div key={job.id} className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80 text-xs flex flex-col gap-2 hover:border-slate-700/60 transition-colors">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <span className="font-extrabold text-white text-xs block">{job.serviceName}</span>
+                              <div className="flex items-center gap-1.5 mt-1 text-slate-400 text-[10px]">
+                                <Calendar size={10} className="text-[#0ea5e9]" />
+                                <span className="font-semibold font-mono">{job.date}</span>
+                                {job.time && (
+                                  <>
+                                    <span className="text-slate-600">•</span>
+                                    <span className="font-semibold font-mono">{job.time}</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex flex-col items-end gap-1.5">
+                              <span className="font-mono text-emerald-400 font-extrabold text-xs">₹{job.price}</span>
+                              <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${statusBadge}`}>
+                                {job.status}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex justify-between items-center pt-2 border-t border-slate-800/40 text-[10px] text-slate-300">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-slate-500 font-semibold">Cleaner (धोने वाला):</span>
+                              <span className="font-bold text-indigo-400 bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10">{staffName}</span>
+                            </div>
+                            {job.vehicle && (
+                              <div className="text-[10px] font-bold text-slate-400">
+                                🚗 {job.vehicle.make} {job.vehicle.model || ''}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <span className="font-mono text-emerald-400 font-bold">₹{job.price}</span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
+                </div>
+              ) : (
+                <div className="text-center p-5 bg-slate-950/30 rounded-xl border border-dashed border-slate-800/50 text-slate-500 text-xs font-semibold">
+                  No detailing/wash history logged for this client yet.
                 </div>
               )}
             </div>
