@@ -34,6 +34,7 @@ interface BillingManagerProps {
   settings: ShopSettings;
   onUpdateAppointment: (updated: Appointment) => void;
   customers?: Customer[];
+  ownerUid?: string;
 }
 
 // Custom Dr Washit Monogram Logo (SVG)
@@ -101,7 +102,8 @@ export default function BillingManager({
   appointments,
   settings,
   onUpdateAppointment,
-  customers = []
+  customers = [],
+  ownerUid = ''
 }: BillingManagerProps) {
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(
     appointments.filter(a => a.status !== 'cancelled')[0]?.id || null
@@ -225,9 +227,13 @@ export default function BillingManager({
                       let cleanPhone = activeInvoice.customerPhone.replace(/[^0-9]/g, '');
                       if (cleanPhone.length === 10) cleanPhone = '91' + cleanPhone;
                       
+                      const invoiceLink = ownerUid 
+                        ? `\n\n📄 *VIEW & DOWNLOAD DIGITAL INVOICE* ⬇️\n${window.location.origin}/?view_invoice=${activeInvoice.id}&owner=${ownerUid}`
+                        : '';
+
                       const formattedMsg = `Dear ${activeInvoice.customerName}, 
 
-Your Booking Invoice from *Dr Washit* has been generated successfully.
+Your Booking Invoice from *Dr Washit* has been generated successfully.${invoiceLink}
 
 *Invoice No* - ${activeInvoice.invoiceNumber || 'N/A'}
 *Date* - ${activeInvoice.date}

@@ -43,6 +43,7 @@ interface BookingsManagerProps {
   autoOpenNewBooking?: boolean;
   onClearAutoOpenNewBooking?: () => void;
   settings: ShopSettings;
+  ownerUid?: string;
 }
 
 const formatDate = (dateStr: string) => {
@@ -69,28 +70,82 @@ const formatTime = (timeStr: string) => {
   return timeStr;
 };
 
-const getFormattedMessage = (customerName: string, date: string, time: string, phone: string) => {
-  return `Dear ${customerName || 'sir'}, 
+const getFormattedMessage = (
+  aptOrName: Appointment | string,
+  date?: string,
+  time?: string,
+  phone?: string,
+  ownerUid?: string
+) => {
+  let customerName = '';
+  let bookingDate = '';
+  let bookingTime = '';
+  let invoiceNo = 'N/A';
+  let vehicleInfo = 'N/A';
+  let serviceName = 'N/A';
+  let totalAmount = '0';
+  let payStatus = 'Unpaid';
 
-Your Slot has been booked successfully.
+  if (typeof aptOrName === 'object' && aptOrName !== null) {
+    const apt = aptOrName as Appointment;
+    customerName = apt.customerName;
+    bookingDate = apt.date;
+    bookingTime = apt.time;
+    invoiceNo = apt.invoiceNumber || 'N/A';
+    vehicleInfo = `${apt.vehicle.year || ''} ${apt.vehicle.make || ''} ${apt.vehicle.model || ''}`.trim() || 'N/A';
+    serviceName = apt.serviceName;
+    totalAmount = `₹${apt.price}`;
+    
+    if (apt.paymentStatus === 'paid') {
+      payStatus = 'Paid (नकद / ऑनलाइन प्राप्त)';
+    } else if (apt.paymentStatus === 'partially_paid') {
+      payStatus = `Partially Paid (₹${apt.paidAmount || 0} received)`;
+    } else {
+      payStatus = 'Unpaid (धोने के बाद भुगतान करें)';
+    }
+  } else {
+    customerName = aptOrName || 'sir';
+    bookingDate = date || '';
+    bookingTime = time || '';
+  }
 
-Our Reaching Time⬇️
-*Time - ${formatTime(time)}
-*Date - ${formatDate(date)}
+  const cleanTime = formatTime(bookingTime);
+  const cleanDate = formatDate(bookingDate);
+
+  let invoiceLink = '';
+  if (typeof aptOrName === 'object' && aptOrName !== null && ownerUid) {
+    const apt = aptOrName as Appointment;
+    invoiceLink = `\n\n📄 *VIEW & DOWNLOAD DIGITAL INVOICE* ⬇️\n${window.location.origin}/?view_invoice=${apt.id}&owner=${ownerUid}\n`;
+  }
+
+  return `Dear ${customerName}, 
+
+Your Slot has been booked successfully! 🎉${invoiceLink}
+
+📄 *INVOICE & BILLING DETAILS (बिल विवरण)* 📄
+-----------------------------------------
+*Invoice No:* ${invoiceNo}
+*Date:* ${cleanDate}
+*Time:* ${cleanTime}
+*Vehicle:* ${vehicleInfo}
+*Service:* ${serviceName}
+-----------------------------------------
+*Total Amount:* ${totalAmount}
+*Payment Status:* ${payStatus}
+-----------------------------------------
 
 Customer Support ⬇️
-Mobile Num - ${phone}
+Mobile Num - 8510002780
 Email - info.drwashit@gmail.com
 Website - www.drwashit.com
 
-Download the Dr Washit - Doorstep Car Carr App Now 
+Download the Dr Washit - Doorstep Car Care App Now 
 
 For Android User ⬇️
 https://play.google.com/store/apps/details?id=com.app.buntywash&pcampaignid=web_share
 
 For Apple User⬇️
 https://apps.apple.com/in/app/dr-washit/id6756914622
-
 
 Let your car sparkle at your doorstep🚗💦✨ & thankyou for choosing *Dr Washit*`;
 };
@@ -106,7 +161,8 @@ export default function BookingsManager({
   onNavigate,
   autoOpenNewBooking = false,
   onClearAutoOpenNewBooking,
-  settings
+  settings,
+  ownerUid = ''
 }: BookingsManagerProps) {
   // Search & Filters State
   const [search, setSearch] = useState('');
@@ -345,7 +401,7 @@ export default function BookingsManager({
       show: true,
       clientName: clientName,
       phone: clientPhone,
-      message: getFormattedMessage(clientName, datePart || new Date().toISOString().split('T')[0], timePart || '09:00', clientPhone)
+      message: getFormattedMessage(newAppointment, undefined, undefined, undefined, ownerUid)
     });
 
     // Reset fields
@@ -664,7 +720,7 @@ export default function BookingsManager({
                         <span className="font-mono font-bold text-white">{apt.customerPhone}</span>
                         <div className="flex gap-1">
                           <a
-                            href={`sms:${apt.customerPhone}?body=${encodeURIComponent(getFormattedMessage(apt.customerName, apt.date, apt.time, apt.customerPhone))}`}
+                            href={`sms:${apt.customerPhone}?body=${encodeURIComponent(getFormattedMessage(apt, undefined, undefined, undefined, ownerUid))}`}
                             className="p-1 hover:bg-slate-800 rounded text-sky-400 hover:text-sky-300 transition-colors"
                             title="Send Free SMS (Message Box)"
                           >
@@ -673,7 +729,7 @@ export default function BookingsManager({
                           {settings.whatsappMode === 'api' ? (
                             <button
                               onClick={() => {
-                                const msg = getFormattedMessage(apt.customerName, apt.date, apt.time, apt.customerPhone);
+                                const msg = getFormattedMessage(apt, undefined, undefined, undefined, ownerUid);
                                 handleSendBackgroundWhatsApp(apt.customerPhone, msg);
                               }}
                               disabled={whatsappSending}
@@ -684,7 +740,7 @@ export default function BookingsManager({
                             </button>
                           ) : (
                             <a
-                              href={`https://wa.me/${apt.customerPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(getFormattedMessage(apt.customerName, apt.date, apt.time, apt.customerPhone))}`}
+                              href={`https://wa.me/${apt.customerPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(getFormattedMessage(apt, undefined, undefined, undefined, ownerUid))}`}
                               target="_blank"
                               rel="noreferrer"
                               className="p-1 hover:bg-slate-800 rounded text-emerald-400 hover:text-emerald-300 transition-colors"

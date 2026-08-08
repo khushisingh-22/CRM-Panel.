@@ -151,3 +151,28 @@ const initializeNewUserFirestoreData = async (uid: string) => {
     initialDocs.map(({ ref, data }) => setDoc(ref, data, { merge: true }))
   );
 };
+
+export const loadPublicInvoiceData = async (ownerUid: string, appointmentId: string) => {
+  try {
+    const shopDocRef = doc(db, 'users', ownerUid, 'settings', 'shop');
+    const appointmentsDocRef = doc(db, 'users', ownerUid, 'collections', 'appointments');
+
+    const [shopSnap, appointmentsSnap] = await Promise.all([
+      getDoc(shopDocRef),
+      getDoc(appointmentsDocRef)
+    ]);
+
+    const settings = shopSnap.exists() ? shopSnap.data() : DEFAULT_SETTINGS;
+    const appointments = appointmentsSnap.exists() ? (appointmentsSnap.data().items || []) : [];
+    const appointment = appointments.find((a: any) => a.id === appointmentId);
+
+    return {
+      settings,
+      appointment
+    };
+  } catch (error) {
+    console.error("Error loading public invoice:", error);
+    return { settings: DEFAULT_SETTINGS, appointment: null };
+  }
+};
+

@@ -64,14 +64,39 @@ import PackagesManager, { BusinessPackage } from './components/PackagesManager';
 
 // Firebase Authentication and Firestore Syncing
 import { customAuth } from './lib/customAuth';
-import { loadFirebaseUserData, saveFirebaseUserField } from './utils/firebaseSync';
+import { loadFirebaseUserData, saveFirebaseUserField, loadPublicInvoiceData } from './utils/firebaseSync';
 import LoginScreen from './components/LoginScreen';
+import PublicInvoiceView from './components/PublicInvoiceView';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [autoOpenNewBooking, setAutoOpenNewBooking] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
   const [showNotifications, setShowNotifications] = useState(false);
+
+  // Public customer invoice viewing state
+  const [publicInvoice, setPublicInvoice] = useState<{ settings: ShopSettings; appointment: Appointment } | null>(null);
+  const [loadingPublicInvoice, setLoadingPublicInvoice] = useState(false);
+
+  // Load public invoice if viewing via link
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const invoiceId = urlParams.get('view_invoice');
+    const owner = urlParams.get('owner');
+    
+    if (invoiceId && owner) {
+      setLoadingPublicInvoice(true);
+      loadPublicInvoiceData(owner, invoiceId).then((data) => {
+        if (data && data.appointment) {
+          setPublicInvoice({
+            settings: data.settings as ShopSettings,
+            appointment: data.appointment as Appointment
+          });
+        }
+        setLoadingPublicInvoice(false);
+      });
+    }
+  }, []);
 
   // Resize listener to auto close sidebar on smaller screens
   useEffect(() => {
@@ -601,6 +626,22 @@ export default function App() {
 
   const pendingLeads = leads.filter(l => l.status === 'new');
 
+  // 0. Guard against Public Customer Invoice View
+  if (loadingPublicInvoice) {
+    return (
+      <div className="h-screen bg-[#070A13] flex items-center justify-center text-slate-400 font-medium select-none">
+        <div className="flex flex-col items-center gap-3">
+          <span className="h-9 w-9 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin"></span>
+          <span className="text-xs font-bold tracking-wider uppercase text-slate-500 animate-pulse">Loading Digital Invoice...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (publicInvoice) {
+    return <PublicInvoiceView appointment={publicInvoice.appointment} settings={publicInvoice.settings} />;
+  }
+
   // 1. Guard against Auth Loading state
   if (authLoading) {
     return (
@@ -977,6 +1018,7 @@ export default function App() {
               autoOpenNewBooking={autoOpenNewBooking}
               onClearAutoOpenNewBooking={() => setAutoOpenNewBooking(false)}
               settings={settings}
+              ownerUid={currentUser?.adminUid || currentUser?.uid || ''}
             />
           )}
 
@@ -1007,6 +1049,7 @@ export default function App() {
             <CustomerCRM
               customers={customers}
               appointments={appointments}
+              staff={staff}
               onAddCustomer={(newCust) => syncCustomers([newCust, ...customers])}
               onUpdateCustomer={(updated) => syncCustomers(customers.map(c => c.id === updated.id ? updated : c))}
               onDeleteCustomer={(id) => syncCustomers(customers.filter(c => c.id !== id))}
@@ -1035,6 +1078,7 @@ export default function App() {
               settings={settings}
               onUpdateAppointment={handleUpdateAppointment}
               customers={customers}
+              ownerUid={currentUser?.adminUid || currentUser?.uid || ''}
             />
           )}
 
