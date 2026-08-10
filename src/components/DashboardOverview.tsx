@@ -387,7 +387,7 @@ export default function DashboardOverview({
       {/* Welcome Banner */}
       <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white rounded-xl p-6 border border-slate-800 shadow-md">
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-          Welcome back, Dr. Washit.
+          Welcome back, Dr Washit.
         </h1>
       </div>
 

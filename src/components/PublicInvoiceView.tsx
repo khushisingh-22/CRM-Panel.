@@ -152,7 +152,7 @@ export default function PublicInvoiceView({ appointment, settings }: PublicInvoi
           <div className="relative z-10 space-y-1">
             <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400 block">PREMIUM DOORSTEP CAR DETAILING</span>
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-none uppercase">
-              DR. WASHIT
+              DR WASHIT
             </h2>
             <p className="text-[9px] text-slate-300 leading-normal max-w-sm pt-1.5 font-medium">
               B-129.PocketB,Sector-omicron 3rd,omicron|||,greaternoida,mathurapur,uttarpradesh201310

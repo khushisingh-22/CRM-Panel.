@@ -706,7 +706,7 @@ export default function App() {
               )}
               {sidebarOpen && (
                 <div className="min-w-0">
-                  <strong className="text-sm font-black text-white block tracking-tight truncate">{settings.shopName || 'Dr. WashIt'}</strong>
+                  <strong className="text-sm font-black text-white block tracking-tight truncate">{settings.shopName || 'Dr Washit'}</strong>
                   <span className="text-4xs text-cyan-400 font-bold uppercase tracking-wider block">CRM Panel</span>
                 </div>
               )}

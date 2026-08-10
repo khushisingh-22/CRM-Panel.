@@ -422,113 +422,25 @@ export default function SettingsPanel({
                   By default, clicking <strong className="text-white">"Open in WhatsApp"</strong> triggers a direct link redirect (<code className="text-cyan-400 font-mono text-[10px] bg-slate-950 px-1 py-0.5 rounded">wa.me/...</code>) which opens WhatsApp on the device currently logged into the CRM (such as an employee's mobile phone). This naturally uses that employee's personal WhatsApp account.
                 </p>
                 <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                  To automatically dispatch all client confirmation and ready alerts from your official business line (<strong className="text-slate-200">8510002780</strong>) regardless of who is logged in, switch the mode below to <strong className="text-emerald-400">Automated WhatsApp API Gateway</strong>.
+                  This manual redirect system is <strong className="text-emerald-400">100% FREE</strong> and requires no expensive API gateway subscriptions. Message templates are prepared automatically, allowing you to send client updates and billing invoices in just one tap.
                 </p>
               </div>
 
-              {/* Toggle WhatsApp Mode */}
-              <div className="space-y-3">
-                <label className="text-3xs text-slate-400 font-extrabold uppercase tracking-wider block">WhatsApp Dispatch Mode</label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setWhatsappMode('direct')}
-                    className={`p-4 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between h-28 ${
-                      whatsappMode === 'direct'
-                        ? 'bg-slate-950 border-emerald-500 text-white shadow-md'
-                        : 'bg-slate-950/40 border-slate-850 text-slate-400 hover:border-slate-800'
-                    }`}
-                  >
-                    <div>
-                      <span className="text-xs font-black block">Local Device Redirect</span>
-                      <span className="text-3xs text-slate-500 block mt-1 leading-relaxed">
-                        Redirects the active browser/phone to WhatsApp to send messages manually.
-                      </span>
-                    </div>
-                    <span className="text-[9px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Sends via personal session</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setWhatsappMode('api')}
-                    className={`p-4 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between h-28 ${
-                      whatsappMode === 'api'
-                        ? 'bg-slate-950 border-emerald-500 text-white shadow-md'
-                        : 'bg-slate-950/40 border-slate-850 text-slate-400 hover:border-slate-800'
-                    }`}
-                  >
-                    <div>
-                      <span className="text-xs font-black block text-emerald-400">Automated API Gateway</span>
-                      <span className="text-3xs text-slate-500 block mt-1 leading-relaxed">
-                        CRM sends background API requests automatically from your official business number.
-                      </span>
-                    </div>
-                    <span className="text-[9px] bg-emerald-950 text-emerald-400 border border-emerald-900/30 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Sends via 8510002780</span>
-                  </button>
+              {/* Direct Info and Business Phone input */}
+              <div className="space-y-4 pt-2 border-t border-slate-850/50">
+                <div className="space-y-1">
+                  <label className="text-3xs text-slate-400 font-extrabold uppercase tracking-wider block">Official Business WhatsApp Number</label>
+                  <input
+                    type="text"
+                    required
+                    value={whatsappBusinessPhone}
+                    onChange={(e) => setWhatsappBusinessPhone(e.target.value)}
+                    placeholder="e.g. 8510002780"
+                    className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white font-semibold focus:outline-hidden focus:border-sky-500/50"
+                  />
+                  <span className="text-[10px] text-slate-500 block">The default business contact number used for test messages.</span>
                 </div>
               </div>
-
-              {/* API Configuration Options */}
-              {whatsappMode === 'api' && (
-                <div className="space-y-4 pt-2 border-t border-slate-850/50 animate-fade-in">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-3xs text-slate-400 font-extrabold uppercase tracking-wider block">API Provider</label>
-                      <select
-                        value={whatsappProvider}
-                        onChange={(e) => setWhatsappProvider(e.target.value as any)}
-                        className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-sky-500/50 cursor-pointer"
-                      >
-                        <option value="ultramsg">Ultramsg (Recommended)</option>
-                        <option value="custom">Custom JSON HTTP Webhook</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-3xs text-slate-400 font-extrabold uppercase tracking-wider block">Business Sender Number</label>
-                      <input
-                        type="text"
-                        required
-                        value={whatsappBusinessPhone}
-                        onChange={(e) => setWhatsappBusinessPhone(e.target.value)}
-                        placeholder="e.g. 8510002780"
-                        className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white font-semibold focus:outline-hidden focus:border-sky-500/50"
-                      />
-                    </div>
-
-                    {whatsappProvider === 'ultramsg' && (
-                      <>
-                        <div className="space-y-1">
-                          <label className="text-3xs text-slate-400 font-extrabold uppercase tracking-wider block">Ultramsg Instance ID *</label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="e.g. instance12345"
-                            value={whatsappInstanceId}
-                            onChange={(e) => setWhatsappInstanceId(e.target.value)}
-                            className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white font-mono placeholder-slate-700 focus:outline-hidden focus:border-sky-500/50"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-3xs text-slate-400 font-extrabold uppercase tracking-wider block">Ultramsg Token / Secret *</label>
-                          <input
-                            type="password"
-                            required
-                            placeholder="••••••••••••••••"
-                            value={whatsappToken}
-                            onChange={(e) => setWhatsappToken(e.target.value)}
-                            className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white font-mono placeholder-slate-700 focus:outline-hidden focus:border-sky-500/50"
-                          />
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  <p className="text-4xs text-slate-500 leading-normal font-sans">
-                    * Automated backgrounds require valid credentials. You can set up a free instance on Ultramsg.com or connect your existing Twilio / DoubleTick endpoints.
-                  </p>
-                </div>
-              )}
 
               {/* Bottom Actions */}
               <div className="border-t border-slate-850 pt-5 flex items-center justify-between">
@@ -549,7 +461,7 @@ export default function SettingsPanel({
               </div>
             </div>
 
-            {/* Right Column: API Testing Console */}
+            {/* Right Column: Testing Console */}
             <div className="bg-[#0B1329] border border-slate-800/60 rounded-xl p-6 space-y-5 shadow-md flex flex-col justify-between">
               <div className="space-y-4">
                 <div className="flex items-center gap-2 border-b border-slate-800/60 pb-3">
@@ -559,7 +471,7 @@ export default function SettingsPanel({
 
                 <div className="space-y-3.5">
                   <p className="text-3xs text-slate-400 leading-normal font-medium">
-                    Send a real-time verification test directly to any device. Make sure you have entered correct Credentials and saved settings first.
+                    Test the direct browser-based WhatsApp redirect to verify communication is properly configured.
                   </p>
 
                   <div className="space-y-2">
@@ -571,54 +483,18 @@ export default function SettingsPanel({
                       disabled
                       className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950/60 text-slate-400 font-mono"
                     />
-                    <span className="text-[9px] text-slate-500 block">Sends a test message directly to the registered business phone number to verify gateway status.</span>
+                    <span className="text-[9px] text-slate-500 block">Sends a test manual message to the registered shop phone number.</span>
                   </div>
 
-                  {whatsappMode === 'api' ? (
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        if (!whatsappInstanceId || !whatsappToken) {
-                          alert('Please fill out Ultramsg Instance ID and Token first.');
-                          return;
-                        }
-                        const targetNum = whatsappBusinessPhone.replace(/\D/g, '') || '8510002780';
-                        try {
-                          const response = await fetch(`https://api.ultramsg.com/${whatsappInstanceId}/messages/chat`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: new URLSearchParams({
-                              token: whatsappToken,
-                              to: targetNum,
-                              body: `👋 Hello! Dr. WashIt CRM WhatsApp automated background delivery is working perfectly on official number: ${whatsappBusinessPhone}!`
-                            })
-                          });
-                          const resData = await response.json();
-                          if (response.ok && (resData.sent === 'true' || resData.sent === true || resData.id)) {
-                            alert('Success! Test WhatsApp message sent via Ultramsg API Gateway.');
-                          } else {
-                            alert(`API response error: ${JSON.stringify(resData)}`);
-                          }
-                        } catch (err: any) {
-                          alert(`Connection failed: ${err.message}`);
-                        }
-                      }}
-                      className="w-full text-center py-2.5 bg-emerald-600 hover:bg-emerald-500 text-[10px] font-bold uppercase tracking-wider rounded text-white transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
-                    >
-                      <MessageSquare size={13} className="stroke-[2.5]" />
-                      <span>Send API Test Message</span>
-                    </button>
-                  ) : (
-                    <a
-                      href={`https://wa.me/${whatsappBusinessPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Hello! Direct WhatsApp test from Dr. WashIt CRM.')}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="w-full text-center py-2.5 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-[10px] font-bold uppercase tracking-wider rounded text-white transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      <ExternalLink size={12} />
-                      <span>Test Manual Redirect Link</span>
-                    </a>
-                  )}
+                  <a
+                    href={`https://wa.me/${whatsappBusinessPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Hello! Direct WhatsApp test from Dr Washit CRM.')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full text-center py-2.5 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-[10px] font-bold uppercase tracking-wider rounded text-white transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <ExternalLink size={12} />
+                    <span>Test Manual Redirect Link</span>
+                  </a>
                 </div>
               </div>
 
@@ -626,9 +502,9 @@ export default function SettingsPanel({
               <div className="bg-slate-950 p-4 rounded-xl border border-slate-850 space-y-1">
                 <span className="text-[10px] text-slate-500 font-extrabold uppercase tracking-widest block">System Status</span>
                 <div className="flex items-center gap-1.5 pt-1">
-                  <div className={`h-2 w-2 rounded-full ${whatsappMode === 'api' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'} shrink-0`} />
+                  <div className="h-2 w-2 rounded-full bg-emerald-400 shrink-0" />
                   <span className="text-xs text-slate-200 font-bold">
-                    {whatsappMode === 'api' ? 'Background API Active' : 'Manual Link Redirect Active'}
+                    Manual Redirect Active (100% Free - Sends from your device)
                   </span>
                 </div>
               </div>
@@ -672,7 +548,7 @@ export default function SettingsPanel({
                     <label className="text-3xs text-slate-400 font-extrabold uppercase tracking-wider block">Website Name / Title *</label>
                     <input
                       type="text"
-                      placeholder="e.g. Dr. WashIt Main Portal"
+                      placeholder="e.g. Dr Washit Main Portal"
                       value={newWebTitle}
                       onChange={(e) => setNewWebTitle(e.target.value)}
                       className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-sky-500/50"
@@ -768,7 +644,7 @@ export default function SettingsPanel({
               <div className="space-y-1">
                 <label className="text-3xs text-slate-400 font-extrabold uppercase tracking-wider block">Invoice footer declaration notes</label>
                 <textarea
-                  defaultValue="Thank you for trusting Dr. WashIt. All detailing jobs carry a 48-hour satisfaction warranty. Contact support at info@drwashit.online"
+                  defaultValue="Thank you for trusting Dr Washit. All detailing jobs carry a 48-hour satisfaction warranty. Contact support at info@drwashit.online"
                   className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white h-20 leading-relaxed"
                 />
               </div>

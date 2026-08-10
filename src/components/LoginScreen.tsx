@@ -89,7 +89,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
             <Sparkles size={28} />
           </div>
           <h1 className="text-2xl font-black text-white tracking-tight uppercase">
-            Dr. Washit <span className="text-sky-400 font-medium">CRM</span>
+            Dr Washit <span className="text-sky-400 font-medium">CRM</span>
           </h1>
           <p className="text-xs text-slate-400">
             Professional Cloud-Synced Auto Detailing Workshop Management

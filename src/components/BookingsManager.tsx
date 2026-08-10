@@ -841,8 +841,8 @@ export default function BookingsManager({
 
       {/* Book Appointment Modal matching Screenshot 1 layout */}
       {showNewModal && (
-        <div className="fixed inset-0 bg-slate-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto animate-fade-in" id="appointment-modal">
-          <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl flex flex-col overflow-hidden animate-zoom-in text-slate-800">
+        <div className="fixed inset-0 bg-slate-950/65 backdrop-blur-xs flex items-start justify-center sm:items-center z-50 p-2 sm:p-4 overflow-y-auto animate-fade-in" id="appointment-modal">
+          <div className="bg-white rounded-2xl w-full max-w-xl my-4 sm:my-8 shadow-2xl flex flex-col overflow-hidden animate-zoom-in text-slate-800">
             {/* Modal Header */}
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white shrink-0">
               <div className="flex items-center gap-2">
@@ -1103,11 +1103,18 @@ export default function BookingsManager({
                 </div>
               </div>
 
-              {/* Submit Button */}
-              <div className="pt-4 border-t border-slate-100">
+              {/* Submit & Cancel Buttons */}
+              <div className="pt-4 border-t border-slate-100 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowNewModal(false)}
+                  className="w-1/3 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-all cursor-pointer text-center"
+                >
+                  Back
+                </button>
                 <button
                   type="submit"
-                  className="w-full py-3 bg-[#0ea5e9] hover:bg-[#38bdf8] text-white text-xs font-extrabold rounded-lg shadow-md transition-all cursor-pointer text-center"
+                  className="w-2/3 py-3 bg-[#0ea5e9] hover:bg-[#38bdf8] text-white text-xs font-extrabold rounded-lg shadow-md transition-all cursor-pointer text-center"
                 >
                   Create Booking
                 </button>
@@ -1120,8 +1127,8 @@ export default function BookingsManager({
 
       {/* Edit Booking Info Modal */}
       {showEditModal && editingApt && (
-        <div className="fixed inset-0 bg-slate-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-zoom-in">
+        <div className="fixed inset-0 bg-slate-950/65 backdrop-blur-xs flex items-start justify-center sm:items-center z-50 p-2 sm:p-4 overflow-y-auto animate-fade-in">
+          <div className="bg-white rounded-2xl w-full max-w-md my-4 sm:my-8 shadow-2xl overflow-hidden animate-zoom-in">
             <div className="p-5 bg-slate-900 text-white border-b border-slate-100 flex justify-between items-center">
               <h3 className="font-bold text-sm">Edit Booking Info</h3>
               <button onClick={() => setShowEditModal(false)} className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors cursor-pointer">
@@ -1219,8 +1226,8 @@ export default function BookingsManager({
 
       {/* Edit Times Modal */}
       {showTimesModal && timesApt && (
-        <div className="fixed inset-0 bg-slate-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden animate-zoom-in">
+        <div className="fixed inset-0 bg-slate-950/65 backdrop-blur-xs flex items-start justify-center sm:items-center z-50 p-2 sm:p-4 overflow-y-auto animate-fade-in">
+          <div className="bg-white rounded-2xl w-full max-w-sm my-4 sm:my-8 shadow-2xl overflow-hidden animate-zoom-in">
             <div className="p-5 bg-slate-900 text-white border-b border-slate-100 flex justify-between items-center">
               <h3 className="font-bold text-sm">Edit Service Timeline</h3>
               <button onClick={() => setShowTimesModal(false)} className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors cursor-pointer">
