@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { customAuth } from '../lib/customAuth';
 import { Mail, Lock, Sparkles, Shield, User, Loader2, Eye, EyeOff } from 'lucide-react';
-import { DrWashitLogo } from './DrwashitLogo';
+import { DrWashitLogo } from './DrWashitLogo';
 
 interface LoginScreenProps {
   onLoginSuccess: (uid: string) => void;
