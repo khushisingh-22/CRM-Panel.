@@ -70,7 +70,7 @@ export default function CarIntroLoader({ step }: CarIntroLoaderProps) {
     },
     {
       title: 'Ready to Shine',
-      subtitle: 'Showroom Finish Achieved! Ready for Detailing Pro...',
+      subtitle: 'Bussiness Finish Achieved! Ready for Detailing Pro...',
       desc: 'Workshop detailing complete. Unlocking Dr. Washit Portal.',
       color: 'from-emerald-500 via-teal-400 to-cyan-500',
       textColor: 'text-emerald-400',
@@ -169,7 +169,7 @@ export default function CarIntroLoader({ step }: CarIntroLoaderProps) {
 
         {/* Progress % indicator */}
         <div className="flex items-center justify-between w-full px-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-          <span>Workshop Detailing</span>
+          <span>CarWash. Detailing</span>
           <span className="text-slate-300 font-mono text-xs">{Math.round(progress)}% Complete</span>
         </div>
       </div>
