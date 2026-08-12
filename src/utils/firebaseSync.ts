@@ -114,15 +114,42 @@ export const loadFirebaseUserData = async (uid: string) => {
   }
 };
 
+const sanitizeFirestoreData = (val: any): any => {
+  if (val === undefined) {
+    return null;
+  }
+  if (val === null) {
+    return null;
+  }
+  if (Array.isArray(val)) {
+    return val.map(sanitizeFirestoreData);
+  }
+  if (typeof val === 'object') {
+    if (val.constructor && val.constructor.name !== 'Object' && val.constructor.name !== 'Array') {
+      return val;
+    }
+    const cleaned: any = {};
+    for (const key of Object.keys(val)) {
+      const sanitized = sanitizeFirestoreData(val[key]);
+      if (sanitized !== undefined) {
+        cleaned[key] = sanitized;
+      }
+    }
+    return cleaned;
+  }
+  return val;
+};
+
 export const saveFirebaseUserField = async (uid: string, category: string, data: any) => {
   try {
     let ref;
+    const sanitizedData = sanitizeFirestoreData(data);
     if (['shop', 'automation', 'profile'].includes(category)) {
       ref = doc(db, 'users', uid, 'settings', category);
-      await setDoc(ref, data, { merge: true });
+      await setDoc(ref, sanitizedData, { merge: true });
     } else {
       ref = doc(db, 'users', uid, 'collections', category);
-      await setDoc(ref, { items: data }, { merge: true });
+      await setDoc(ref, { items: sanitizedData }, { merge: true });
     }
   } catch (error) {
     console.error(`Error saving user field ${category} to Firebase:`, error);

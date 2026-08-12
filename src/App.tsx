@@ -76,7 +76,13 @@ export default function App() {
 
   // Public customer invoice viewing state
   const [publicInvoice, setPublicInvoice] = useState<{ settings: ShopSettings; appointment: Appointment } | null>(null);
-  const [loadingPublicInvoice, setLoadingPublicInvoice] = useState(false);
+  const [loadingPublicInvoice, setLoadingPublicInvoice] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.has('view_invoice') && urlParams.has('owner');
+    }
+    return false;
+  });
 
   // Load public invoice if viewing via link
   useEffect(() => {
@@ -191,68 +197,168 @@ export default function App() {
         try {
           const targetUid = user.adminUid || user.uid;
           const data = await loadFirebaseUserData(targetUid);
-          
-          // Verify & migrate services
-          if (!data.services || data.services.length === 0) {
-            setServices(DEFAULT_SERVICES);
+          const localData = getStoredData();
+
+          // 1. Services Union-Merge
+          let mergedServices = data.services || [];
+          if (localData.services && localData.services.length > 0) {
+            const existingIds = new Set(mergedServices.map((x: any) => x.id));
+            const newLocal = localData.services.filter((x: any) => !existingIds.has(x.id));
+            if (newLocal.length > 0) {
+              mergedServices = [...mergedServices, ...newLocal];
+              saveFirebaseUserField(targetUid, 'services', mergedServices);
+            }
+          }
+          if (mergedServices.length === 0) {
+            mergedServices = DEFAULT_SERVICES;
             saveFirebaseUserField(targetUid, 'services', DEFAULT_SERVICES);
-          } else {
-            setServices(data.services);
           }
-          
-          setCustomers(data.customers || []);
-          setAppointments(data.appointments || []);
-          
-          // Verify staff
-          if (!data.staff || data.staff.length === 0) {
-            setStaff(DEFAULT_STAFF);
+          setServices(mergedServices);
+
+          // 2. Customers Union-Merge
+          let mergedCustomers = data.customers || [];
+          if (localData.customers && localData.customers.length > 0) {
+            const existingIds = new Set(mergedCustomers.map((x: any) => x.id));
+            const newLocal = localData.customers.filter((x: any) => !existingIds.has(x.id));
+            if (newLocal.length > 0) {
+              mergedCustomers = [...mergedCustomers, ...newLocal];
+              saveFirebaseUserField(targetUid, 'customers', mergedCustomers);
+            }
+          }
+          setCustomers(mergedCustomers);
+
+          // 3. Appointments Union-Merge
+          let mergedAppointments = data.appointments || [];
+          if (localData.appointments && localData.appointments.length > 0) {
+            const existingIds = new Set(mergedAppointments.map((x: any) => x.id));
+            const newLocal = localData.appointments.filter((x: any) => !existingIds.has(x.id));
+            if (newLocal.length > 0) {
+              mergedAppointments = [...mergedAppointments, ...newLocal];
+              saveFirebaseUserField(targetUid, 'appointments', mergedAppointments);
+            }
+          }
+          setAppointments(mergedAppointments);
+
+          // 4. Staff Union-Merge
+          let mergedStaff = data.staff || [];
+          if (localData.staff && localData.staff.length > 0) {
+            const existingIds = new Set(mergedStaff.map((x: any) => x.id));
+            const newLocal = localData.staff.filter((x: any) => !existingIds.has(x.id));
+            if (newLocal.length > 0) {
+              mergedStaff = [...mergedStaff, ...newLocal];
+              saveFirebaseUserField(targetUid, 'staff', mergedStaff);
+            }
+          }
+          if (mergedStaff.length === 0) {
+            mergedStaff = DEFAULT_STAFF;
             saveFirebaseUserField(targetUid, 'staff', DEFAULT_STAFF);
-          } else {
-            setStaff(data.staff);
           }
-          
-          // Verify settings
-          if (!data.settings) {
-            setSettings(DEFAULT_SETTINGS);
+          setStaff(mergedStaff);
+
+          // 5. Settings Merge
+          let mergedSettings = data.settings;
+          if (!mergedSettings && localData.settings && localData.settings.shopName) {
+            mergedSettings = localData.settings;
+            saveFirebaseUserField(targetUid, 'shop', mergedSettings);
+          }
+          if (!mergedSettings) {
+            mergedSettings = DEFAULT_SETTINGS;
             saveFirebaseUserField(targetUid, 'shop', DEFAULT_SETTINGS);
-          } else {
-            setSettings(data.settings);
           }
-          
-          setLeads(data.leads || []);
-          setExpenses(data.expenses || []);
-          
-          // Verify inventory
-          if (!data.inventory || data.inventory.length === 0) {
+          setSettings(mergedSettings);
+
+          // 6. Leads Union-Merge
+          let mergedLeads = data.leads || [];
+          if (localData.leads && localData.leads.length > 0) {
+            const existingIds = new Set(mergedLeads.map((x: any) => x.id));
+            const newLocal = localData.leads.filter((x: any) => !existingIds.has(x.id));
+            if (newLocal.length > 0) {
+              mergedLeads = [...mergedLeads, ...newLocal];
+              saveFirebaseUserField(targetUid, 'leads', mergedLeads);
+            }
+          }
+          setLeads(mergedLeads);
+
+          // 7. Expenses Union-Merge
+          let mergedExpenses = data.expenses || [];
+          if (localData.expenses && localData.expenses.length > 0) {
+            const existingIds = new Set(mergedExpenses.map((x: any) => x.id));
+            const newLocal = localData.expenses.filter((x: any) => !existingIds.has(x.id));
+            if (newLocal.length > 0) {
+              mergedExpenses = [...mergedExpenses, ...newLocal];
+              saveFirebaseUserField(targetUid, 'expenses', mergedExpenses);
+            }
+          }
+          setExpenses(mergedExpenses);
+
+          // 8. Inventory Union-Merge
+          let mergedInventory = data.inventory || [];
+          if (localData.inventory && localData.inventory.length > 0) {
+            const existingIds = new Set(mergedInventory.map((x: any) => x.id));
+            const newLocal = localData.inventory.filter((x: any) => !existingIds.has(x.id));
+            if (newLocal.length > 0) {
+              mergedInventory = [...mergedInventory, ...newLocal];
+              saveFirebaseUserField(targetUid, 'inventory', mergedInventory);
+            }
+          }
+          if (mergedInventory.length === 0) {
             const defaultInv = [
               { id: 'inv-1', name: 'Premium Shampoo', category: 'shampoo', quantity: 25, unit: 'litres', minThreshold: 60, costPrice: 450, location: 'Bay 1' },
               { id: 'inv-2', name: 'Disposable Paper Mats', category: 'papermats', quantity: 150, unit: 'sheets', minThreshold: 30, costPrice: 5, location: 'Shelf B2' },
               { id: 'inv-3', name: 'Paper Air Freshener', category: 'paperAirFreshner', quantity: 80, unit: 'pieces', minThreshold: 20, costPrice: 15, location: 'Counter' }
             ];
-            setInventory(defaultInv);
+            mergedInventory = defaultInv;
             saveFirebaseUserField(targetUid, 'inventory', defaultInv);
-          } else {
-            setInventory(data.inventory);
           }
-          
-          setRecurringList(data.recurring || []);
-          setWaitlist(data.waitlist || []);
-          setWorkflows(data.workflows || []);
-          setAutomationSettings(data.automationSettings || {
-            autoAssignStaff: true,
-            autoSMSOnReady: true,
-            autoSMSOnConfirm: true,
-            autoInvoiceOnComplete: false,
-            reminderHours: 24
-          });
-          setProfile(data.profile || {
-            name: 'John Doe',
-            role: 'Studio Owner',
-            email: 'owner@drwashit.online',
-            phone: '800-555-WASH',
-            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
-          });
-          const initialPackages = data.packages && data.packages.length > 0 ? data.packages.map((p: any) => {
+          setInventory(mergedInventory);
+
+          // 9. Recurring Union-Merge
+          let mergedRecurring = data.recurring || [];
+          if (localData.recurring && localData.recurring.length > 0) {
+            const existingIds = new Set(mergedRecurring.map((x: any) => x.id));
+            const newLocal = localData.recurring.filter((x: any) => !existingIds.has(x.id));
+            if (newLocal.length > 0) {
+              mergedRecurring = [...mergedRecurring, ...newLocal];
+              saveFirebaseUserField(targetUid, 'recurring', mergedRecurring);
+            }
+          }
+          setRecurringList(mergedRecurring);
+
+          // 10. Waitlist Union-Merge
+          let mergedWaitlist = data.waitlist || [];
+          if (localData.waitlist && localData.waitlist.length > 0) {
+            const existingIds = new Set(mergedWaitlist.map((x: any) => x.id));
+            const newLocal = localData.waitlist.filter((x: any) => !existingIds.has(x.id));
+            if (newLocal.length > 0) {
+              mergedWaitlist = [...mergedWaitlist, ...newLocal];
+              saveFirebaseUserField(targetUid, 'waitlist', mergedWaitlist);
+            }
+          }
+          setWaitlist(mergedWaitlist);
+
+          // 11. Workflows Union-Merge
+          let mergedWorkflows = data.workflows || [];
+          if (localData.workflows && localData.workflows.length > 0) {
+            const existingIds = new Set(mergedWorkflows.map((x: any) => x.id));
+            const newLocal = localData.workflows.filter((x: any) => !existingIds.has(x.id));
+            if (newLocal.length > 0) {
+              mergedWorkflows = [...mergedWorkflows, ...newLocal];
+              saveFirebaseUserField(targetUid, 'workflows', mergedWorkflows);
+            }
+          }
+          setWorkflows(mergedWorkflows);
+
+          // 12. Packages Union-Merge
+          let mergedPackages = data.packages || [];
+          if (localData.packages && localData.packages.length > 0) {
+            const existingIds = new Set(mergedPackages.map((x: any) => x.id));
+            const newLocal = localData.packages.filter((x: any) => !existingIds.has(x.id));
+            if (newLocal.length > 0) {
+              mergedPackages = [...mergedPackages, ...newLocal];
+              saveFirebaseUserField(targetUid, 'packages', mergedPackages);
+            }
+          }
+          const initialPackages = mergedPackages.length > 0 ? mergedPackages.map((p: any) => {
             if (p.id === 'pkg-default-1' && p.originalPrice === 34234) {
               return { ...p, originalPrice: 1399, packagePrice: 1399 };
             }
@@ -261,10 +367,26 @@ export default function App() {
             { id: 'pkg-default-1', name: '4 Wash In a Month', originalPrice: 1399, packagePrice: 1399, duration: '0h', status: true }
           ];
           setPackages(initialPackages);
-          if (!data.packages || data.packages.length === 0 || data.packages.some((p: any) => p.id === 'pkg-default-1' && p.originalPrice === 34234)) {
+          if (mergedPackages.length === 0 || mergedPackages.some((p: any) => p.id === 'pkg-default-1' && p.originalPrice === 34234)) {
             saveFirebaseUserField(targetUid, 'packages', initialPackages);
           }
-          
+
+          // 13. Automation & Profile
+          setAutomationSettings(data.automationSettings || localData.automationSettings || {
+            autoAssignStaff: true,
+            autoSMSOnReady: true,
+            autoSMSOnConfirm: true,
+            autoInvoiceOnComplete: false,
+            reminderHours: 24
+          });
+          setProfile(data.profile || localData.profile || {
+            name: 'John Doe',
+            role: 'Studio Owner',
+            email: 'owner@drwashit.online',
+            phone: '800-555-WASH',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+          });
+
         } catch (e) {
           console.error("Error setting up data on login:", e);
         }
@@ -627,19 +749,44 @@ export default function App() {
   const pendingLeads = leads.filter(l => l.status === 'new');
 
   // 0. Guard against Public Customer Invoice View
-  if (loadingPublicInvoice) {
+  const isViewingPublicInvoice = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('view_invoice');
+
+  if (isViewingPublicInvoice) {
+    if (loadingPublicInvoice) {
+      return (
+        <div className="h-screen bg-[#070A13] flex items-center justify-center text-slate-400 font-medium select-none">
+          <div className="flex flex-col items-center gap-3">
+            <span className="h-9 w-9 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin"></span>
+            <span className="text-xs font-bold tracking-wider uppercase text-slate-500 animate-pulse">Loading Digital Invoice...</span>
+          </div>
+        </div>
+      );
+    }
+
+    if (publicInvoice) {
+      return <PublicInvoiceView appointment={publicInvoice.appointment} settings={publicInvoice.settings} />;
+    }
+
+    // Customer is viewing invoice, but loading completed and publicInvoice is null
     return (
-      <div className="h-screen bg-[#070A13] flex items-center justify-center text-slate-400 font-medium select-none">
-        <div className="flex flex-col items-center gap-3">
-          <span className="h-9 w-9 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin"></span>
-          <span className="text-xs font-bold tracking-wider uppercase text-slate-500 animate-pulse">Loading Digital Invoice...</span>
+      <div className="min-h-screen bg-[#070A13] flex items-center justify-center px-4 py-12 select-none text-slate-300">
+        <div className="max-w-md w-full text-center space-y-6 bg-[#0B1329] border border-slate-800/60 rounded-2xl p-8 shadow-2xl">
+          <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 mb-2">
+            <AlertCircle size={32} />
+          </div>
+          <h1 className="text-xl font-black text-white tracking-tight uppercase">
+            Invoice Not Found
+          </h1>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            The requested invoice could not be located or may have expired. Please verify the link or contact customer support.
+          </p>
+          <div className="pt-4 border-t border-slate-800/60 space-y-2 text-2xs font-semibold text-slate-400">
+            <p>Dr Washit Support: <span className="text-sky-400 font-mono">8510002780</span></p>
+            <p>Email: <span className="text-sky-400 font-mono">info.drwashit@gmail.com</span></p>
+          </div>
         </div>
       </div>
     );
-  }
-
-  if (publicInvoice) {
-    return <PublicInvoiceView appointment={publicInvoice.appointment} settings={publicInvoice.settings} />;
   }
 
   // 1. Guard against Auth Loading state
