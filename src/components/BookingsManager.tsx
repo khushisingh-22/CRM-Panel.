@@ -197,7 +197,7 @@ export default function BookingsManager({
 
   // Monthly Package fields for new booking
   const [isMonthlyPkg, setIsMonthlyPkg] = useState(false);
-  const [monthlyPkgName, setMonthlyPkgName] = useState('Silver Weekly Maintenance Wash');
+  const [monthlyPkgName, setMonthlyPkgName] = useState('4 Wash in a Month');
   const [monthlyPkgWashNum, setMonthlyPkgWashNum] = useState(1);
   const [monthlyPkgTotalWashes, setMonthlyPkgTotalWashes] = useState(4);
 
@@ -428,7 +428,7 @@ export default function BookingsManager({
     setPaidAmountInput(0);
     setUploadedPhotos('');
     setIsMonthlyPkg(false);
-    setMonthlyPkgName('Silver Weekly Maintenance Wash');
+    setMonthlyPkgName('4 Wash in a Month');
     setMonthlyPkgWashNum(1);
     setMonthlyPkgTotalWashes(4);
 
@@ -1081,6 +1081,9 @@ export default function BookingsManager({
                       setIsMonthlyPkg(e.target.checked);
                       if (e.target.checked) {
                         setSelectedServiceId('');
+                        setPriceInput(1399);
+                        setPaidAmountInput(1399);
+                      } else {
                         setPriceInput(0);
                         setPaidAmountInput(0);
                       }
@@ -1099,10 +1102,7 @@ export default function BookingsManager({
                         onChange={(e) => setMonthlyPkgName(e.target.value)}
                         className="text-xs p-2.5 border border-indigo-200 rounded-lg w-full bg-white text-slate-800 focus:outline-indigo-500 font-semibold cursor-pointer"
                       >
-                        <option value="Silver Weekly Maintenance Wash">Silver Weekly Wash</option>
-                        <option value="Gold Bi-Weekly Gloss Plan">Gold Bi-Weekly Gloss</option>
-                        <option value="Platinum Monthly Showroom Reset">Platinum Monthly Reset</option>
-                        <option value="Elite Quarterly Protection Plan">Elite Quarterly Protection</option>
+                        <option value="4 Wash in a Month">4 Wash in a Month</option>
                       </select>
                     </div>
 

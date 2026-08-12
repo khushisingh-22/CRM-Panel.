@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { customAuth } from '../lib/customAuth';
 import { Mail, Lock, Sparkles, Shield, User, Loader2, Eye, EyeOff } from 'lucide-react';
+import { DrWashitLogo } from './DrwashitLogo';
 
 interface LoginScreenProps {
   onLoginSuccess: (uid: string) => void;
@@ -85,8 +86,8 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
             }
           }}
         >
-          <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 mb-2">
-            <Sparkles size={28} />
+          <div className="mb-2">
+            <DrWashitLogo size={64} className="shadow-lg" />
           </div>
           <h1 className="text-2xl font-black text-white tracking-tight uppercase">
             Dr Washit <span className="text-sky-400 font-medium">CRM</span>

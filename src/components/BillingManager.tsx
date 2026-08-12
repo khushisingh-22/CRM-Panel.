@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { Appointment, ShopSettings, Customer } from '../types/crm';
 import { sendWhatsAppMessage } from '../utils/whatsapp';
+import logoImg from '../assets/images.png';
 
 interface BillingManagerProps {
   appointments: Appointment[];
@@ -39,53 +40,13 @@ interface BillingManagerProps {
 
 // Custom Dr Washit Monogram Logo (SVG)
 export const DrWashitLogo = ({ size = 60, className = "" }: { size?: number; className?: string }) => (
-  <div className={`inline-flex items-center justify-center bg-white p-1.5 rounded-xl border border-slate-200/50 ${className}`} style={{ width: size, height: size }}>
-    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-      {/* Vertical "WASHIT" text on the left */}
-      <text 
-         x="-82" 
-         y="25" 
-         fill="#082A3A" 
-         fontSize="12.5" 
-         fontWeight="900" 
-         fontFamily="system-ui, sans-serif" 
-         letterSpacing="1" 
-         transform="rotate(-90)"
-         className="select-none font-sans"
-      >
-        WASHIT
-      </text>
-      
-      {/* Monogram emblem - B / R styled curves */}
-      <path 
-        d="M32 18 H78 C83 18, 85 20, 83 24 C74 34, 59 38, 47 38" 
-        stroke="#082A3A" 
-        strokeWidth="6.5" 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-      />
-      <path 
-        d="M32 38 H76 C84 38, 86 44, 80 50 C71 57, 54 59, 38 59" 
-        stroke="#082A3A" 
-        strokeWidth="6.5" 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-      />
-      <path 
-        d="M38 59 H74 C82 59, 86 65, 82 73 C78 81, 68 84, 60 84" 
-        stroke="#082A3A" 
-        strokeWidth="6.5" 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-      />
-      <path 
-        d="M38 59 V84" 
-        stroke="#082A3A" 
-        strokeWidth="6.5" 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-      />
-    </svg>
+  <div className={`inline-flex items-center justify-center bg-white rounded-xl border border-slate-200/50 overflow-hidden ${className}`} style={{ width: size, height: size }}>
+    <img 
+      src={logoImg} 
+      alt="Dr. Washit Logo" 
+      className="w-full h-full object-cover" 
+      referrerPolicy="no-referrer"
+    />
   </div>
 );
 
@@ -339,7 +300,7 @@ Let your car sparkle at your doorstep🚗💦✨ & thankyou for choosing *Dr Was
                     <div className="relative z-10 space-y-1">
                       <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400 block">PREMIUM DOORSTEP CAR DETAILING</span>
                       <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-none uppercase">
-                        DR. WASHIT
+                        DR WASHIT
                       </h2>
                       <p className="text-[9px] text-slate-300 leading-normal max-w-sm pt-1.5 font-medium">
                         B-129.PocketB,Sector-omicron 3rd,omicron|||,greaternoida,mathurapur,uttarpradesh201310
