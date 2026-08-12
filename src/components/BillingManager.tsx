@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { Appointment, ShopSettings, Customer } from '../types/crm';
 import { sendWhatsAppMessage } from '../utils/whatsapp';
-import logoImg from '../assets/images.png';
+import { DrWashitLogo } from './DrWashitLogo';
 
 interface BillingManagerProps {
   appointments: Appointment[];
@@ -37,18 +37,6 @@ interface BillingManagerProps {
   customers?: Customer[];
   ownerUid?: string;
 }
-
-// Custom Dr Washit Monogram Logo (SVG)
-export const DrWashitLogo = ({ size = 60, className = "" }: { size?: number; className?: string }) => (
-  <div className={`inline-flex items-center justify-center bg-white rounded-xl border border-slate-200/50 overflow-hidden ${className}`} style={{ width: size, height: size }}>
-    <img 
-      src={logoImg} 
-      alt="Dr. Washit Logo" 
-      className="w-full h-full object-cover" 
-      referrerPolicy="no-referrer"
-    />
-  </div>
-);
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '';

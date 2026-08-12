@@ -67,6 +67,7 @@ import { customAuth } from './lib/customAuth';
 import { loadFirebaseUserData, saveFirebaseUserField, loadPublicInvoiceData } from './utils/firebaseSync';
 import LoginScreen from './components/LoginScreen';
 import PublicInvoiceView from './components/PublicInvoiceView';
+import CarIntroLoader from './components/CarIntrLoader';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
@@ -185,6 +186,34 @@ export default function App() {
   // Auth state
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
+
+  // Premium Car Detailing Boot Animation state
+  const [showIntro, setShowIntro] = useState(false);
+  const [introStep, setIntroStep] = useState(0);
+
+  // Premium Car Detailing Intro trigger when transitioning to logged-in
+  useEffect(() => {
+    if (currentUser) {
+      setShowIntro(true);
+      setIntroStep(0);
+      const t1 = setTimeout(() => setIntroStep(1), 1100);
+      const t2 = setTimeout(() => setIntroStep(2), 2200);
+      const t3 = setTimeout(() => setIntroStep(3), 3300);
+      const t4 = setTimeout(() => setIntroStep(4), 4400);
+      const t5 = setTimeout(() => setShowIntro(false), 5200);
+
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+        clearTimeout(t3);
+        clearTimeout(t4);
+        clearTimeout(t5);
+      };
+    } else {
+      setShowIntro(false);
+      setIntroStep(0);
+    }
+  }, [currentUser]);
 
   // Monitor auth state and load data
   useEffect(() => {
@@ -804,6 +833,11 @@ export default function App() {
   // 2. Guard against No Authenticated User
   if (!currentUser) {
     return <LoginScreen onLoginSuccess={() => {}} />;
+  }
+
+  // 2.5 Show Premium Detailing Intro sequence
+  if (showIntro) {
+    return <CarIntroLoader step={introStep} />;
   }
 
   // 3. Guard against unmounted defaults when logged in but data still fetching
