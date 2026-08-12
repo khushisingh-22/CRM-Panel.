@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { Appointment, ShopSettings, Customer } from '../types/crm';
 import { sendWhatsAppMessage } from '../utils/whatsapp';
-import { DrWashitLogo } from './DrWashitLogo';
+import { DrWashitLogo } from './DrwashitLogo';
 
 interface BillingManagerProps {
   appointments: Appointment[];
