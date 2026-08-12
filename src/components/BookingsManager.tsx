@@ -8,6 +8,7 @@ import {
   Search,
   Filter,
   Plus,
+  Minus,
   Play,
   Check,
   X,
@@ -194,6 +195,12 @@ export default function BookingsManager({
   const [assignedStaffId, setAssignedStaffId] = useState('');
   const [bookingNotes, setBookingNotes] = useState('');
 
+  // Monthly Package fields for new booking
+  const [isMonthlyPkg, setIsMonthlyPkg] = useState(false);
+  const [monthlyPkgName, setMonthlyPkgName] = useState('Silver Weekly Maintenance Wash');
+  const [monthlyPkgWashNum, setMonthlyPkgWashNum] = useState(1);
+  const [monthlyPkgTotalWashes, setMonthlyPkgTotalWashes] = useState(4);
+
   // Form State for Screenshot 1 Booking Creation
   const [priceInput, setPriceInput] = useState<number>(0);
   const [paidAmountInput, setPaidAmountInput] = useState<number>(0);
@@ -350,7 +357,7 @@ export default function BookingsManager({
     }
 
     const matchedService = services.find(s => s.id === selectedServiceId);
-    let serviceNameStr = matchedService ? matchedService.name : 'Custom Detailing';
+    let serviceNameStr = isMonthlyPkg ? monthlyPkgName : (matchedService ? matchedService.name : 'Custom Detailing');
 
     let vehicleYear = '2024';
     let vehicleMake = vehMake;
@@ -379,19 +386,23 @@ export default function BookingsManager({
       customerEmail: clientEmail,
       customerAddress: clientAddress || undefined,
       vehicle: vehicleObj,
-      serviceId: selectedServiceId,
+      serviceId: isMonthlyPkg ? 'monthly-package' : selectedServiceId,
       serviceName: serviceNameStr,
       addOns: [],
       date: datePart || new Date().toISOString().split('T')[0],
       time: timePart || '09:00',
       status: 'scheduled',
-      price: priceInput || 150,
+      price: priceInput || (isMonthlyPkg ? 0 : 150),
       notes: bookingNotes,
       assignedTo: assignedStaffId || undefined,
-      paymentStatus: paidAmountInput >= (priceInput || 0) ? 'paid' : paidAmountInput > 0 ? 'partially_paid' : 'unpaid',
-      paidAmount: paidAmountInput,
+      paymentStatus: isMonthlyPkg ? 'paid' : (paidAmountInput >= (priceInput || 0) ? 'paid' : paidAmountInput > 0 ? 'partially_paid' : 'unpaid'),
+      paidAmount: isMonthlyPkg ? (priceInput || 0) : paidAmountInput,
       invoiceNumber: `INV-2026-0${Math.floor(Math.random() * 900) + 100}`,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      isMonthlyPackage: isMonthlyPkg,
+      packageName: isMonthlyPkg ? monthlyPkgName : undefined,
+      packageWashNumber: isMonthlyPkg ? monthlyPkgWashNum : undefined,
+      packageTotalWashes: isMonthlyPkg ? monthlyPkgTotalWashes : undefined
     };
 
     onAddAppointment(newAppointment);
@@ -416,6 +427,10 @@ export default function BookingsManager({
     setPriceInput(0);
     setPaidAmountInput(0);
     setUploadedPhotos('');
+    setIsMonthlyPkg(false);
+    setMonthlyPkgName('Silver Weekly Maintenance Wash');
+    setMonthlyPkgWashNum(1);
+    setMonthlyPkgTotalWashes(4);
 
     // Select the newly created booking
     setSelectedAptId(newAppointment.id);
@@ -680,8 +695,93 @@ export default function BookingsManager({
                   </div>
 
                   {/* Notes/Service description */}
-                  <div className="space-y-1">
-                    <span className="text-[11px] font-black text-indigo-400 block">{apt.serviceName}</span>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[11px] font-black text-indigo-400 block">{apt.serviceName}</span>
+                      {apt.isMonthlyPackage && (
+                        <span className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-[8px] font-black uppercase px-2 py-0.5 rounded-md tracking-wider">
+                          VIP Package
+                        </span>
+                      )}
+                    </div>
+
+                    {apt.isMonthlyPackage && (
+                      <div className="p-3.5 rounded-xl bg-indigo-950/40 border border-indigo-900/40 space-y-2.5 animate-fade-in shadow-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] font-extrabold text-indigo-300 uppercase tracking-wider">Wash Progress Tracker</span>
+                          <span className="text-[10px] font-mono font-bold text-white px-2 py-0.5 rounded bg-slate-950 border border-indigo-900/40">
+                            {apt.packageWashNumber ?? 1} / {apt.packageTotalWashes ?? 4}
+                          </span>
+                        </div>
+                        {/* Progress bar */}
+                        <div className="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden border border-slate-900">
+                          <div
+                            className={`h-full transition-all duration-300 ${
+                              (apt.packageWashNumber ?? 1) >= (apt.packageTotalWashes ?? 4)
+                                ? 'bg-emerald-500'
+                                : 'bg-indigo-500 animate-pulse'
+                            }`}
+                            style={{
+                              width: `${Math.min(
+                                ((((apt.packageWashNumber ?? 1) / (apt.packageTotalWashes ?? 4)) * 100)),
+                                100
+                              )}%`
+                            }}
+                          />
+                        </div>
+                        {/* Increment/Decrement Buttons */}
+                        <div className="flex items-center justify-between gap-2 border-t border-indigo-900/25 pt-2">
+                          <span className="text-[9px] text-slate-400 font-semibold">Update Wash Count:</span>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const current = apt.packageWashNumber ?? 1;
+                                if (current > 0) {
+                                  onUpdateAppointment({
+                                    ...apt,
+                                    packageWashNumber: current - 1
+                                  });
+                                }
+                              }}
+                              className="p-1 rounded bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-colors cursor-pointer"
+                              title="Decrease wash number"
+                            >
+                              <Minus size={10} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const current = apt.packageWashNumber ?? 1;
+                                onUpdateAppointment({
+                                  ...apt,
+                                  packageWashNumber: current + 1
+                                });
+                              }}
+                              className="p-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white transition-colors cursor-pointer"
+                              title="Increase wash number"
+                            >
+                              <Plus size={10} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm('Reset this wash cycle to 1?')) {
+                                  onUpdateAppointment({
+                                    ...apt,
+                                    packageWashNumber: 1
+                                  });
+                                }
+                              }}
+                              className="text-[9px] text-indigo-400 hover:text-rose-400 transition-colors uppercase font-black pl-1 cursor-pointer"
+                            >
+                              Reset
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {apt.notes && (
                       <p className="text-[10px] text-slate-400 leading-relaxed bg-slate-950/20 p-2 rounded-lg border border-slate-850 font-medium">
                         {apt.notes}
@@ -971,6 +1071,71 @@ export default function BookingsManager({
                 />
               </div>
 
+              {/* VIP Monthly Package Option */}
+              <div className="p-4 bg-indigo-50 border border-indigo-150 rounded-xl space-y-3">
+                <label className="flex items-center gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isMonthlyPkg}
+                    onChange={(e) => {
+                      setIsMonthlyPkg(e.target.checked);
+                      if (e.target.checked) {
+                        setSelectedServiceId('');
+                        setPriceInput(0);
+                        setPaidAmountInput(0);
+                      }
+                    }}
+                    className="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer"
+                  />
+                  <span className="text-xs font-bold text-indigo-950">Book under Active VIP Monthly Package / Membership</span>
+                </label>
+
+                {isMonthlyPkg && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-indigo-200/50 animate-fade-in">
+                    <div>
+                      <label className="text-[10px] font-bold text-indigo-800 uppercase tracking-wider block mb-1">Select VIP Plan</label>
+                      <select
+                        value={monthlyPkgName}
+                        onChange={(e) => setMonthlyPkgName(e.target.value)}
+                        className="text-xs p-2.5 border border-indigo-200 rounded-lg w-full bg-white text-slate-800 focus:outline-indigo-500 font-semibold cursor-pointer"
+                      >
+                        <option value="Silver Weekly Maintenance Wash">Silver Weekly Wash</option>
+                        <option value="Gold Bi-Weekly Gloss Plan">Gold Bi-Weekly Gloss</option>
+                        <option value="Platinum Monthly Showroom Reset">Platinum Monthly Reset</option>
+                        <option value="Elite Quarterly Protection Plan">Elite Quarterly Protection</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold text-indigo-800 uppercase tracking-wider block mb-1">Current Wash</label>
+                      <select
+                        value={monthlyPkgWashNum}
+                        onChange={(e) => setMonthlyPkgWashNum(Number(e.target.value))}
+                        className="text-xs p-2.5 border border-indigo-200 rounded-lg w-full bg-white text-slate-800 focus:outline-indigo-500 font-semibold cursor-pointer"
+                      >
+                        <option value="1">1st Wash</option>
+                        <option value="2">2nd Wash</option>
+                        <option value="3">3rd Wash</option>
+                        <option value="4">4th Wash</option>
+                        <option value="5">5th Wash</option>
+                        <option value="6">6th Wash</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold text-indigo-800 uppercase tracking-wider block mb-1">Total Cycle Washes</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={monthlyPkgTotalWashes}
+                        onChange={(e) => setMonthlyPkgTotalWashes(Number(e.target.value))}
+                        className="text-xs p-2.5 border border-indigo-200 rounded-lg w-full bg-white text-slate-800 focus:outline-indigo-500 font-mono"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Row 2: Vehicle Type * and Service Type * */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -987,8 +1152,9 @@ export default function BookingsManager({
                 <div>
                   <label className="text-xs font-bold text-slate-700 block mb-1">Service Type *</label>
                   <select
-                    required
-                    value={selectedServiceId}
+                    required={!isMonthlyPkg}
+                    disabled={isMonthlyPkg}
+                    value={isMonthlyPkg ? 'monthly-package' : selectedServiceId}
                     onChange={(e) => {
                       const svcId = e.target.value;
                       setSelectedServiceId(svcId);
@@ -997,14 +1163,20 @@ export default function BookingsManager({
                         setPriceInput(svc.pricing.sedan || 150);
                       }
                     }}
-                    className="w-full text-xs font-semibold rounded-lg border border-slate-200 p-2.5 bg-slate-50/50 text-slate-800 focus:outline-sky-500"
+                    className={`w-full text-xs font-semibold rounded-lg border border-slate-200 p-2.5 focus:outline-sky-500 ${isMonthlyPkg ? 'bg-indigo-50 text-indigo-900 border-indigo-250 cursor-not-allowed opacity-90' : 'bg-slate-50/50 text-slate-800'}`}
                   >
-                    <option value="" className="bg-white text-slate-800">Select service</option>
-                    {services
-                      .filter(s => s.category !== 'add_on')
-                      .map(pkg => (
-                        <option key={pkg.id} value={pkg.id} className="bg-white text-slate-800">{pkg.name}</option>
-                      ))}
+                    {isMonthlyPkg ? (
+                      <option value="monthly-package" className="bg-white text-slate-800">{monthlyPkgName} (VIP)</option>
+                    ) : (
+                      <>
+                        <option value="" className="bg-white text-slate-800">Select service</option>
+                        {services
+                          .filter(s => s.category !== 'add_on')
+                          .map(pkg => (
+                            <option key={pkg.id} value={pkg.id} className="bg-white text-slate-800">{pkg.name}</option>
+                          ))}
+                      </>
+                    )}
                   </select>
                 </div>
               </div>

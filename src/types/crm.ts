@@ -73,6 +73,10 @@ export interface Appointment {
   paymentMethod?: 'cash' | 'card' | 'stripe' | 'apple_pay' | 'bank_transfer';
   invoiceNumber?: string;
   createdAt: string;
+  isMonthlyPackage?: boolean;
+  packageName?: string;
+  packageWashNumber?: number;
+  packageTotalWashes?: number;
 }
 
 export interface StaffLedgerEntry {
