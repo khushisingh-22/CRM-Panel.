@@ -112,7 +112,7 @@ export default function TeamManager({
           }`}
         >
           <BookOpen size={14} />
-          <span>Salary Ledger & Leaves (हिसाब-किताब)</span>
+          <span>Salary Ledger & Leaves</span>
         </button>
       </div>
 

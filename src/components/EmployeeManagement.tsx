@@ -75,7 +75,7 @@ export default function EmployeeManagement({
   // Leave & Salary Cut form states
   const [formTab, setFormTab] = useState<'payment' | 'leave'>('payment');
   const [leaveDate, setLeaveDate] = useState(new Date().toISOString().split('T')[0]);
-  const [leaveReason, setLeaveReason] = useState('Absent without permission (बिना बताए छुट्टी)');
+  const [leaveReason, setLeaveReason] = useState('Absent without permission');
   const [leaveRemarks, setLeaveRemarks] = useState('');
   const [leaveDeduction, setLeaveDeduction] = useState<number>(0);
 
@@ -433,7 +433,7 @@ export default function EmployeeManagement({
                           : 'border-transparent text-slate-400 hover:text-slate-200'
                       }`}
                     >
-                      Mark Leave (छुट्टी) 🛑
+                      Mark Leave 🛑
                     </button>
                   </div>
 
@@ -503,11 +503,11 @@ export default function EmployeeManagement({
                           onChange={(e) => setLeaveReason(e.target.value)}
                           className="w-full text-xs px-3 py-2.5 rounded-lg border border-slate-700 bg-slate-950 text-white focus:outline-hidden focus:border-rose-500 cursor-pointer font-semibold"
                         >
-                          <option value="Absent without permission (बिना बताए छुट्टी)">Absent without permission (बिना बताए छुट्टी)</option>
-                          <option value="Sick Leave (बीमारी की छुट्टी)">Sick Leave (बीमारी की छुट्टी)</option>
-                          <option value="Personal Work (व्यक्तिगत काम)">Personal Work (व्यक्तिगत काम)</option>
-                          <option value="Festival / Holiday (त्यौहार / अवकाश)">Festival / Holiday (त्यौहार / अवकाश)</option>
-                          <option value="Other Reason (अन्य कारण)">Other Reason (अन्य कारण)</option>
+                          <option value="Absent without permission">Absent without permission</option>
+                          <option value="Sick Leave">Sick Leave</option>
+                          <option value="Personal Leave">Personal Leave</option>
+                          <option value="Holiday / Festival">Holiday / Festival</option>
+                          <option value="Other Reason">Other Reason</option>
                         </select>
                       </div>
 
@@ -674,7 +674,7 @@ export default function EmployeeManagement({
               </div>
 
               <div>
-                <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Profile Photo (Optional - प्रोफ़ाइल फोटो / URL)</label>
+                <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Profile Photo (Optional - Image URL)</label>
                 <div className="flex gap-2">
                   <input
                     type="text"

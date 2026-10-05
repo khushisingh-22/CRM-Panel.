@@ -14,24 +14,12 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { Appointment, ShopSettings } from '../types/crm';
-import logoImg from '../assets/images.png';
+import { DrWashitLogo } from './DrWashitLogo';
 
 interface PublicInvoiceViewProps {
   appointment: Appointment;
   settings: ShopSettings;
 }
-
-// Custom Dr Washit Monogram Logo (SVG)
-const DrWashitLogo = ({ size = 60, className = "" }: { size?: number; className?: string }) => (
-  <div className={`inline-flex items-center justify-center bg-white rounded-xl border border-slate-200/50 overflow-hidden ${className}`} style={{ width: size, height: size }}>
-    <img 
-      src={logoImg} 
-      alt="Dr. Washit Logo" 
-      className="w-full h-full object-cover" 
-      referrerPolicy="no-referrer"
-    />
-  </div>
-);
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '';
@@ -178,7 +166,7 @@ export default function PublicInvoiceView({ appointment, settings }: PublicInvoi
                 {appointment.paymentStatus === 'paid' ? (
                   <span className="inline-flex items-center gap-1 text-[9px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full uppercase tracking-wider">
                     <CheckCircle size={10} className="text-emerald-600" />
-                    <span>PAID (नकद / ऑनलाइन)</span>
+                    <span>PAID</span>
                   </span>
                 ) : appointment.paymentStatus === 'partially_paid' ? (
                   <span className="inline-flex items-center gap-1 text-[9px] font-bold bg-sky-100 text-sky-800 px-2 py-0.5 rounded-full uppercase tracking-wider">
@@ -188,7 +176,7 @@ export default function PublicInvoiceView({ appointment, settings }: PublicInvoi
                 ) : (
                   <span className="inline-flex items-center gap-1 text-[9px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full uppercase tracking-wider">
                     <Clock size={10} className="text-amber-600 animate-pulse" />
-                    <span>UNPAID (धोने के बाद दें)</span>
+                    <span>UNPAID</span>
                   </span>
                 )}
               </div>

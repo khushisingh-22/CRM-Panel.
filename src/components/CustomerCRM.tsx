@@ -93,6 +93,18 @@ export default function CustomerCRM({
       return;
     }
 
+    // Check if the customer with the exact same name and phone number already exists
+    const exactMatch = customers.find(c => {
+      const cleanPhone = custPhone.replace(/\D/g, '');
+      const cPhoneNorm = c.phone ? c.phone.replace(/\D/g, '') : '';
+      return cleanPhone.length >= 5 && cPhoneNorm === cleanPhone && c.name.trim().toLowerCase() === custName.trim().toLowerCase();
+    });
+
+    if (exactMatch) {
+      alert(`⚠️ Alert: A client with the name "${custName}" and mobile number "${custPhone}" already exists.\n\nYou cannot create a duplicate client.`);
+      return;
+    }
+
     // Map the combined "Vehicle Type" to make/model
     const vehicleTypeStr = custVehicleType.trim() || 'Toyota';
     
