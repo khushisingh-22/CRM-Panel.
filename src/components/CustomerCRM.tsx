@@ -621,7 +621,7 @@ export default function CustomerCRM({
                           
                           <div className="flex justify-between items-center pt-2 border-t border-slate-800/40 text-[10px] text-slate-300">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-slate-500 font-semibold">Cleaner (धोने वाला):</span>
+                              <span className="text-slate-500 font-semibold">Cleaner:</span>
                               <span className="font-bold text-indigo-400 bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10">{staffName}</span>
                             </div>
                             {job.vehicle && (

@@ -71,9 +71,11 @@ import CarIntroLoader from './components/CarIntroLoader';
 
 // Helper to dynamically calculate customer stats
 const recalculateCustomerStats = (customerList: Customer[], appointmentList: Appointment[]): Customer[] => {
+  // Enforce unique appointment objects by ID to eliminate any double-counting bugs
+  const uniqueApts = Array.from(new Map(appointmentList.map(item => [item.id, item])).values());
   return customerList.map(c => {
     // We count all active non-cancelled appointments in history
-    const clientApts = appointmentList.filter(a => a.customerId === c.id && a.status !== 'cancelled');
+    const clientApts = uniqueApts.filter(a => a.customerId === c.id && a.status !== 'cancelled');
     return {
       ...c,
       totalJobs: clientApts.length,
@@ -532,18 +534,20 @@ export default function App() {
   };
 
   const syncCustomers = (updated: Customer[]) => {
-    setCustomers(updated);
-    saveStoredData({ customers: updated });
+    const unique = Array.from(new Map(updated.map(item => [item.id, item])).values());
+    setCustomers(unique);
+    saveStoredData({ customers: unique });
     if (currentUser) {
-      saveFirebaseUserField(currentUser.adminUid || currentUser.uid, 'customers', updated);
+      saveFirebaseUserField(currentUser.adminUid || currentUser.uid, 'customers', unique);
     }
   };
 
   const syncAppointments = (updated: Appointment[]) => {
-    setAppointments(updated);
-    saveStoredData({ appointments: updated });
+    const unique = Array.from(new Map(updated.map(item => [item.id, item])).values());
+    setAppointments(unique);
+    saveStoredData({ appointments: unique });
     if (currentUser) {
-      saveFirebaseUserField(currentUser.adminUid || currentUser.uid, 'appointments', updated);
+      saveFirebaseUserField(currentUser.adminUid || currentUser.uid, 'appointments', unique);
     }
   };
 
@@ -1264,6 +1268,7 @@ export default function App() {
               onSelectJob={handleSelectJobFromOutside}
               onUpdateAppointment={handleUpdateAppointment}
               currentUser={currentUser}
+              onUpdateExpenses={syncExpenses}
             />
           )}
 

@@ -43,6 +43,7 @@ interface DashboardOverviewProps {
   onSelectJob: (jobId: string) => void;
   onUpdateAppointment?: (updated: Appointment) => void;
   currentUser?: any;
+  onUpdateExpenses?: (updated: any[]) => void;
 }
 
 export default function DashboardOverview({
@@ -55,7 +56,8 @@ export default function DashboardOverview({
   onNavigate,
   onSelectJob,
   onUpdateAppointment,
-  currentUser
+  currentUser,
+  onUpdateExpenses
 }: DashboardOverviewProps) {
   // Local date helper
   const getRelativeDate = (offsetDays: number): string => {
@@ -76,12 +78,18 @@ export default function DashboardOverview({
   const totalProfit = totalRevenue - totalExpenses;
   const lowStockCount = inventory ? inventory.filter(item => item.quantity <= item.minThreshold).length : 0;
 
-  // Daily Profit calculation
-  const todayStr = new Date().toISOString().split('T')[0];
+  // Daily Profit calculation (Calculate date in local timezone YYYY-MM-DD instead of UTC to avoid mismatch)
+  const todayStr = (() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  })();
   const todayCompletedJobs = appointments.filter(a => a.status === 'completed' && a.date === todayStr);
   const todayRevenue = todayCompletedJobs.reduce((sum, a) => sum + a.price, 0);
   const todayExpenses = expenses ? expenses.filter(e => e.date === todayStr).reduce((sum, e) => sum + e.amount, 0) : 0;
-  const dailyProfit = todayCompletedJobs.length > 0 ? (todayRevenue - todayExpenses) : 450;
+  const dailyProfit = todayRevenue - todayExpenses;
   const pendingPaymentsTotal = appointments
     .filter(a => a.paymentStatus !== 'paid' && a.status !== 'cancelled')
     .reduce((sum, a) => {
@@ -93,6 +101,33 @@ export default function DashboardOverview({
   const [pendingSearchTerm, setPendingSearchTerm] = useState('');
   const [editingAptId, setEditingAptId] = useState<string | null>(null);
   const [newPaidAmount, setNewPaidAmount] = useState<string>('');
+
+  // Quick Expense states
+  const [expName, setExpName] = useState('');
+  const [expAmount, setExpAmount] = useState('');
+  const [expCategory, setExpCategory] = useState('chemicals');
+
+  const handleQuickAddExpense = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!expName || !expAmount || !onUpdateExpenses) return;
+
+    const newExpense = {
+      id: `exp-${Date.now()}`,
+      name: expName.trim(),
+      amount: parseFloat(expAmount) || 0,
+      category: expCategory,
+      date: todayStr,
+      notes: 'Logged via Dashboard Quick Tracker.'
+    };
+
+    const updatedList = [newExpense, ...(expenses || [])];
+    onUpdateExpenses(updatedList);
+
+    // Reset form
+    setExpName('');
+    setExpAmount('');
+    setExpCategory('chemicals');
+  };
 
   const averageJobValue = completedJobs.length > 0 
     ? Math.round(totalRevenue / completedJobs.length) 
@@ -521,36 +556,118 @@ export default function DashboardOverview({
         </div>
       )}
 
-      {/* Quick Actions Container */}
-      <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs space-y-4">
-        <h3 className="text-base font-bold text-white">Quick Actions</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {/* New Booking Button */}
-          <button
-            onClick={() => onNavigate('bookings_new')}
-            className="p-4 h-24 rounded-xl flex flex-col items-center justify-center gap-2 transition-all duration-300 cursor-pointer text-center bg-[#0ea5e9] hover:bg-[#38bdf8] hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:shadow-sky-500/20 text-white font-semibold text-xs border-0 shadow-sm shadow-sky-500/10 animate-fade-in"
-          >
-            <Plus size={20} className="stroke-[2.5]" />
-            <span>New Booking</span>
-          </button>
+      {/* Two Column Layout: Quick Actions & Quick Expense Tracker */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* Left: Quick Actions (col-span-7) */}
+        <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs space-y-4 lg:col-span-7 flex flex-col justify-between">
+          <div className="space-y-1">
+            <h3 className="text-base font-bold text-white">Quick Actions</h3>
+            <p className="text-3xs text-slate-400">Instantly register bookings or browse database tabs</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+            {/* New Booking Button */}
+            <button
+              onClick={() => onNavigate('bookings_new')}
+              className="p-4 h-24 rounded-xl flex flex-col items-center justify-center gap-2 transition-all duration-300 cursor-pointer text-center bg-[#0ea5e9] hover:bg-[#38bdf8] hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:shadow-sky-500/20 text-white font-semibold text-xs border-0 shadow-sm shadow-sky-500/10"
+            >
+              <Plus size={20} className="stroke-[2.5]" />
+              <span>New Booking</span>
+            </button>
 
-          {/* AI Calendar Button */}
-          <button
-            onClick={() => onNavigate('appointments')}
-            className="p-4 h-24 rounded-xl flex flex-col items-center justify-center gap-2 transition-all duration-300 cursor-pointer text-center bg-[#18223c] hover:bg-slate-800/80 hover:-translate-y-1 hover:scale-[1.02] border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-medium text-xs"
-          >
-            <Calendar size={18} />
-            <span>Calendar</span>
-          </button>
+            {/* Calendar Button */}
+            <button
+              onClick={() => onNavigate('appointments')}
+              className="p-4 h-24 rounded-xl flex flex-col items-center justify-center gap-2 transition-all duration-300 cursor-pointer text-center bg-[#18223c] hover:bg-slate-800/80 hover:-translate-y-1 hover:scale-[1.02] border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-medium text-xs"
+            >
+              <Calendar size={18} />
+              <span>Calendar</span>
+            </button>
 
-          {/* Clients Button */}
-          <button
-            onClick={() => onNavigate('crm')}
-            className="p-4 h-24 rounded-xl flex flex-col items-center justify-center gap-2 transition-all duration-300 cursor-pointer text-center bg-[#18223c] hover:bg-slate-800/80 hover:-translate-y-1 hover:scale-[1.02] border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-medium text-xs"
-          >
-            <Users size={18} />
-            <span>Clients</span>
-          </button>
+            {/* Clients Button */}
+            <button
+              onClick={() => onNavigate('crm')}
+              className="p-4 h-24 rounded-xl flex flex-col items-center justify-center gap-2 transition-all duration-300 cursor-pointer text-center bg-[#18223c] hover:bg-slate-800/80 hover:-translate-y-1 hover:scale-[1.02] border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-medium text-xs"
+            >
+              <Users size={18} />
+              <span>Clients</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Right: Quick Expense Tracker (col-span-5) */}
+        <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs space-y-4 lg:col-span-5 flex flex-col justify-between">
+          <div className="space-y-1">
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span>
+              <span>Quick Expense Tracker</span>
+            </h3>
+            <p className="text-3xs text-slate-400">Log any workshop/studio expense instantly below</p>
+          </div>
+
+          <form onSubmit={handleQuickAddExpense} className="grid grid-cols-1 sm:grid-cols-12 gap-2 pt-2 items-end">
+            <div className="sm:col-span-5 space-y-1">
+              <label className="text-[10px] text-slate-400 font-bold uppercase block">Expense Name *</label>
+              <input
+                type="text"
+                required
+                value={expName}
+                onChange={(e) => setExpName(e.target.value)}
+                placeholder="e.g. Microfiber towels"
+                className="text-xs p-2 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-rose-500 placeholder-slate-600 font-semibold"
+              />
+            </div>
+            
+            <div className="sm:col-span-3 space-y-1">
+              <label className="text-[10px] text-slate-400 font-bold uppercase block">Amount (₹) *</label>
+              <input
+                type="number"
+                required
+                value={expAmount}
+                onChange={(e) => setExpAmount(e.target.value)}
+                placeholder="350"
+                className="text-xs p-2 border border-slate-800 rounded-lg w-full bg-slate-950 text-white font-mono focus:outline-hidden focus:border-rose-500 placeholder-slate-600 font-bold text-rose-400"
+              />
+            </div>
+
+            <div className="sm:col-span-4 space-y-1">
+              <label className="text-[10px] text-slate-400 font-bold uppercase block">Category</label>
+              <select
+                value={expCategory}
+                onChange={(e) => setExpCategory(e.target.value)}
+                className="text-xs p-2 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-rose-500 cursor-pointer font-semibold"
+              >
+                <option value="chemicals">Chemicals</option>
+                <option value="wages">Wages</option>
+                <option value="utilities">Utilities</option>
+                <option value="misc">Misc</option>
+              </select>
+            </div>
+
+            <div className="sm:col-span-12 pt-2">
+              <button
+                type="submit"
+                className="w-full py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg transition-all shadow-sm shadow-rose-950/20 cursor-pointer flex items-center justify-center gap-1 hover:scale-[1.01]"
+              >
+                <span>Log Expense</span>
+              </button>
+            </div>
+          </form>
+
+          {/* Today's logged expenses summary inline list */}
+          {expenses && expenses.filter(e => e.date === todayStr).length > 0 && (
+            <div className="border-t border-slate-800/40 pt-2 text-[10px] space-y-1">
+              <span className="text-slate-400 block font-bold uppercase tracking-wider">Today's Expenses:</span>
+              <div className="flex flex-wrap gap-1.5 max-h-12 overflow-y-auto pr-1">
+                {expenses.filter(e => e.date === todayStr).map((e: any) => (
+                  <span key={e.id} className="bg-rose-500/10 border border-rose-500/10 text-rose-300 px-2 py-0.5 rounded font-medium flex items-center gap-1 font-mono">
+                    <span>{e.name}</span>
+                    <span className="text-slate-500">•</span>
+                    <span className="font-bold">₹{e.amount}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

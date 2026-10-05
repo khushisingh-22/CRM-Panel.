@@ -319,9 +319,17 @@ export default function InventoryManager({
                             >
                               <Minus size={10} />
                             </button>
-                            <span className="font-mono font-bold text-white min-w-8 text-center">
-                              {item.quantity} {item.unit}
-                            </span>
+                            <input
+                              type="number"
+                              value={item.quantity}
+                              onChange={(e) => {
+                                const val = Math.max(0, parseInt(e.target.value) || 0);
+                                const updated = inventory.map(it => it.id === item.id ? { ...it, quantity: val } : it);
+                                onUpdateInventory(updated);
+                              }}
+                              className="w-14 text-center font-mono font-bold text-white bg-slate-950 border border-slate-850 rounded py-1 focus:outline-hidden focus:border-indigo-500"
+                            />
+                            <span className="text-slate-400 text-[10px] ml-1 font-semibold">{item.unit}</span>
                             <button
                               onClick={() => handleAdjustQuantity(item.id, 1)}
                               className="p-1 hover:bg-slate-800 rounded bg-slate-950 text-slate-400 border border-slate-800 cursor-pointer"
