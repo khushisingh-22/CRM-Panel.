@@ -67,7 +67,7 @@ import { customAuth } from './lib/customAuth';
 import { loadFirebaseUserData, saveFirebaseUserField, loadPublicInvoiceData } from './utils/firebaseSync';
 import LoginScreen from './components/LoginScreen';
 import PublicInvoiceView from './components/PublicInvoiceView';
-import CarIntroLoader from './components/CarIntrLoader';
+import CarIntroLoader from './components/CarIntroLoader';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
@@ -228,107 +228,171 @@ export default function App() {
           const data = await loadFirebaseUserData(targetUid);
           const localData = getStoredData();
 
-          // 1. Services Union-Merge
+          const defaultAutomation = {
+            autoAssignStaff: true,
+            autoSMSOnReady: true,
+            autoSMSOnConfirm: true,
+            autoInvoiceOnComplete: false,
+            reminderHours: 24
+          };
+
+          const defaultProfile = {
+            name: 'John Doe',
+            role: 'Studio Owner',
+            email: 'owner@drwashit.online',
+            phone: '800-555-WASH',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+          };
+
+          const firstMigrationDone = localStorage.getItem('is_first_migration_completed') === 'true';
+
           let mergedServices = data.services || [];
-          if (localData.services && localData.services.length > 0) {
-            const existingIds = new Set(mergedServices.map((x: any) => x.id));
-            const newLocal = localData.services.filter((x: any) => !existingIds.has(x.id));
-            if (newLocal.length > 0) {
-              mergedServices = [...mergedServices, ...newLocal];
-              saveFirebaseUserField(targetUid, 'services', mergedServices);
+          let mergedCustomers = data.customers || [];
+          let mergedAppointments = data.appointments || [];
+          let mergedStaff = data.staff || [];
+          let mergedSettings = data.settings;
+          let mergedLeads = data.leads || [];
+          let mergedExpenses = data.expenses || [];
+          let mergedInventory = data.inventory || [];
+          let mergedRecurring = data.recurring || [];
+          let mergedWaitlist = data.waitlist || [];
+          let mergedWorkflows = data.workflows || [];
+          let mergedPackages = data.packages || [];
+
+          if (!firstMigrationDone) {
+            // Run Union-Merge once to import any guest-mode local data
+            // 1. Services
+            if (localData.services && localData.services.length > 0) {
+              const existingIds = new Set(mergedServices.map((x: any) => x.id));
+              const newLocal = localData.services.filter((x: any) => !existingIds.has(x.id));
+              if (newLocal.length > 0) {
+                mergedServices = [...mergedServices, ...newLocal];
+                saveFirebaseUserField(targetUid, 'services', mergedServices);
+              }
             }
+
+            // 2. Customers
+            if (localData.customers && localData.customers.length > 0) {
+              const existingIds = new Set(mergedCustomers.map((x: any) => x.id));
+              const newLocal = localData.customers.filter((x: any) => !existingIds.has(x.id));
+              if (newLocal.length > 0) {
+                mergedCustomers = [...mergedCustomers, ...newLocal];
+                saveFirebaseUserField(targetUid, 'customers', mergedCustomers);
+              }
+            }
+
+            // 3. Appointments
+            if (localData.appointments && localData.appointments.length > 0) {
+              const existingIds = new Set(mergedAppointments.map((x: any) => x.id));
+              const newLocal = localData.appointments.filter((x: any) => !existingIds.has(x.id));
+              if (newLocal.length > 0) {
+                mergedAppointments = [...mergedAppointments, ...newLocal];
+                saveFirebaseUserField(targetUid, 'appointments', mergedAppointments);
+              }
+            }
+
+            // 4. Staff
+            if (localData.staff && localData.staff.length > 0) {
+              const existingIds = new Set(mergedStaff.map((x: any) => x.id));
+              const newLocal = localData.staff.filter((x: any) => !existingIds.has(x.id));
+              if (newLocal.length > 0) {
+                mergedStaff = [...mergedStaff, ...newLocal];
+                saveFirebaseUserField(targetUid, 'staff', mergedStaff);
+              }
+            }
+
+            // 5. Settings
+            if (!mergedSettings && localData.settings && localData.settings.shopName) {
+              mergedSettings = localData.settings;
+              saveFirebaseUserField(targetUid, 'shop', mergedSettings);
+            }
+
+            // 6. Leads
+            if (localData.leads && localData.leads.length > 0) {
+              const existingIds = new Set(mergedLeads.map((x: any) => x.id));
+              const newLocal = localData.leads.filter((x: any) => !existingIds.has(x.id));
+              if (newLocal.length > 0) {
+                mergedLeads = [...mergedLeads, ...newLocal];
+                saveFirebaseUserField(targetUid, 'leads', mergedLeads);
+              }
+            }
+
+            // 7. Expenses
+            if (localData.expenses && localData.expenses.length > 0) {
+              const existingIds = new Set(mergedExpenses.map((x: any) => x.id));
+              const newLocal = localData.expenses.filter((x: any) => !existingIds.has(x.id));
+              if (newLocal.length > 0) {
+                mergedExpenses = [...mergedExpenses, ...newLocal];
+                saveFirebaseUserField(targetUid, 'expenses', mergedExpenses);
+              }
+            }
+
+            // 8. Inventory
+            if (localData.inventory && localData.inventory.length > 0) {
+              const existingIds = new Set(mergedInventory.map((x: any) => x.id));
+              const newLocal = localData.inventory.filter((x: any) => !existingIds.has(x.id));
+              if (newLocal.length > 0) {
+                mergedInventory = [...mergedInventory, ...newLocal];
+                saveFirebaseUserField(targetUid, 'inventory', mergedInventory);
+              }
+            }
+
+            // 9. Recurring
+            if (localData.recurring && localData.recurring.length > 0) {
+              const existingIds = new Set(mergedRecurring.map((x: any) => x.id));
+              const newLocal = localData.recurring.filter((x: any) => !existingIds.has(x.id));
+              if (newLocal.length > 0) {
+                mergedRecurring = [...mergedRecurring, ...newLocal];
+                saveFirebaseUserField(targetUid, 'recurring', mergedRecurring);
+              }
+            }
+
+            // 10. Waitlist
+            if (localData.waitlist && localData.waitlist.length > 0) {
+              const existingIds = new Set(mergedWaitlist.map((x: any) => x.id));
+              const newLocal = localData.waitlist.filter((x: any) => !existingIds.has(x.id));
+              if (newLocal.length > 0) {
+                mergedWaitlist = [...mergedWaitlist, ...newLocal];
+                saveFirebaseUserField(targetUid, 'waitlist', mergedWaitlist);
+              }
+            }
+
+            // 11. Workflows
+            if (localData.workflows && localData.workflows.length > 0) {
+              const existingIds = new Set(mergedWorkflows.map((x: any) => x.id));
+              const newLocal = localData.workflows.filter((x: any) => !existingIds.has(x.id));
+              if (newLocal.length > 0) {
+                mergedWorkflows = [...mergedWorkflows, ...newLocal];
+                saveFirebaseUserField(targetUid, 'workflows', mergedWorkflows);
+              }
+            }
+
+            // 12. Packages
+            if (localData.packages && localData.packages.length > 0) {
+              const existingIds = new Set(mergedPackages.map((x: any) => x.id));
+              const newLocal = localData.packages.filter((x: any) => !existingIds.has(x.id));
+              if (newLocal.length > 0) {
+                mergedPackages = [...mergedPackages, ...newLocal];
+                saveFirebaseUserField(targetUid, 'packages', mergedPackages);
+              }
+            }
+
+            // Mark migration as completed so it never runs again
+            localStorage.setItem('is_first_migration_completed', 'true');
           }
+
+          // Fallback to defaults where appropriate
           if (mergedServices.length === 0) {
             mergedServices = DEFAULT_SERVICES;
             saveFirebaseUserField(targetUid, 'services', DEFAULT_SERVICES);
-          }
-          setServices(mergedServices);
-
-          // 2. Customers Union-Merge
-          let mergedCustomers = data.customers || [];
-          if (localData.customers && localData.customers.length > 0) {
-            const existingIds = new Set(mergedCustomers.map((x: any) => x.id));
-            const newLocal = localData.customers.filter((x: any) => !existingIds.has(x.id));
-            if (newLocal.length > 0) {
-              mergedCustomers = [...mergedCustomers, ...newLocal];
-              saveFirebaseUserField(targetUid, 'customers', mergedCustomers);
-            }
-          }
-          setCustomers(mergedCustomers);
-
-          // 3. Appointments Union-Merge
-          let mergedAppointments = data.appointments || [];
-          if (localData.appointments && localData.appointments.length > 0) {
-            const existingIds = new Set(mergedAppointments.map((x: any) => x.id));
-            const newLocal = localData.appointments.filter((x: any) => !existingIds.has(x.id));
-            if (newLocal.length > 0) {
-              mergedAppointments = [...mergedAppointments, ...newLocal];
-              saveFirebaseUserField(targetUid, 'appointments', mergedAppointments);
-            }
-          }
-          setAppointments(mergedAppointments);
-
-          // 4. Staff Union-Merge
-          let mergedStaff = data.staff || [];
-          if (localData.staff && localData.staff.length > 0) {
-            const existingIds = new Set(mergedStaff.map((x: any) => x.id));
-            const newLocal = localData.staff.filter((x: any) => !existingIds.has(x.id));
-            if (newLocal.length > 0) {
-              mergedStaff = [...mergedStaff, ...newLocal];
-              saveFirebaseUserField(targetUid, 'staff', mergedStaff);
-            }
           }
           if (mergedStaff.length === 0) {
             mergedStaff = DEFAULT_STAFF;
             saveFirebaseUserField(targetUid, 'staff', DEFAULT_STAFF);
           }
-          setStaff(mergedStaff);
-
-          // 5. Settings Merge
-          let mergedSettings = data.settings;
-          if (!mergedSettings && localData.settings && localData.settings.shopName) {
-            mergedSettings = localData.settings;
-            saveFirebaseUserField(targetUid, 'shop', mergedSettings);
-          }
           if (!mergedSettings) {
             mergedSettings = DEFAULT_SETTINGS;
             saveFirebaseUserField(targetUid, 'shop', DEFAULT_SETTINGS);
-          }
-          setSettings(mergedSettings);
-
-          // 6. Leads Union-Merge
-          let mergedLeads = data.leads || [];
-          if (localData.leads && localData.leads.length > 0) {
-            const existingIds = new Set(mergedLeads.map((x: any) => x.id));
-            const newLocal = localData.leads.filter((x: any) => !existingIds.has(x.id));
-            if (newLocal.length > 0) {
-              mergedLeads = [...mergedLeads, ...newLocal];
-              saveFirebaseUserField(targetUid, 'leads', mergedLeads);
-            }
-          }
-          setLeads(mergedLeads);
-
-          // 7. Expenses Union-Merge
-          let mergedExpenses = data.expenses || [];
-          if (localData.expenses && localData.expenses.length > 0) {
-            const existingIds = new Set(mergedExpenses.map((x: any) => x.id));
-            const newLocal = localData.expenses.filter((x: any) => !existingIds.has(x.id));
-            if (newLocal.length > 0) {
-              mergedExpenses = [...mergedExpenses, ...newLocal];
-              saveFirebaseUserField(targetUid, 'expenses', mergedExpenses);
-            }
-          }
-          setExpenses(mergedExpenses);
-
-          // 8. Inventory Union-Merge
-          let mergedInventory = data.inventory || [];
-          if (localData.inventory && localData.inventory.length > 0) {
-            const existingIds = new Set(mergedInventory.map((x: any) => x.id));
-            const newLocal = localData.inventory.filter((x: any) => !existingIds.has(x.id));
-            if (newLocal.length > 0) {
-              mergedInventory = [...mergedInventory, ...newLocal];
-              saveFirebaseUserField(targetUid, 'inventory', mergedInventory);
-            }
           }
           if (mergedInventory.length === 0) {
             const defaultInv = [
@@ -339,54 +403,15 @@ export default function App() {
             mergedInventory = defaultInv;
             saveFirebaseUserField(targetUid, 'inventory', defaultInv);
           }
-          setInventory(mergedInventory);
-
-          // 9. Recurring Union-Merge
-          let mergedRecurring = data.recurring || [];
-          if (localData.recurring && localData.recurring.length > 0) {
-            const existingIds = new Set(mergedRecurring.map((x: any) => x.id));
-            const newLocal = localData.recurring.filter((x: any) => !existingIds.has(x.id));
-            if (newLocal.length > 0) {
-              mergedRecurring = [...mergedRecurring, ...newLocal];
-              saveFirebaseUserField(targetUid, 'recurring', mergedRecurring);
-            }
+          if (mergedWorkflows.length === 0) {
+            const defaultWorkflows = [
+              { id: 'wf-1', name: 'Auto-Notify on Completed', trigger: 'ready_for_pickup' as const, action: 'send_sms_notification' as const, status: 'active' as const, executionsCount: 0 },
+              { id: 'wf-2', name: 'Booking Confirmation Alert', trigger: 'appointment_created' as const, action: 'send_sms_notification' as const, status: 'active' as const, executionsCount: 0 }
+            ];
+            mergedWorkflows = defaultWorkflows;
+            saveFirebaseUserField(targetUid, 'workflows', defaultWorkflows);
           }
-          setRecurringList(mergedRecurring);
 
-          // 10. Waitlist Union-Merge
-          let mergedWaitlist = data.waitlist || [];
-          if (localData.waitlist && localData.waitlist.length > 0) {
-            const existingIds = new Set(mergedWaitlist.map((x: any) => x.id));
-            const newLocal = localData.waitlist.filter((x: any) => !existingIds.has(x.id));
-            if (newLocal.length > 0) {
-              mergedWaitlist = [...mergedWaitlist, ...newLocal];
-              saveFirebaseUserField(targetUid, 'waitlist', mergedWaitlist);
-            }
-          }
-          setWaitlist(mergedWaitlist);
-
-          // 11. Workflows Union-Merge
-          let mergedWorkflows = data.workflows || [];
-          if (localData.workflows && localData.workflows.length > 0) {
-            const existingIds = new Set(mergedWorkflows.map((x: any) => x.id));
-            const newLocal = localData.workflows.filter((x: any) => !existingIds.has(x.id));
-            if (newLocal.length > 0) {
-              mergedWorkflows = [...mergedWorkflows, ...newLocal];
-              saveFirebaseUserField(targetUid, 'workflows', mergedWorkflows);
-            }
-          }
-          setWorkflows(mergedWorkflows);
-
-          // 12. Packages Union-Merge
-          let mergedPackages = data.packages || [];
-          if (localData.packages && localData.packages.length > 0) {
-            const existingIds = new Set(mergedPackages.map((x: any) => x.id));
-            const newLocal = localData.packages.filter((x: any) => !existingIds.has(x.id));
-            if (newLocal.length > 0) {
-              mergedPackages = [...mergedPackages, ...newLocal];
-              saveFirebaseUserField(targetUid, 'packages', mergedPackages);
-            }
-          }
           const initialPackages = mergedPackages.length > 0 ? mergedPackages.map((p: any) => {
             if (p.id === 'pkg-default-1' && p.originalPrice === 34234) {
               return { ...p, originalPrice: 1399, packagePrice: 1399 };
@@ -395,26 +420,45 @@ export default function App() {
           }) : [
             { id: 'pkg-default-1', name: '4 Wash In a Month', originalPrice: 1399, packagePrice: 1399, duration: '0h', status: true }
           ];
-          setPackages(initialPackages);
+
           if (mergedPackages.length === 0 || mergedPackages.some((p: any) => p.id === 'pkg-default-1' && p.originalPrice === 34234)) {
             saveFirebaseUserField(targetUid, 'packages', initialPackages);
           }
 
-          // 13. Automation & Profile
-          setAutomationSettings(data.automationSettings || localData.automationSettings || {
-            autoAssignStaff: true,
-            autoSMSOnReady: true,
-            autoSMSOnConfirm: true,
-            autoInvoiceOnComplete: false,
-            reminderHours: 24
+          // Set all reactive states
+          setServices(mergedServices);
+          setCustomers(mergedCustomers);
+          setAppointments(mergedAppointments);
+          setStaff(mergedStaff);
+          setSettings(mergedSettings);
+          setLeads(mergedLeads);
+          setExpenses(mergedExpenses);
+          setInventory(mergedInventory);
+          setRecurringList(mergedRecurring);
+          setWaitlist(mergedWaitlist);
+          setWorkflows(mergedWorkflows);
+          setPackages(initialPackages);
+
+          // Update local storage to match exactly
+          saveStoredData({
+            services: mergedServices,
+            customers: mergedCustomers,
+            appointments: mergedAppointments,
+            staff: mergedStaff,
+            settings: mergedSettings,
+            leads: mergedLeads,
+            expenses: mergedExpenses,
+            inventory: mergedInventory,
+            recurring: mergedRecurring,
+            waitlist: mergedWaitlist,
+            workflows: mergedWorkflows,
+            packages: initialPackages,
+            automationSettings: data.automationSettings || localData.automationSettings || defaultAutomation,
+            profile: data.profile || localData.profile || defaultProfile
           });
-          setProfile(data.profile || localData.profile || {
-            name: 'John Doe',
-            role: 'Studio Owner',
-            email: 'owner@drwashit.online',
-            phone: '800-555-WASH',
-            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
-          });
+
+          setAutomationSettings(data.automationSettings || localData.automationSettings || defaultAutomation);
+          setProfile(data.profile || localData.profile || defaultProfile);
 
         } catch (e) {
           console.error("Error setting up data on login:", e);
