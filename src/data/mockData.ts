@@ -26,24 +26,6 @@ export const DEFAULT_SERVICES: ServicePackage[] = [
     ]
   },
   {
-    id: 'pkg-exterior-wash',
-    name: 'Exterior Wash',
-    description: 'Thorough external foam washing, microfiber hand drying, windshield care, and wheel de-griming.',
-    durationMin: 30,
-    pricing: {
-      sedan: 399,
-      suv: 399,
-      truck_large: 399
-    },
-    category: 'exterior',
-    features: [
-      'Active Foam Pressure Wash',
-      'Underbody Spray Rinse',
-      'Microfiber Touchless Drying',
-      'Rim Grime Treatment'
-    ]
-  },
-  {
     id: 'pkg-dry-cleaning',
     name: 'Dry Cleaning',
     description: 'Complete deep-extraction shampooing and dry clean for seats, mats, carpets, roof headliner, and door pads.',

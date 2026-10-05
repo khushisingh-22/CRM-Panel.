@@ -98,11 +98,11 @@ const getFormattedMessage = (
     totalAmount = `₹${apt.price}`;
     
     if (apt.paymentStatus === 'paid') {
-      payStatus = 'Paid (नकद / ऑनलाइन प्राप्त)';
+      payStatus = 'Paid';
     } else if (apt.paymentStatus === 'partially_paid') {
       payStatus = `Partially Paid (₹${apt.paidAmount || 0} received)`;
     } else {
-      payStatus = 'Unpaid (धोने के बाद भुगतान करें)';
+      payStatus = 'Unpaid';
     }
   } else {
     customerName = aptOrName || 'sir';
@@ -123,7 +123,7 @@ const getFormattedMessage = (
 
 Your Slot has been booked successfully! 🎉${invoiceLink}
 
-📄 *INVOICE & BILLING DETAILS (बिल विवरण)* 📄
+📄 *INVOICE & BILLING DETAILS* 📄
 -----------------------------------------
 *Invoice No:* ${invoiceNo}
 *Date:* ${cleanDate}
@@ -190,6 +190,7 @@ export default function BookingsManager({
   const [vehModel, setVehModel] = useState('');
   const [vehPlate, setVehPlate] = useState('');
   const [selectedServiceId, setSelectedServiceId] = useState('');
+  const [customServiceName, setCustomServiceName] = useState('');
   const [bookingDate, setBookingDate] = useState(new Date().toISOString().split('T')[0]);
   const [bookingTime, setBookingTime] = useState('09:00');
   const [assignedStaffId, setAssignedStaffId] = useState('');
@@ -271,6 +272,7 @@ export default function BookingsManager({
   const [editPlate, setEditPlate] = useState('');
   const [editPrice, setEditPrice] = useState(0);
   const [editPaidAmount, setEditPaidAmount] = useState(0);
+  const [editServiceName, setEditServiceName] = useState('');
 
   // Form State for editing start/end times
   const [timesApt, setTimesApt] = useState<Appointment | null>(null);
@@ -357,7 +359,11 @@ export default function BookingsManager({
     }
 
     const matchedService = services.find(s => s.id === selectedServiceId);
-    let serviceNameStr = isMonthlyPkg ? monthlyPkgName : (matchedService ? matchedService.name : 'Custom Detailing');
+    let serviceNameStr = isMonthlyPkg 
+      ? monthlyPkgName 
+      : selectedServiceId === 'custom' 
+        ? (customServiceName || 'Custom Detailing') 
+        : (matchedService ? matchedService.name : 'Custom Detailing');
 
     let vehicleYear = '2024';
     let vehicleMake = vehMake;
@@ -423,6 +429,7 @@ export default function BookingsManager({
     setNewCustAddress('');
     setVehMake('');
     setSelectedServiceId('');
+    setCustomServiceName('');
     setBookingNotes('');
     setPriceInput(0);
     setPaidAmountInput(0);
@@ -459,6 +466,7 @@ export default function BookingsManager({
     setEditPlate(apt.vehicle.licensePlate || '');
     setEditPrice(apt.price);
     setEditPaidAmount(apt.paidAmount ?? (apt.paymentStatus === 'paid' || apt.status === 'completed' ? apt.price : 0));
+    setEditServiceName(apt.serviceName);
     setShowEditModal(true);
   };
 
@@ -472,6 +480,7 @@ export default function BookingsManager({
       customerName: editName,
       customerPhone: editPhone,
       customerEmail: editEmail,
+      serviceName: editServiceName,
       price: editPrice,
       paidAmount: editPaidAmount,
       paymentStatus: editPaidAmount >= (editPrice || 0) ? 'paid' : editPaidAmount > 0 ? 'partially_paid' : 'unpaid',
@@ -1158,9 +1167,13 @@ export default function BookingsManager({
                     onChange={(e) => {
                       const svcId = e.target.value;
                       setSelectedServiceId(svcId);
-                      const svc = services.find(s => s.id === svcId);
-                      if (svc) {
-                        setPriceInput(svc.pricing.sedan || 150);
+                      if (svcId === 'custom') {
+                        setPriceInput(0);
+                      } else {
+                        const svc = services.find(s => s.id === svcId);
+                        if (svc) {
+                          setPriceInput(svc.pricing.sedan || 150);
+                        }
                       }
                     }}
                     className={`w-full text-xs font-semibold rounded-lg border border-slate-200 p-2.5 focus:outline-sky-500 ${isMonthlyPkg ? 'bg-indigo-50 text-indigo-900 border-indigo-250 cursor-not-allowed opacity-90' : 'bg-slate-50/50 text-slate-800'}`}
@@ -1171,15 +1184,32 @@ export default function BookingsManager({
                       <>
                         <option value="" className="bg-white text-slate-800">Select service</option>
                         {services
-                          .filter(s => s.category !== 'add_on')
+                          .filter(s => s.category !== 'add_on' && s.id !== 'pkg-exterior-wash' && s.name.toLowerCase() !== 'exterior wash')
                           .map(pkg => (
                             <option key={pkg.id} value={pkg.id} className="bg-white text-slate-800">{pkg.name}</option>
                           ))}
+                        <option value="custom" className="bg-sky-550/20 text-sky-800 font-bold">➕ Write Custom Service</option>
                       </>
                     )}
                   </select>
                 </div>
               </div>
+
+              {/* Custom Service Name Field */}
+              {selectedServiceId === 'custom' && !isMonthlyPkg && (
+                <div className="bg-sky-50 border border-sky-200 p-4 rounded-xl space-y-2 animate-fade-in text-slate-800">
+                  <label className="text-xs font-bold text-sky-950 block">Custom Service Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={customServiceName}
+                    onChange={(e) => setCustomServiceName(e.target.value)}
+                    placeholder="e.g., Ceramic Coating, Premium Polish, Interior Detailing"
+                    className="text-xs p-2.5 border border-sky-200 rounded-lg w-full bg-white text-slate-800 focus:outline-sky-500 font-bold"
+                  />
+                  <p className="text-[10px] text-sky-700 font-semibold">Enter custom service details and set its custom price in the field below.</p>
+                </div>
+              )}
 
               {/* Row 3: Price * and Customer Paid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1316,6 +1346,16 @@ export default function BookingsManager({
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   className="w-full text-xs p-2 border border-slate-200 rounded-lg text-slate-800"
+                />
+              </div>
+              <div>
+                <label className="text-3xs font-bold text-slate-500 uppercase block mb-1">Service Name / Type</label>
+                <input
+                  type="text"
+                  required
+                  value={editServiceName}
+                  onChange={(e) => setEditServiceName(e.target.value)}
+                  className="w-full text-xs p-2 border border-slate-200 rounded-lg text-slate-800 font-semibold focus:outline-sky-500"
                 />
               </div>
               <div>
