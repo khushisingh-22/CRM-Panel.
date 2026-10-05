@@ -69,6 +69,19 @@ import LoginScreen from './components/LoginScreen';
 import PublicInvoiceView from './components/PublicInvoiceView';
 import CarIntroLoader from './components/CarIntroLoader';
 
+// Helper to dynamically calculate customer stats
+const recalculateCustomerStats = (customerList: Customer[], appointmentList: Appointment[]): Customer[] => {
+  return customerList.map(c => {
+    // We count all active non-cancelled appointments in history
+    const clientApts = appointmentList.filter(a => a.customerId === c.id && a.status !== 'cancelled');
+    return {
+      ...c,
+      totalJobs: clientApts.length,
+      lifetimeSpend: clientApts.reduce((sum, a) => sum + (a.price || 0), 0)
+    };
+  });
+};
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [autoOpenNewBooking, setAutoOpenNewBooking] = useState(false);
@@ -425,9 +438,12 @@ export default function App() {
             saveFirebaseUserField(targetUid, 'packages', initialPackages);
           }
 
+          // Recalculate customer statistics to correct any past stale or double counted values
+          const cleanedCustomers = recalculateCustomerStats(mergedCustomers, mergedAppointments);
+
           // Set all reactive states
           setServices(mergedServices);
-          setCustomers(mergedCustomers);
+          setCustomers(cleanedCustomers);
           setAppointments(mergedAppointments);
           setStaff(mergedStaff);
           setSettings(mergedSettings);
@@ -442,7 +458,7 @@ export default function App() {
           // Update local storage to match exactly
           saveStoredData({
             services: mergedServices,
-            customers: mergedCustomers,
+            customers: cleanedCustomers,
             appointments: mergedAppointments,
             staff: mergedStaff,
             settings: mergedSettings,
@@ -456,6 +472,9 @@ export default function App() {
             automationSettings: data.automationSettings || localData.automationSettings || defaultAutomation,
             profile: data.profile || localData.profile || defaultProfile
           });
+
+          // Also save the cleaned list back to Firebase Firestore to correct database
+          saveFirebaseUserField(targetUid, 'customers', cleanedCustomers);
 
           setAutomationSettings(data.automationSettings || localData.automationSettings || defaultAutomation);
           setProfile(data.profile || localData.profile || defaultProfile);
@@ -586,26 +605,14 @@ export default function App() {
   };
 
   // Appointment CRUD Handlers
+
   const handleAddAppointment = (apt: Appointment) => {
     const list = [apt, ...appointments];
     syncAppointments(list);
 
-    // Update Customer profile totals
+    let updatedCustomers = [...customers];
     const client = customers.find(c => c.id === apt.customerId);
-    if (client) {
-      const updatedCustomers = customers.map(c => {
-        if (c.id === apt.customerId) {
-          return {
-            ...c,
-            lifetimeSpend: c.lifetimeSpend + apt.price,
-            totalJobs: c.totalJobs + 1
-          };
-        }
-        return c;
-      });
-      syncCustomers(updatedCustomers);
-    } else {
-      // Create profile for customer if not existing
+    if (!client) {
       const newC: Customer = {
         id: apt.customerId,
         name: apt.customerName,
@@ -613,37 +620,29 @@ export default function App() {
         email: apt.customerEmail,
         vehicles: [apt.vehicle],
         createdAt: new Date().toISOString(),
-        lifetimeSpend: apt.price,
-        totalJobs: 1
+        lifetimeSpend: 0,
+        totalJobs: 0
       };
-      syncCustomers([newC, ...customers]);
+      updatedCustomers = [newC, ...customers];
     }
+    const recalculated = recalculateCustomerStats(updatedCustomers, list);
+    syncCustomers(recalculated);
   };
 
   const handleUpdateAppointment = (updated: Appointment) => {
     const list = appointments.map(a => (a.id === updated.id ? updated : a));
     syncAppointments(list);
 
-    // If status is changed to completed previously, adjust spend if price modified
-    const original = appointments.find(a => a.id === updated.id);
-    if (original && original.status !== 'completed' && updated.status === 'completed') {
-      const updatedCustomers = customers.map(c => {
-        if (c.id === updated.customerId) {
-          return {
-            ...c,
-            lifetimeSpend: c.lifetimeSpend + updated.price,
-            totalJobs: c.totalJobs + 1
-          };
-        }
-        return c;
-      });
-      syncCustomers(updatedCustomers);
-    }
+    const recalculated = recalculateCustomerStats(customers, list);
+    syncCustomers(recalculated);
   };
 
   const handleDeleteAppointment = (id: string) => {
     const list = appointments.filter(a => a.id !== id);
     syncAppointments(list);
+
+    const recalculated = recalculateCustomerStats(customers, list);
+    syncCustomers(recalculated);
   };
 
   // Lead approval / self booking accept handler
@@ -652,6 +651,7 @@ export default function App() {
     let client = customers.find(c => c.phone === lead.phone);
     let clientId = client ? client.id : `cust-${Date.now()}`;
 
+    let updatedCustomers = [...customers];
     if (!client) {
       const newC: Customer = {
         id: clientId,
@@ -660,25 +660,22 @@ export default function App() {
         email: lead.email,
         vehicles: [lead.vehicle],
         createdAt: new Date().toISOString(),
-        lifetimeSpend: lead.totalPrice,
-        totalJobs: 1
+        lifetimeSpend: 0,
+        totalJobs: 0
       };
-      syncCustomers([newC, ...customers]);
+      updatedCustomers = [newC, ...customers];
     } else {
       // Add vehicle to client if not exist
       const hasVeh = client.vehicles.some(v => v.model === lead.vehicle.model);
-      const updatedCustomers = customers.map(c => {
+      updatedCustomers = customers.map(c => {
         if (c.id === clientId) {
           return {
             ...c,
-            vehicles: hasVeh ? c.vehicles : [...c.vehicles, lead.vehicle],
-            lifetimeSpend: c.lifetimeSpend + lead.totalPrice,
-            totalJobs: c.totalJobs + 1
+            vehicles: hasVeh ? c.vehicles : [...c.vehicles, lead.vehicle]
           };
         }
         return c;
       });
-      syncCustomers(updatedCustomers);
     }
 
     // Build appointment block
@@ -702,8 +699,12 @@ export default function App() {
       createdAt: new Date().toISOString()
     };
 
-    // Add appointment & clear lead
-    syncAppointments([newApt, ...appointments]);
+    const list = [newApt, ...appointments];
+    syncAppointments(list);
+
+    const recalculated = recalculateCustomerStats(updatedCustomers, list);
+    syncCustomers(recalculated);
+
     const updatedLeads = leads.map(l => (l.id === lead.id ? { ...l, status: 'accepted' } : l));
     syncLeads(updatedLeads);
     setShowNotifications(false);
@@ -729,6 +730,7 @@ export default function App() {
       licensePlate: 'PENDING'
     };
 
+    let updatedCustomers = [...customers];
     if (!client) {
       const newC: Customer = {
         id: clientId,
@@ -740,11 +742,11 @@ export default function App() {
         lifetimeSpend: 0,
         totalJobs: 0
       };
-      syncCustomers([newC, ...customers]);
+      updatedCustomers = [newC, ...customers];
     } else {
       const hasVeh = client.vehicles.some(v => v.model === item.vehicleModel);
       if (!hasVeh) {
-        const updatedCustomers = customers.map(c => {
+        updatedCustomers = customers.map(c => {
           if (c.id === clientId) {
             return {
               ...c,
@@ -753,7 +755,6 @@ export default function App() {
           }
           return c;
         });
-        syncCustomers(updatedCustomers);
       }
     }
 
@@ -785,7 +786,12 @@ export default function App() {
       createdAt: new Date().toISOString()
     };
 
-    syncAppointments([newApt, ...appointments]);
+    const list = [newApt, ...appointments];
+    syncAppointments(list);
+
+    const recalculated = recalculateCustomerStats(updatedCustomers, list);
+    syncCustomers(recalculated);
+
     const updatedWaitlist = waitlist.filter(w => w.id !== item.id);
     syncWaitlist(updatedWaitlist);
     setActiveTab('workboard');
