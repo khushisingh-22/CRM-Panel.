@@ -110,7 +110,6 @@ export default function DashboardOverview({
   // Quick Expense states
   const [expName, setExpName] = useState('');
   const [expAmount, setExpAmount] = useState('');
-  const [expCategory, setExpCategory] = useState('chemicals');
 
   const handleQuickAddExpense = (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,9 +117,10 @@ export default function DashboardOverview({
 
     const newExpense = {
       id: `exp-${Date.now()}`,
+      title: expName.trim(),
       name: expName.trim(),
       amount: parseFloat(expAmount) || 0,
-      category: expCategory,
+      category: 'other',
       date: todayStr,
       notes: 'Logged via Dashboard Quick Tracker.'
     };
@@ -131,7 +131,6 @@ export default function DashboardOverview({
     // Reset form
     setExpName('');
     setExpAmount('');
-    setExpCategory('chemicals');
   };
 
   const averageJobValue = completedJobs.length > 0 
@@ -616,7 +615,7 @@ export default function DashboardOverview({
           </div>
 
           <form onSubmit={handleQuickAddExpense} className="grid grid-cols-1 sm:grid-cols-12 gap-2 pt-2 items-end">
-            <div className="sm:col-span-5 space-y-1">
+            <div className="sm:col-span-8 space-y-1">
               <label className="text-[10px] text-slate-400 font-bold uppercase block">Expense Name *</label>
               <input
                 type="text"
@@ -628,7 +627,7 @@ export default function DashboardOverview({
               />
             </div>
             
-            <div className="sm:col-span-3 space-y-1">
+            <div className="sm:col-span-4 space-y-1">
               <label className="text-[10px] text-slate-400 font-bold uppercase block">Amount (₹) *</label>
               <input
                 type="number"
@@ -638,20 +637,6 @@ export default function DashboardOverview({
                 placeholder="350"
                 className="text-xs p-2 border border-slate-800 rounded-lg w-full bg-slate-950 text-white font-mono focus:outline-hidden focus:border-rose-500 placeholder-slate-600 font-bold text-rose-400"
               />
-            </div>
-
-            <div className="sm:col-span-4 space-y-1">
-              <label className="text-[10px] text-slate-400 font-bold uppercase block">Category</label>
-              <select
-                value={expCategory}
-                onChange={(e) => setExpCategory(e.target.value)}
-                className="text-xs p-2 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-rose-500 cursor-pointer font-semibold"
-              >
-                <option value="chemicals">Chemicals</option>
-                <option value="wages">Wages</option>
-                <option value="utilities">Utilities</option>
-                <option value="misc">Misc</option>
-              </select>
             </div>
 
             <div className="sm:col-span-12 pt-2">
@@ -1570,7 +1555,6 @@ export default function DashboardOverview({
                         <div className="flex justify-between items-start">
                           <div>
                             <strong className="font-bold text-white text-xs block">{e.name || e.title}</strong>
-                            <span className="text-[10px] text-rose-400 font-bold uppercase tracking-wide block">{e.category}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-rose-400 font-black text-xs">-₹{e.amount}</span>
@@ -1703,7 +1687,6 @@ export default function DashboardOverview({
                         <div className="flex justify-between items-start">
                           <div>
                             <strong className="font-bold text-white text-xs block">{e.name || e.title}</strong>
-                            <span className="text-[10px] text-rose-400 font-bold uppercase tracking-wide block">{e.category}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-rose-400 font-black text-xs">-₹{e.amount}</span>

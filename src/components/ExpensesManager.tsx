@@ -5,28 +5,25 @@
 
 import React, { useState } from 'react';
 import {
-  TrendingUp,
   Plus,
   Trash2,
-  Edit3,
   DollarSign,
-  Briefcase,
   Sliders,
+  X,
   Calendar,
   Layers,
-  X,
-  CheckCircle,
-  AlertCircle
+  FileText
 } from 'lucide-react';
 
 export interface Expense {
   id: string;
   title: string;
-  category: 'chemicals' | 'equipment' | 'rent' | 'utilities' | 'wages' | 'marketing' | 'other';
+  category?: 'chemicals' | 'equipment' | 'rent' | 'utilities' | 'wages' | 'marketing' | 'other';
   amount: number;
   date: string;
   vendor: string;
   notes?: string;
+  name?: string;
 }
 
 interface ExpensesManagerProps {
@@ -36,12 +33,11 @@ interface ExpensesManagerProps {
 }
 
 export default function ExpensesManager({
-  expenses,
+  expenses = [],
   onAddExpense,
   onDeleteExpense
 }: ExpensesManagerProps) {
   const [showAddModal, setShowAddModal] = useState(false);
-  const [filterCategory, setFilterCategory] = useState<string>('all');
   const [search, setSearch] = useState('');
 
   // Local date helper
@@ -55,7 +51,6 @@ export default function ExpensesManager({
 
   // Form states
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState<Expense['category']>('chemicals');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(getLocalDateString());
   const [vendor, setVendor] = useState('');
@@ -67,12 +62,13 @@ export default function ExpensesManager({
 
     const newExpense: Expense = {
       id: `exp-${Date.now()}`,
-      title,
-      category,
+      title: title.trim(),
+      name: title.trim(), // sync name with title
+      category: 'other',
       amount: Number(amount),
       date,
-      vendor,
-      notes
+      vendor: vendor.trim(),
+      notes: notes.trim()
     };
 
     onAddExpense(newExpense);
@@ -80,7 +76,6 @@ export default function ExpensesManager({
     
     // Reset Form
     setTitle('');
-    setCategory('chemicals');
     setAmount('');
     setDate(getLocalDateString());
     setVendor('');
@@ -88,33 +83,24 @@ export default function ExpensesManager({
   };
 
   const filteredExpenses = expenses.filter(exp => {
-    const matchesCategory = filterCategory === 'all' || exp.category === filterCategory;
-    const matchesSearch = exp.title.toLowerCase().includes(search.toLowerCase()) || 
-                          exp.vendor.toLowerCase().includes(search.toLowerCase());
-    return matchesCategory && matchesSearch;
+    const titleVal = exp.title || exp.name || '';
+    const vendorVal = exp.vendor || '';
+    const matchesSearch = titleVal.toLowerCase().includes(search.toLowerCase()) || 
+                          vendorVal.toLowerCase().includes(search.toLowerCase());
+    return matchesSearch;
   });
 
-  const totalExpenseSum = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
+  const todayStr = getLocalDateString();
+  const thisMonthPrefix = todayStr.substring(0, 7); // "YYYY-MM"
 
-  const categoryLabels: Record<Expense['category'], string> = {
-    chemicals: 'Chemicals & Soap',
-    equipment: 'Tools & Equipment',
-    rent: 'Facility Rent',
-    utilities: 'Utilities (Water & Power)',
-    wages: 'Staff Wages',
-    marketing: 'Marketing & Ads',
-    other: 'Other Misc Expenses'
-  };
-
-  const categoryColors: Record<Expense['category'], string> = {
-    chemicals: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
-    equipment: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
-    rent: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
-    utilities: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-    wages: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-    marketing: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-    other: 'bg-slate-500/10 text-slate-400 border-slate-500/20'
-  };
+  // Calculation metrics
+  const totalExpenseSum = expenses.reduce((sum, e) => sum + e.amount, 0);
+  const todayExpenseSum = expenses
+    .filter(e => e.date === todayStr)
+    .reduce((sum, e) => sum + e.amount, 0);
+  const thisMonthExpenseSum = expenses
+    .filter(e => e.date && e.date.startsWith(thisMonthPrefix))
+    .reduce((sum, e) => sum + e.amount, 0);
 
   return (
     <div className="space-y-6" id="expenses-manager-root">
@@ -122,7 +108,7 @@ export default function ExpensesManager({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-xl font-extrabold text-white tracking-tight md:text-2xl">Expenses & Shop Costs</h1>
-          <p className="text-xs text-slate-400">Track facility rent, chemicals, equipment, utilities, and wages</p>
+          <p className="text-xs text-slate-400">Log and monitor business overhead, utilities, and wash supplies</p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
@@ -138,32 +124,32 @@ export default function ExpensesManager({
         <div className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl space-y-2">
           <span className="text-3xs font-bold text-slate-400 uppercase tracking-wider block">Total Expenses</span>
           <div className="flex items-baseline justify-between">
-            <strong className="text-2xl font-black text-rose-400 font-mono">₹{expenses.reduce((sum, e) => sum + e.amount, 0).toFixed(2)}</strong>
-            <span className="text-4xs text-slate-500 font-bold">Lifetime Logs</span>
+            <strong className="text-2xl font-black text-rose-400 font-mono">₹{totalExpenseSum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+            <span className="text-4xs text-slate-500 font-bold">All Time</span>
           </div>
         </div>
 
         <div className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl space-y-2">
-          <span className="text-3xs font-bold text-slate-400 uppercase tracking-wider block">Chemicals & Soap</span>
+          <span className="text-3xs font-bold text-slate-400 uppercase tracking-wider block">Today's Expenses</span>
           <div className="flex items-baseline justify-between">
-            <strong className="text-lg font-black text-white font-mono">₹{expenses.filter(e => e.category === 'chemicals').reduce((sum, e) => sum + e.amount, 0).toFixed(2)}</strong>
-            <span className="text-4xs text-cyan-400 font-bold">Active Inventory</span>
+            <strong className="text-lg font-black text-white font-mono">₹{todayExpenseSum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+            <span className="text-4xs text-cyan-400 font-bold">Today</span>
           </div>
         </div>
 
         <div className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl space-y-2">
-          <span className="text-3xs font-bold text-slate-400 uppercase tracking-wider block">Wages & Contracts</span>
+          <span className="text-3xs font-bold text-slate-400 uppercase tracking-wider block">This Month's Expenses</span>
           <div className="flex items-baseline justify-between">
-            <strong className="text-lg font-black text-white font-mono">₹{expenses.filter(e => e.category === 'wages').reduce((sum, e) => sum + e.amount, 0).toFixed(2)}</strong>
-            <span className="text-4xs text-emerald-400 font-bold">Staff Payouts</span>
+            <strong className="text-lg font-black text-white font-mono">₹{thisMonthExpenseSum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+            <span className="text-4xs text-emerald-400 font-bold">Month view</span>
           </div>
         </div>
 
         <div className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl space-y-2">
-          <span className="text-3xs font-bold text-slate-400 uppercase tracking-wider block">Facility & Utilities</span>
+          <span className="text-3xs font-bold text-slate-400 uppercase tracking-wider block">Total Logs Count</span>
           <div className="flex items-baseline justify-between">
-            <strong className="text-lg font-black text-white font-mono">₹{expenses.filter(e => ['rent', 'utilities'].includes(e.category)).reduce((sum, e) => sum + e.amount, 0).toFixed(2)}</strong>
-            <span className="text-4xs text-amber-400 font-bold">Fixed Overheads</span>
+            <strong className="text-lg font-black text-white font-mono">{expenses.length}</strong>
+            <span className="text-4xs text-amber-400 font-bold">Log entries</span>
           </div>
         </div>
       </div>
@@ -171,40 +157,14 @@ export default function ExpensesManager({
       {/* Control filters & table */}
       <div className="bg-[#131D35] border border-slate-800/40 rounded-xl overflow-hidden flex flex-col">
         <div className="p-4 border-b border-slate-800/40 flex flex-col sm:flex-row gap-3 items-center justify-between">
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex gap-2 w-full">
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search expenses by title or vendor..."
-              className="text-xs px-3 py-2 border border-slate-800 rounded-lg bg-slate-950 text-white w-full sm:w-64 focus:outline-hidden focus:border-indigo-500"
+              className="text-xs px-3 py-2 border border-slate-800 rounded-lg bg-slate-950 text-white w-full focus:outline-hidden focus:border-indigo-500"
             />
-          </div>
-
-          <div className="flex gap-1 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-            <button
-              onClick={() => setFilterCategory('all')}
-              className={`px-3 py-1 text-4xs font-bold rounded uppercase tracking-wider transition-all whitespace-nowrap border ${
-                filterCategory === 'all'
-                  ? 'bg-indigo-600 text-white border-indigo-600'
-                  : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
-              }`}
-            >
-              All Categories
-            </button>
-            {Object.entries(categoryLabels).map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => setFilterCategory(key)}
-                className={`px-3 py-1 text-4xs font-bold rounded uppercase tracking-wider transition-all whitespace-nowrap border ${
-                  filterCategory === key
-                    ? 'bg-indigo-600 text-white border-indigo-600'
-                    : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
-                }`}
-              >
-                {label.split(' ')[0]}
-              </button>
-            ))}
           </div>
         </div>
 
@@ -214,7 +174,6 @@ export default function ExpensesManager({
             <thead>
               <tr className="border-b border-slate-800 text-slate-400 text-3xs font-extrabold uppercase tracking-wider bg-slate-950">
                 <th className="py-3 px-4">Title / Description</th>
-                <th className="py-3 px-4">Category</th>
                 <th className="py-3 px-4">Vendor</th>
                 <th className="py-3 px-4">Logged Date</th>
                 <th className="py-3 px-4 text-right">Amount Cost</th>
@@ -224,22 +183,17 @@ export default function ExpensesManager({
             <tbody className="divide-y divide-slate-800/40 text-slate-300">
               {filteredExpenses.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-slate-500 font-medium">
+                  <td colSpan={5} className="p-8 text-center text-slate-500 font-medium">
                     <Sliders size={28} className="mx-auto mb-2 text-slate-600" />
-                    No expense logs match filter settings.
+                    No expense logs found.
                   </td>
                 </tr>
               ) : (
                 filteredExpenses.map(exp => (
                   <tr key={exp.id} className="hover:bg-slate-900/30 transition-all">
                     <td className="py-3.5 px-4">
-                      <strong className="text-white font-bold block">{exp.title}</strong>
+                      <strong className="text-white font-bold block">{exp.title || exp.name}</strong>
                       {exp.notes && <span className="text-3xs text-slate-500 block truncate max-w-xs">{exp.notes}</span>}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className={`px-2 py-0.5 rounded-full text-4xs font-extrabold uppercase border ${categoryColors[exp.category]}`}>
-                        {categoryLabels[exp.category]}
-                      </span>
                     </td>
                     <td className="py-3.5 px-4 font-medium text-slate-400">
                       {exp.vendor || 'N/A'}
@@ -294,32 +248,17 @@ export default function ExpensesManager({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Category</label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as any)}
-                    className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500"
-                  >
-                    {Object.entries(categoryLabels).map(([key, label]) => (
-                      <option key={key} value={key}>{label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Cost Amount (₹)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    placeholder="0.00"
-                    className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white font-mono font-bold focus:outline-hidden focus:border-indigo-500"
-                  />
-                </div>
+              <div className="space-y-1">
+                <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Cost Amount (₹)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="0.00"
+                  className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white font-mono font-bold focus:outline-hidden focus:border-indigo-500"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
