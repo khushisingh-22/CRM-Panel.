@@ -63,7 +63,10 @@ export default function DashboardOverview({
   const getRelativeDate = (offsetDays: number): string => {
     const d = new Date();
     d.setDate(d.getDate() + offsetDays);
-    return d.toISOString().split('T')[0];
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   // Calculations
@@ -98,6 +101,8 @@ export default function DashboardOverview({
     }, 0);
 
   const [showPendingListModal, setShowPendingListModal] = useState(false);
+  const [showDailyProfitModal, setShowDailyProfitModal] = useState(false);
+  const [showTotalProfitModal, setShowTotalProfitModal] = useState(false);
   const [pendingSearchTerm, setPendingSearchTerm] = useState('');
   const [editingAptId, setEditingAptId] = useState<string | null>(null);
   const [newPaidAmount, setNewPaidAmount] = useState<string>('');
@@ -492,28 +497,34 @@ export default function DashboardOverview({
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4" id="kpi-dashboard-grid">
           {/* Card 1: Daily Profit */}
-          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
+          <button
+            onClick={() => setShowDailyProfitModal(true)}
+            className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 hover:border-sky-500/50 transition-all shadow-xs flex items-center justify-between text-left cursor-pointer w-full group relative overflow-hidden"
+          >
             <div className="space-y-1">
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Daily Profit</span>
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block group-hover:text-sky-300 transition-colors">Daily Profit</span>
               <span className="text-2xl font-extrabold text-[#38bdf8] font-mono">₹{dailyProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              <span className="text-slate-500 text-3xs font-medium block">Today's net earnings</span>
+              <span className="text-slate-500 text-3xs font-medium block group-hover:text-slate-300 transition-colors">Click to view list →</span>
             </div>
-            <div className="p-3 bg-sky-500/10 text-[#38bdf8] rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
+            <div className="p-3 bg-sky-500/10 text-[#38bdf8] group-hover:bg-[#38bdf8]/20 transition-all rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
               ₹
             </div>
-          </div>
+          </button>
 
           {/* Card 2: Total Profit */}
-          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
+          <button
+            onClick={() => setShowTotalProfitModal(true)}
+            className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 hover:border-emerald-500/50 transition-all shadow-xs flex items-center justify-between text-left cursor-pointer w-full group relative overflow-hidden"
+          >
             <div className="space-y-1">
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Total Profit</span>
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block group-hover:text-emerald-300 transition-colors">Total Profit</span>
               <span className="text-2xl font-extrabold text-emerald-400 font-mono">₹{totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              <span className="text-slate-500 text-3xs font-medium block">₹{totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} this month</span>
+              <span className="text-slate-500 text-3xs font-medium block group-hover:text-slate-300 transition-colors">Click to view list →</span>
             </div>
-            <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
+            <div className="p-3 bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-500/20 transition-all rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
               ₹
             </div>
-          </div>
+          </button>
 
           {/* Card 3: Total Revenue */}
           <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
@@ -657,12 +668,24 @@ export default function DashboardOverview({
           {expenses && expenses.filter(e => e.date === todayStr).length > 0 && (
             <div className="border-t border-slate-800/40 pt-2 text-[10px] space-y-1">
               <span className="text-slate-400 block font-bold uppercase tracking-wider">Today's Expenses:</span>
-              <div className="flex flex-wrap gap-1.5 max-h-12 overflow-y-auto pr-1">
+              <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
                 {expenses.filter(e => e.date === todayStr).map((e: any) => (
-                  <span key={e.id} className="bg-rose-500/10 border border-rose-500/10 text-rose-300 px-2 py-0.5 rounded font-medium flex items-center gap-1 font-mono">
+                  <span key={e.id} className="bg-rose-500/10 border border-rose-500/20 text-rose-300 px-2 py-1 rounded font-medium flex items-center gap-1.5 font-mono">
                     <span>{e.name}</span>
                     <span className="text-slate-500">•</span>
-                    <span className="font-bold">₹{e.amount}</span>
+                    <span className="font-bold text-rose-400">₹{e.amount}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (onUpdateExpenses) {
+                          onUpdateExpenses(expenses.filter(item => item.id !== e.id));
+                        }
+                      }}
+                      className="text-rose-500 hover:text-rose-300 transition-colors p-0.5 rounded-full hover:bg-rose-500/20 ml-0.5 cursor-pointer flex items-center justify-center shrink-0"
+                      title="Delete Expense"
+                    >
+                      <X size={10} className="stroke-[2.5]" />
+                    </button>
                   </span>
                 ))}
               </div>
@@ -1446,6 +1469,273 @@ export default function DashboardOverview({
                   setEditingAptId(null);
                 }}
                 className="px-4 py-1.5 bg-slate-800 hover:bg-slate-705 text-slate-300 hover:text-white text-xs font-bold rounded-lg border border-slate-700 transition-colors cursor-pointer"
+              >
+                Close details
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Daily Profit Modal */}
+      {showDailyProfitModal && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-xs flex items-center justify-center z-50 p-4" id="daily-profit-modal">
+          <div className="bg-[#0B1329] border border-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-scale-up-corner">
+            {/* Header */}
+            <div className="p-5 border-b border-slate-800/60 flex items-center justify-between bg-slate-900/40">
+              <div>
+                <h3 className="text-base font-extrabold text-white flex items-center gap-2">
+                  <span className="p-1.5 bg-sky-500/10 text-[#38bdf8] rounded-md font-mono">₹</span>
+                  Daily Profit Breakdown & History
+                </h3>
+                <p className="text-3xs text-slate-400 mt-1">
+                  Today's Date: <span className="font-mono font-bold text-white">{todayStr}</span>
+                </p>
+              </div>
+              <button
+                onClick={() => setShowDailyProfitModal(false)}
+                className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Profit Summary Banner */}
+            <div className="p-5 bg-slate-950/40 border-b border-slate-800/40 grid grid-cols-3 gap-4 text-center">
+              <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800/30">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Today's Revenue</span>
+                <strong className="text-lg font-black text-sky-400 font-mono">₹{todayCompletedJobs.reduce((sum, a) => sum + a.price, 0).toFixed(2)}</strong>
+              </div>
+              <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800/30">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Today's Expenses</span>
+                <strong className="text-lg font-black text-rose-400 font-mono">₹{expenses ? expenses.filter(e => e.date === todayStr).reduce((sum, e) => sum + e.amount, 0).toFixed(2) : '0.00'}</strong>
+              </div>
+              <div className="bg-slate-900/80 p-3 rounded-xl border border-sky-500/20 shadow-lg shadow-sky-500/5">
+                <span className="text-[10px] text-sky-300 font-bold uppercase tracking-wider block">Net Daily Profit</span>
+                <strong className="text-xl font-black text-[#38bdf8] font-mono">₹{dailyProfit.toFixed(2)}</strong>
+              </div>
+            </div>
+
+            {/* Split Content Lists */}
+            <div className="flex-1 overflow-y-auto p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Left Column: Earnings (Revenue) */}
+              <div className="space-y-3 font-semibold text-xs">
+                <h4 className="text-xs font-extrabold text-white uppercase tracking-wider flex items-center justify-between border-b border-slate-850 pb-2">
+                  <span>Revenue: Detailing Jobs Completed</span>
+                  <span className="bg-sky-500/10 text-sky-400 px-2 py-0.5 rounded text-[10px] font-bold">{todayCompletedJobs.length} Wash</span>
+                </h4>
+
+                <div className="space-y-2.5 max-h-[45vh] overflow-y-auto pr-1">
+                  {todayCompletedJobs.length === 0 ? (
+                    <div className="py-12 text-center text-slate-500 bg-slate-900/20 rounded-xl border border-dashed border-slate-800/40">
+                      <p className="text-xs font-semibold text-slate-400">No washes completed yet today</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">Mark scheduled washes as "Completed" in Bookings.</p>
+                    </div>
+                  ) : (
+                    todayCompletedJobs.map(apt => (
+                      <div key={apt.id} className="p-3 bg-slate-900/40 hover:bg-slate-900/60 transition-colors border border-slate-800/40 rounded-xl space-y-1 text-left">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <strong className="font-bold text-white text-xs block">{apt.customerName}</strong>
+                            <span className="text-[11px] text-indigo-400 font-medium block">{apt.serviceName}</span>
+                          </div>
+                          <span className="font-mono text-[#38bdf8] font-black text-xs">+₹{apt.price}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-[10px] text-slate-400 border-t border-slate-800/30 pt-1 mt-1 font-mono">
+                          <span>{apt.time} • {apt.vehicle?.make}</span>
+                          <span className="text-emerald-400 font-bold uppercase text-[9px]">{apt.paymentStatus}</span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column: Expenditures (Expenses) */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-extrabold text-white uppercase tracking-wider flex items-center justify-between border-b border-slate-850 pb-2">
+                  <span>Expenses: Today's Shop Costs</span>
+                  <span className="bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded text-[10px] font-bold">{expenses ? expenses.filter(e => e.date === todayStr).length : 0} Logged</span>
+                </h4>
+
+                <div className="space-y-2.5 max-h-[45vh] overflow-y-auto pr-1">
+                  {!expenses || expenses.filter(e => e.date === todayStr).length === 0 ? (
+                    <div className="py-12 text-center text-slate-500 bg-slate-900/20 rounded-xl border border-dashed border-slate-800/40">
+                      <p className="text-xs font-semibold text-slate-400">No expenses logged today</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">Use the "Quick Expense Tracker" to log overhead costs.</p>
+                    </div>
+                  ) : (
+                    expenses.filter(e => e.date === todayStr).map((e: any) => (
+                      <div key={e.id} className="p-3 bg-slate-900/40 hover:bg-slate-900/60 transition-colors border border-slate-800/40 rounded-xl space-y-1 text-left">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <strong className="font-bold text-white text-xs block">{e.name || e.title}</strong>
+                            <span className="text-[10px] text-rose-400 font-bold uppercase tracking-wide block">{e.category}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-rose-400 font-black text-xs">-₹{e.amount}</span>
+                            <button
+                              onClick={() => {
+                                if (onUpdateExpenses) {
+                                  onUpdateExpenses(expenses.filter(item => item.id !== e.id));
+                                }
+                              }}
+                              className="p-1 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded transition-colors cursor-pointer flex items-center justify-center"
+                              title="Delete Expense"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        </div>
+                        {e.notes && (
+                          <p className="text-[10px] text-slate-400 border-t border-slate-800/30 pt-1 mt-1 italic">
+                            "{e.notes}"
+                          </p>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-slate-800/60 bg-slate-900/30 flex justify-end">
+              <button
+                onClick={() => setShowDailyProfitModal(false)}
+                className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold rounded-lg border border-slate-700 transition-colors cursor-pointer"
+              >
+                Close details
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Total Profit Modal */}
+      {showTotalProfitModal && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-xs flex items-center justify-center z-50 p-4" id="total-profit-modal">
+          <div className="bg-[#0B1329] border border-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-scale-up-corner">
+            {/* Header */}
+            <div className="p-5 border-b border-slate-800/60 flex items-center justify-between bg-slate-900/40">
+              <div>
+                <h3 className="text-base font-extrabold text-white flex items-center gap-2">
+                  <span className="p-1.5 bg-emerald-500/10 text-emerald-400 rounded-md font-mono">₹</span>
+                  Total Profit Breakdown & History
+                </h3>
+                <p className="text-3xs text-slate-400 mt-1">
+                  Showing lifetime statistics of revenue and expenditures.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowTotalProfitModal(false)}
+                className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Profit Summary Banner */}
+            <div className="p-5 bg-slate-950/40 border-b border-slate-800/40 grid grid-cols-3 gap-4 text-center">
+              <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800/30">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Total Revenue</span>
+                <strong className="text-lg font-black text-sky-400 font-mono">₹{totalRevenue.toFixed(2)}</strong>
+              </div>
+              <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800/30">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Total Expenses</span>
+                <strong className="text-lg font-black text-rose-400 font-mono">₹{totalExpenses.toFixed(2)}</strong>
+              </div>
+              <div className="bg-slate-900/80 p-3 rounded-xl border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
+                <span className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider block">Net Total Profit</span>
+                <strong className="text-xl font-black text-emerald-400 font-mono">₹{totalProfit.toFixed(2)}</strong>
+              </div>
+            </div>
+
+            {/* Split Content Lists */}
+            <div className="flex-1 overflow-y-auto p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Left Column: Earnings (Revenue) */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-extrabold text-white uppercase tracking-wider flex items-center justify-between border-b border-slate-850 pb-2">
+                  <span>Completed Detailing Jobs</span>
+                  <span className="bg-sky-500/10 text-sky-400 px-2 py-0.5 rounded text-[10px] font-bold">{completedJobs.length} Completed</span>
+                </h4>
+
+                <div className="space-y-2.5 max-h-[45vh] overflow-y-auto pr-1">
+                  {completedJobs.length === 0 ? (
+                    <div className="py-12 text-center text-slate-500 bg-slate-900/20 rounded-xl border border-dashed border-slate-800/40">
+                      <p className="text-xs font-semibold text-slate-400">No completed washes in database</p>
+                    </div>
+                  ) : (
+                    completedJobs.map(apt => (
+                      <div key={apt.id} className="p-3 bg-slate-900/40 hover:bg-slate-900/60 transition-colors border border-slate-800/40 rounded-xl space-y-1 text-left">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <strong className="font-bold text-white text-xs block">{apt.customerName}</strong>
+                            <span className="text-[11px] text-indigo-400 font-medium block">{apt.serviceName}</span>
+                          </div>
+                          <span className="font-mono text-sky-400 font-black text-xs">+₹{apt.price}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-[10px] text-slate-400 border-t border-slate-800/30 pt-1 mt-1 font-mono">
+                          <span>{apt.date} • {apt.time}</span>
+                          <span className="text-emerald-400 font-bold uppercase text-[9px]">{apt.paymentStatus}</span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column: Expenditures (Expenses) */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-extrabold text-white uppercase tracking-wider flex items-center justify-between border-b border-slate-850 pb-2">
+                  <span>All Logged Business Expenses</span>
+                  <span className="bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded text-[10px] font-bold">{expenses ? expenses.length : 0} Logged</span>
+                </h4>
+
+                <div className="space-y-2.5 max-h-[45vh] overflow-y-auto pr-1">
+                  {!expenses || expenses.length === 0 ? (
+                    <div className="py-12 text-center text-slate-500 bg-slate-900/20 rounded-xl border border-dashed border-slate-800/40">
+                      <p className="text-xs font-semibold text-slate-400">No historical expenses found</p>
+                    </div>
+                  ) : (
+                    expenses.map((e: any) => (
+                      <div key={e.id} className="p-3 bg-slate-900/40 hover:bg-slate-900/60 transition-colors border border-slate-800/40 rounded-xl space-y-1 text-left">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <strong className="font-bold text-white text-xs block">{e.name || e.title}</strong>
+                            <span className="text-[10px] text-rose-400 font-bold uppercase tracking-wide block">{e.category}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-rose-400 font-black text-xs">-₹{e.amount}</span>
+                            <button
+                              onClick={() => {
+                                if (onUpdateExpenses) {
+                                  onUpdateExpenses(expenses.filter(item => item.id !== e.id));
+                                }
+                              }}
+                              className="p-1 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded transition-colors cursor-pointer flex items-center justify-center"
+                              title="Delete Expense"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center text-[10px] text-slate-400 border-t border-slate-800/30 pt-1 mt-1 font-mono">
+                          <span>{e.date}</span>
+                          {e.vendor && <span className="text-slate-400 truncate max-w-[120px]">Vendor: {e.vendor}</span>}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-slate-800/60 bg-slate-900/30 flex justify-end">
+              <button
+                onClick={() => setShowTotalProfitModal(false)}
+                className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold rounded-lg border border-slate-700 transition-colors cursor-pointer"
               >
                 Close details
               </button>

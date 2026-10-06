@@ -502,15 +502,10 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Sync/refresh database when window gains focus or visibility changes to prevent stale overwrites
+  // Sync/refresh database when window visibility changes to prevent stale overwrites across tabs
   useEffect(() => {
     if (!currentUser) return;
 
-    const handleFocus = async () => {
-      await fetchAndSetUserData(currentUser);
-    };
-
-    window.addEventListener('focus', handleFocus);
     const handleVisibilityChange = async () => {
       if (document.visibilityState === 'visible') {
         await fetchAndSetUserData(currentUser);
@@ -519,7 +514,6 @@ export default function App() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [currentUser]);
@@ -1007,6 +1001,7 @@ export default function App() {
                 { id: 'crm', name: 'Clients', icon: Users },
                 { id: 'employee_ledger', name: 'Employee Ledger', icon: ClipboardList, adminOnly: true },
                 { id: 'billing', name: 'Invoices & Billing', icon: CreditCard, adminOnly: true },
+                { id: 'expenses', name: 'Expenses Log', icon: DollarSign, adminOnly: true },
               ] as Array<{ id: string; name: string; icon: any; badge?: number; adminOnly?: boolean }>)
                 .filter(tab => !tab.adminOnly || currentUser?.role !== 'employee')
                 .map(tab => {

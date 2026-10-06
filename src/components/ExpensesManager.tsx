@@ -44,11 +44,20 @@ export default function ExpensesManager({
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [search, setSearch] = useState('');
 
+  // Local date helper
+  const getLocalDateString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Form states
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<Expense['category']>('chemicals');
   const [amount, setAmount] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(getLocalDateString());
   const [vendor, setVendor] = useState('');
   const [notes, setNotes] = useState('');
 
@@ -73,7 +82,7 @@ export default function ExpensesManager({
     setTitle('');
     setCategory('chemicals');
     setAmount('');
-    setDate(new Date().toISOString().split('T')[0]);
+    setDate(getLocalDateString());
     setVendor('');
     setNotes('');
   };
