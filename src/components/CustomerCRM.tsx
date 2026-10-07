@@ -25,6 +25,36 @@ import {
 } from 'lucide-react';
 import { Customer, Appointment, Staff } from '../types/crm';
 
+const formatDateTimeFriendly = (dateStr: string, timeStr: string) => {
+  if (!dateStr) return '';
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const parts = dateStr.split('-');
+  let datePart = dateStr;
+  if (parts.length === 3) {
+    const year = parts[0];
+    const monthIndex = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    if (monthIndex >= 0 && monthIndex < 12) {
+      const dayStr = day < 10 ? `0${day}` : `${day}`;
+      datePart = `${dayStr} ${months[monthIndex]} ${year}`;
+    }
+  }
+  
+  let timePart = timeStr || '';
+  if (timeStr && /^\d{2}:\d{2}$/.test(timeStr)) {
+    let [hoursStr, minutesStr] = timeStr.split(':');
+    let hours = parseInt(hoursStr, 10);
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    timePart = `${hours}:${minutesStr} ${ampm}`;
+  } else if (timeStr && /^\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?$/i.test(timeStr)) {
+    timePart = timeStr.toUpperCase();
+  }
+  
+  return timePart ? `${datePart}, ${timePart}` : datePart;
+};
+
 interface CustomerCRMProps {
   customers: Customer[];
   appointments: Appointment[];
@@ -325,7 +355,9 @@ export default function CustomerCRM({
             <FileText size={16} className="text-[#0891B2]" />
             <span>Complete Jobs History log</span>
           </h3>
-          <div className="overflow-x-auto">
+
+          {/* Desktop/Laptop Table (Hidden on screens below 768px / md) */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
                 <tr className="border-b border-[#E5EDF3] text-[#334155] font-bold">
@@ -345,7 +377,7 @@ export default function CustomerCRM({
                       <td className="py-3 font-semibold text-[#0F172A]">{apt.customerName}</td>
                       <td className="py-3 capitalize">{apt.vehicle.make} {apt.vehicle.model}</td>
                       <td className="py-3 font-semibold text-[#0E7490]">{apt.serviceName}</td>
-                      <td className="py-3 font-mono text-[#475569]">{apt.date} @ {apt.time}</td>
+                      <td className="py-3 font-sans text-[#475569] whitespace-nowrap">{formatDateTimeFriendly(apt.date, apt.time)}</td>
                       <td className="py-3 text-right font-semibold text-[#16A34A]">₹{apt.price}</td>
                       <td className="py-3 text-right">
                         <span className="bg-emerald-100 text-emerald-800 border border-emerald-200 text-[9px] font-bold uppercase px-2 py-0.5 rounded">
@@ -363,6 +395,81 @@ export default function CustomerCRM({
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Stacked Job Cards View (Only visible on screens below 768px / md) */}
+          <div className="block md:hidden space-y-3">
+            {appointments
+              .filter(a => a.status === 'completed')
+              .map((apt) => (
+                <div
+                  key={apt.id}
+                  className={`bg-white border border-[#E5EDF3] rounded-2xl p-4 shadow-sm text-left flex flex-col gap-3 border-l-[4px] ${
+                    apt.status === 'completed'
+                      ? 'border-l-[#16A34A]'
+                      : apt.status === 'scheduled'
+                      ? 'border-l-[#0891B2]'
+                      : apt.status === 'pending'
+                      ? 'border-l-[#FACC15]'
+                      : apt.status === 'cancelled'
+                      ? 'border-l-[#EF4444]'
+                      : 'border-l-slate-300'
+                  }`}
+                >
+                  {/* Top row: Client Name and Status Pill */}
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="text-base font-bold text-[#0F172A] truncate">{apt.customerName}</span>
+                    {apt.status === 'completed' ? (
+                      <span className="bg-emerald-50 text-[#16A34A] border border-emerald-100 text-xs px-2.5 py-1 rounded-full font-bold whitespace-nowrap">
+                        Completed
+                      </span>
+                    ) : apt.status === 'scheduled' ? (
+                      <span className="bg-cyan-50 text-[#0891B2] border border-cyan-100 text-xs px-2.5 py-1 rounded-full font-bold whitespace-nowrap">
+                        Scheduled
+                      </span>
+                    ) : apt.status === 'pending' ? (
+                      <span className="bg-amber-50 text-[#F59E0B] border border-amber-100 text-xs px-2.5 py-1 rounded-full font-bold whitespace-nowrap">
+                        Pending
+                      </span>
+                    ) : apt.status === 'cancelled' ? (
+                      <span className="bg-rose-50 text-[#EF4444] border border-rose-100 text-xs px-2.5 py-1 rounded-full font-bold whitespace-nowrap">
+                        Cancelled
+                      </span>
+                    ) : (
+                      <span className="bg-slate-50 text-slate-600 border border-slate-100 text-xs px-2.5 py-1 rounded-full font-bold whitespace-nowrap">
+                        {apt.status}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Second row: Service Name and Vehicle Model */}
+                  <div className="space-y-1">
+                    <h4 className="text-[15px] font-semibold text-[#0E7490] leading-snug">{apt.serviceName}</h4>
+                    <div className="flex items-center gap-1.5 text-[13px] text-[#64748B]">
+                      <Car size={13} className="shrink-0 text-[#64748B]" />
+                      <span className="capitalize truncate">{apt.vehicle.make} {apt.vehicle.model}</span>
+                    </div>
+                  </div>
+
+                  {/* Third row: Date and Time */}
+                  <div className="flex items-center gap-1.5 text-[14px] text-[#334155] font-normal whitespace-nowrap">
+                    <Calendar size={14} className="shrink-0 text-[#64748B]" />
+                    <span>{formatDateTimeFriendly(apt.date, apt.time)}</span>
+                  </div>
+
+                  {/* Bottom row: Divider + Amount & Price */}
+                  <div className="pt-2.5 border-t border-[#E5EDF3] flex justify-between items-center">
+                    <span className="text-[13px] text-[#64748B]">Amount</span>
+                    <span className="text-[18px] font-bold text-[#0F172A]">₹{apt.price}</span>
+                  </div>
+                </div>
+              ))}
+
+            {appointments.filter(a => a.status === 'completed').length === 0 && (
+              <div className="text-center py-8 text-[#64748B] italic bg-slate-50/50 rounded-2xl border border-dashed border-[#E5EDF3] p-4">
+                No completed jobs logged in the system yet.
+              </div>
+            )}
           </div>
         </div>
       )}

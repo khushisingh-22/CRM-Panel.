@@ -521,18 +521,11 @@ export default function DashboardOverview({
           {/* Card 1: Daily Profit */}
           <button
             onClick={() => setShowDailyProfitModal(true)}
-            className="bg-gradient-to-br from-white to-[#F0FDFA] hover:to-[#E6FDF9] p-5 rounded-2xl border-t-4 border-t-[#0891B2] border-x border-b border-[#E5EDF3] transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-[#0891B2]/10 hover:-translate-y-1 flex flex-col justify-between text-left cursor-pointer w-full group relative overflow-hidden"
+            className="bg-gradient-to-br from-white to-[#F0FDFA] hover:to-[#E6FDF9] p-5 rounded-2xl border-t-4 border-t-[#0891B2] border-x border-b border-[#E5EDF3] transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-[#0891B2]/10 hover:-translate-y-1 flex flex-col justify-between text-left cursor-pointer w-full relative overflow-hidden min-h-[170px]"
           >
-            {/* Top row: Badge top right, and info top left */}
-            <div className="flex justify-between items-start w-full">
-              <div className="space-y-1">
-                <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wider block">Daily Profit</span>
-                <span className="text-[28px] font-extrabold text-[#0F172A] font-sans tabular-nums leading-none">
-                  ₹{dailyProfit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                </span>
-              </div>
-              
-              {/* Badge top right corner */}
+            {/* Top row: Label + Badge */}
+            <div className="flex justify-between items-center w-full">
+              <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wider block truncate max-w-[70%]">Daily Profit</span>
               {dailyProfit > 0 && (
                 <span className="inline-flex items-center gap-0.5 bg-[#16A34A]/10 text-[#16A34A] text-[9px] px-2 py-0.5 rounded-full font-extrabold shadow-2xs shrink-0">
                   <span>↑</span>
@@ -541,25 +534,27 @@ export default function DashboardOverview({
               )}
             </div>
 
-            {/* Middle row: Label + Icon */}
-            <div className="flex items-center justify-between w-full mt-4">
-              <div className="space-y-1">
-                <span className="text-[#0891B2] text-[10px] font-bold tracking-wider flex items-center gap-1 group-hover:translate-x-1 transition-all duration-200">
-                  <span>Click to view list</span>
-                  <span>→</span>
-                </span>
-              </div>
+            {/* Middle Row: Big Number & Right-Center Icon */}
+            <div className="pr-[52px] relative mt-2 mb-2">
+              <span className="text-[30px] font-bold text-[#0F172A] font-sans tabular-nums leading-none block">
+                ₹{dailyProfit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              </span>
               
-              {/* Larger Icon box with white icon and gradient bg */}
-              <div className="p-2.5 h-12 w-12 bg-gradient-to-br from-[#0891B2] to-[#06B6D4] text-white rounded-xl flex items-center justify-center font-bold shadow-md shrink-0">
-                <span className="text-base font-black">₹</span>
+              {/* Icon box (44px, vertically centered with big number) */}
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 h-11 w-11 bg-gradient-to-br from-[#0891B2] to-[#06B6D4] text-white rounded-xl flex items-center justify-center font-bold shadow-md shrink-0">
+                <span className="text-sm font-black">₹</span>
               </div>
             </div>
 
-            {/* Sparkline at bottom */}
-            <div className="w-full h-5 mt-3 opacity-85">
-              <svg className="w-full h-full" viewBox="0 0 100 20" preserveAspectRatio="none">
-                <path d="M0 15 Q15 5, 30 12 T60 3 T90 10 L100 5" fill="none" stroke="#0891B2" strokeWidth="2.5" strokeLinecap="round" />
+            {/* Bottom Row: Helper text */}
+            <div className="w-full truncate text-[13px] font-semibold text-[#0891B2]">
+              <span>Click to view list &rarr;</span>
+            </div>
+
+            {/* Sparkline at the very bottom (36px height) */}
+            <div className="absolute bottom-0 left-5 right-5 h-9 overflow-visible pointer-events-none">
+              <svg className="w-full h-full overflow-visible" viewBox="0 0 100 20" preserveAspectRatio="none">
+                <path d="M0 15 Q15 6, 30 12 T60 4 T90 10 L100 6" fill="none" stroke="#0891B2" strokeWidth="2.5" strokeLinecap="round" />
               </svg>
             </div>
           </button>
@@ -567,18 +562,11 @@ export default function DashboardOverview({
           {/* Card 2: Total Profit */}
           <button
             onClick={() => setShowTotalProfitModal(true)}
-            className="bg-gradient-to-br from-white to-[#F0FDF4] hover:to-[#E6FDF2] p-5 rounded-2xl border-t-4 border-t-[#16A34A] border-x border-b border-[#E5EDF3] transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-[#16A34A]/10 hover:-translate-y-1 flex flex-col justify-between text-left cursor-pointer w-full group relative overflow-hidden"
+            className="bg-gradient-to-br from-white to-[#F0FDF4] hover:to-[#E6FDF2] p-5 rounded-2xl border-t-4 border-t-[#16A34A] border-x border-b border-[#E5EDF3] transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-[#16A34A]/10 hover:-translate-y-1 flex flex-col justify-between text-left cursor-pointer w-full relative overflow-hidden min-h-[170px]"
           >
-            {/* Top row: Badge top right, and info top left */}
-            <div className="flex justify-between items-start w-full">
-              <div className="space-y-1">
-                <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wider block">Total Profit</span>
-                <span className="text-[28px] font-extrabold text-[#0F172A] font-sans tabular-nums leading-none">
-                  ₹{totalProfit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                </span>
-              </div>
-              
-              {/* Badge top right corner */}
+            {/* Top row: Label + Badge */}
+            <div className="flex justify-between items-center w-full">
+              <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wider block truncate max-w-[70%]">Total Profit</span>
               {totalProfit > 0 && (
                 <span className="inline-flex items-center gap-0.5 bg-[#16A34A]/10 text-[#16A34A] text-[9px] px-2 py-0.5 rounded-full font-extrabold shadow-2xs shrink-0">
                   <span>↑</span>
@@ -587,41 +575,36 @@ export default function DashboardOverview({
               )}
             </div>
 
-            {/* Middle row: Label + Icon */}
-            <div className="flex items-center justify-between w-full mt-4">
-              <div className="space-y-1">
-                <span className="text-[#16A34A] text-[10px] font-bold tracking-wider flex items-center gap-1 group-hover:translate-x-1 transition-all duration-200">
-                  <span>Click to view list</span>
-                  <span>→</span>
-                </span>
-              </div>
+            {/* Middle Row: Big Number & Right-Center Icon */}
+            <div className="pr-[52px] relative mt-2 mb-2">
+              <span className="text-[30px] font-bold text-[#0F172A] font-sans tabular-nums leading-none block">
+                ₹{totalProfit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              </span>
               
-              {/* Larger Icon box with white icon and gradient bg */}
-              <div className="p-2.5 h-12 w-12 bg-gradient-to-br from-[#16A34A] to-[#22C55E] text-white rounded-xl flex items-center justify-center font-bold shadow-md shrink-0">
-                <span className="text-base font-black">₹</span>
+              {/* Icon box (44px, vertically centered with big number) */}
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 h-11 w-11 bg-gradient-to-br from-[#16A34A] to-[#22C55E] text-white rounded-xl flex items-center justify-center font-bold shadow-md shrink-0">
+                <span className="text-sm font-black">₹</span>
               </div>
             </div>
 
-            {/* Sparkline at bottom */}
-            <div className="w-full h-5 mt-3 opacity-85">
-              <svg className="w-full h-full" viewBox="0 0 100 20" preserveAspectRatio="none">
-                <path d="M0 18 Q20 2, 40 10 T70 5 T100 2" fill="none" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round" />
+            {/* Bottom Row: Helper text */}
+            <div className="w-full truncate text-[13px] font-semibold text-[#16A34A]">
+              <span>Click to view list &rarr;</span>
+            </div>
+
+            {/* Sparkline at the very bottom (36px height) */}
+            <div className="absolute bottom-0 left-5 right-5 h-9 overflow-visible pointer-events-none">
+              <svg className="w-full h-full overflow-visible" viewBox="0 0 100 20" preserveAspectRatio="none">
+                <path d="M0 16 Q20 4, 40 10 T70 6 T100 4" fill="none" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round" />
               </svg>
             </div>
           </button>
 
           {/* Card 3: Total Revenue */}
-          <div className="bg-gradient-to-br from-white to-[#EFF6FF] p-5 rounded-2xl border-t-4 border-t-[#2563EB] border-x border-b border-[#E5EDF3] transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-[#2563EB]/10 hover:-translate-y-1 flex flex-col justify-between text-left w-full group relative overflow-hidden">
-            {/* Top row: Badge top right, and info top left */}
-            <div className="flex justify-between items-start w-full">
-              <div className="space-y-1">
-                <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wider block">Total Revenue</span>
-                <span className="text-[28px] font-extrabold text-[#0F172A] font-sans tabular-nums leading-none">
-                  ₹{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                </span>
-              </div>
-              
-              {/* Badge top right corner */}
+          <div className="bg-gradient-to-br from-white to-[#EFF6FF] p-5 rounded-2xl border-t-4 border-t-[#2563EB] border-x border-b border-[#E5EDF3] transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-[#2563EB]/10 hover:-translate-y-1 text-left w-full relative overflow-hidden min-h-[170px]">
+            {/* Top row: Label + Badge */}
+            <div className="flex justify-between items-center w-full">
+              <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wider block truncate max-w-[70%]">Total Revenue</span>
               {totalRevenue > 0 && (
                 <span className="inline-flex items-center gap-0.5 bg-[#16A34A]/10 text-[#16A34A] text-[9px] px-2 py-0.5 rounded-full font-extrabold shadow-2xs shrink-0">
                   <span>↑</span>
@@ -630,40 +613,36 @@ export default function DashboardOverview({
               )}
             </div>
 
-            {/* Middle row: Label + Icon */}
-            <div className="flex items-center justify-between w-full mt-4">
-              <div className="space-y-1">
-                <span className="text-[#2563EB] text-[10px] font-bold tracking-wider">
-                  ₹{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} this month
-                </span>
-              </div>
+            {/* Middle Row: Big Number & Right-Center Icon */}
+            <div className="pr-[52px] relative mt-2 mb-2">
+              <span className="text-[30px] font-bold text-[#0F172A] font-sans tabular-nums leading-none block">
+                ₹{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              </span>
               
-              {/* Larger Icon box with white icon and gradient bg */}
-              <div className="p-2.5 h-12 w-12 bg-gradient-to-br from-[#2563EB] to-[#3B82F6] text-white rounded-xl flex items-center justify-center font-bold shadow-md shrink-0">
-                <span className="text-base font-black">₹</span>
+              {/* Icon box (44px, vertically centered with big number) */}
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 h-11 w-11 bg-gradient-to-br from-[#2563EB] to-[#3B82F6] text-white rounded-xl flex items-center justify-center font-bold shadow-md shrink-0">
+                <span className="text-sm font-black">₹</span>
               </div>
             </div>
 
-            {/* Sparkline at bottom */}
-            <div className="w-full h-5 mt-3 opacity-85">
-              <svg className="w-full h-full" viewBox="0 0 100 20" preserveAspectRatio="none">
-                <path d="M0 15 L20 12 L40 16 L60 8 L80 14 L100 4" fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" />
+            {/* Bottom Row: Helper text */}
+            <div className="w-full truncate text-[13px] font-semibold text-[#2563EB]">
+              <span>₹{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} this month</span>
+            </div>
+
+            {/* Sparkline at the very bottom (36px height) */}
+            <div className="absolute bottom-0 left-5 right-5 h-9 overflow-visible pointer-events-none">
+              <svg className="w-full h-full overflow-visible" viewBox="0 0 100 20" preserveAspectRatio="none">
+                <path d="M0 15 L20 10 L40 16 L60 6 L80 14 L100 4" fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" />
               </svg>
             </div>
           </div>
 
           {/* Card 4: Low Stock Alerts */}
-          <div className="bg-gradient-to-br from-white to-[#FEFCE8] p-5 rounded-2xl border-t-4 border-t-[#FACC15] border-x border-b border-[#E5EDF3] transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-[#FACC15]/10 hover:-translate-y-1 flex flex-col justify-between text-left w-full group relative overflow-hidden">
-            {/* Top row: Badge top right, and info top left */}
-            <div className="flex justify-between items-start w-full">
-              <div className="space-y-1">
-                <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wider block">Low Stock Alerts</span>
-                <span className={`text-[28px] font-extrabold font-sans tabular-nums leading-none ${lowStockCount > 0 ? 'text-[#D97706]' : 'text-[#0F172A]'}`}>
-                  {lowStockCount || '0'}
-                </span>
-              </div>
-              
-              {/* Badge top right corner */}
+          <div className="bg-gradient-to-br from-white to-[#FEFCE8] p-5 rounded-2xl border-t-4 border-t-[#FACC15] border-x border-b border-[#E5EDF3] transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-[#FACC15]/10 hover:-translate-y-1 text-left w-full relative overflow-hidden min-h-[170px]">
+            {/* Top row: Label + Badge */}
+            <div className="flex justify-between items-center w-full">
+              <span className="text-[11px] font-semibold uppercase tracking-wider block truncate max-w-[70%] text-[#64748B]">Low Stock Alerts</span>
               {lowStockCount > 0 && (
                 <span className="inline-flex items-center bg-amber-500/10 text-amber-600 text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider shadow-2xs shrink-0">
                   alert
@@ -671,36 +650,32 @@ export default function DashboardOverview({
               )}
             </div>
 
-            {/* Middle row: Label + Icon */}
-            <div className="flex items-center justify-between w-full mt-4">
-              <div className="space-y-1">
-                <span className="text-[#D97706] text-[10px] font-bold tracking-wider">
-                  {lowStockCount === 0 ? 'all items in stock' : `${lowStockCount} items need stock`}
-                </span>
-              </div>
+            {/* Middle Row: Big Number & Right-Center Icon */}
+            <div className="pr-[52px] relative mt-2 mb-2">
+              <span className={`text-[30px] font-bold font-sans tabular-nums leading-none block ${lowStockCount > 0 ? 'text-[#D97706]' : 'text-[#0F172A]'}`}>
+                {lowStockCount || '0'}
+              </span>
               
-              {/* Larger Icon box with white icon and gradient bg */}
-              <div className="p-2.5 h-12 w-12 bg-gradient-to-br from-[#FACC15] to-[#F59E0B] text-white rounded-xl flex items-center justify-center font-bold shadow-md shrink-0">
-                <Package size={22} className="text-white" />
+              {/* Icon box (44px, vertically centered with big number) */}
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 h-11 w-11 bg-gradient-to-br from-[#FACC15] to-[#F59E0B] text-white rounded-xl flex items-center justify-center font-bold shadow-md shrink-0">
+                <Package size={20} className="text-white" />
               </div>
+            </div>
+
+            {/* Bottom Row: Helper text */}
+            <div className="w-full truncate text-[13px] font-semibold text-[#D97706]">
+              <span>{lowStockCount === 0 ? 'All items in stock' : `${lowStockCount} items need stock`}</span>
             </div>
           </div>
 
           {/* Card 5: Pending Client Payments */}
           <button
             onClick={() => setShowPendingListModal(true)}
-            className="bg-gradient-to-br from-white to-[#FEF2F2] hover:to-[#FEE2E2] p-5 rounded-2xl border-t-4 border-t-[#EF4444] border-x border-b border-[#E5EDF3] transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-[#EF4444]/10 hover:-translate-y-1 flex flex-col justify-between text-left cursor-pointer w-full group relative overflow-hidden"
+            className="bg-gradient-to-br from-white to-[#FEF2F2] hover:to-[#FEE2E2] p-5 rounded-2xl border-t-4 border-t-[#EF4444] border-x border-b border-[#E5EDF3] transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-[#EF4444]/10 hover:-translate-y-1 flex flex-col justify-between text-left cursor-pointer w-full relative overflow-hidden min-h-[170px]"
           >
-            {/* Top row: Badge top right, and info top left */}
-            <div className="flex justify-between items-start w-full">
-              <div className="space-y-1">
-                <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wider block">Pending Payments</span>
-                <span className="text-[28px] font-extrabold text-[#EF4444] font-sans tabular-nums leading-none">
-                  ₹{pendingPaymentsTotal.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                </span>
-              </div>
-              
-              {/* Badge top right corner */}
+            {/* Top row: Label + Badge */}
+            <div className="flex justify-between items-center w-full">
+              <span className="text-[11px] font-semibold uppercase tracking-wider block truncate max-w-[70%] text-[#64748B]">Pending Payments</span>
               {pendingPaymentsTotal > 0 && (
                 <span className="inline-flex items-center bg-rose-500/10 text-rose-600 text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider shadow-2xs shrink-0">
                   due
@@ -708,19 +683,21 @@ export default function DashboardOverview({
               )}
             </div>
 
-            {/* Middle row: Label + Icon */}
-            <div className="flex items-center justify-between w-full mt-4">
-              <div className="space-y-1">
-                <span className="text-[#EF4444] text-[10px] font-bold tracking-wider flex items-center gap-1 group-hover:translate-x-1 transition-all duration-200">
-                  <span>Click to view list</span>
-                  <span>→</span>
-                </span>
-              </div>
+            {/* Middle Row: Big Number & Right-Center Icon */}
+            <div className="pr-[52px] relative mt-2 mb-2">
+              <span className="text-[30px] font-bold text-[#EF4444] font-sans tabular-nums leading-none block">
+                ₹{pendingPaymentsTotal.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              </span>
               
-              {/* Larger Icon box with white icon and gradient bg */}
-              <div className="p-2.5 h-12 w-12 bg-gradient-to-br from-[#EF4444] to-[#F43F5E] text-white rounded-xl flex items-center justify-center font-bold shadow-md shrink-0">
-                <CreditCard size={22} className="text-white" />
+              {/* Icon box (44px, vertically centered with big number) */}
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 h-11 w-11 bg-gradient-to-br from-[#EF4444] to-[#F43F5E] text-white rounded-xl flex items-center justify-center font-bold shadow-md shrink-0">
+                <CreditCard size={20} className="text-white" />
               </div>
+            </div>
+
+            {/* Bottom Row: Helper text */}
+            <div className="w-full truncate text-[13px] font-semibold text-[#EF4444]">
+              <span>Click to view list &rarr;</span>
             </div>
           </button>
         </div>
