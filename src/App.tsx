@@ -171,26 +171,11 @@ export default function App() {
   useEffect(() => {
     if (!settings || !settings.shopName) return;
 
-    // Apply theme
-    const theme = settings.theme || 'dark';
+    // Apply theme (Redesigned with Premium LIGHT Theme as requested)
+    const theme = 'light';
     const root = document.documentElement;
-    if (theme === 'light') {
-      root.classList.remove('dark');
-      root.classList.add('light');
-    } else if (theme === 'dark') {
-      root.classList.remove('light');
-      root.classList.add('dark');
-    } else {
-      // System
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (systemPrefersDark) {
-        root.classList.remove('light');
-        root.classList.add('dark');
-      } else {
-        root.classList.remove('dark');
-        root.classList.add('light');
-      }
-    }
+    root.classList.remove('dark');
+    root.classList.add('light');
 
     // Apply font size class
     const fontSize = settings.fontSize || 'medium';
@@ -932,7 +917,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#070A13] flex text-slate-100 font-sans" id="drwashit-crm-app">
+    <div className="min-h-screen bg-[#F4F8FB] flex text-slate-900 font-sans" id="drwashit-crm-app">
       
       {/* Sidebar Overlay Backdrop for Mobile */}
       {sidebarOpen && (
@@ -948,26 +933,26 @@ export default function App() {
           sidebarOpen 
             ? 'w-64 translate-x-0' 
             : 'w-16 lg:translate-x-0 lg:w-16 -translate-x-full'
-        } fixed lg:static inset-y-0 left-0 bg-[#0B1329] border-r border-slate-800/60 text-slate-400 flex flex-col justify-between transition-all duration-300 z-50 lg:z-30 select-none`}
+        } fixed lg:sticky lg:top-0 lg:h-screen lg:self-start inset-y-0 left-0 bg-white border-r border-[#E5EDF3] text-[#334155] flex flex-col justify-between transition-all duration-300 z-50 lg:z-30 select-none`}
         id="side-navigation-panel"
       >
         <div className="flex flex-col h-full overflow-hidden">
           {/* Logo brand */}
-          <div className="h-16 border-b border-slate-800/60 px-4 flex items-center justify-between shrink-0">
+          <div className="h-16 border-b border-[#E5EDF3] px-4 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2 min-w-0">
               {settings.logoUrl ? (
-                <div className="h-7 w-7 rounded-lg overflow-hidden border border-slate-700/80 flex items-center justify-center shrink-0 shadow-md">
+                <div className="h-7 w-7 rounded-lg overflow-hidden border border-[#E5EDF3] flex items-center justify-center shrink-0 shadow-sm">
                   <img src={settings.logoUrl} alt="Logo" className="h-full w-full object-cover" />
                 </div>
               ) : (
-                <span className="h-7 w-7 bg-indigo-600 hover:bg-indigo-500 transition-colors rounded-lg flex items-center justify-center shrink-0 shadow-md">
+                <span className="h-7 w-7 bg-[#0891B2] hover:bg-[#0E7490] transition-colors rounded-lg flex items-center justify-center shrink-0 shadow-sm">
                   <Car className="text-white shrink-0 stroke-[2.5]" size={16} />
                 </span>
               )}
               {sidebarOpen && (
                 <div className="min-w-0">
-                  <strong className="text-sm font-black text-white block tracking-tight truncate">{settings.shopName || 'Dr Washit'}</strong>
-                  <span className="text-4xs text-cyan-400 font-bold uppercase tracking-wider block">CRM Panel</span>
+                  <strong className="text-sm font-black text-[#0F172A] block tracking-tight truncate">{settings.shopName || 'Dr Washit'}</strong>
+                  <span className="text-4xs text-[#0891B2] font-bold uppercase tracking-wider block">CRM Panel</span>
                 </div>
               )}
             </div>
@@ -981,7 +966,7 @@ export default function App() {
                   setSidebarOpen(!sidebarOpen);
                 }
               }}
-              className="p-1.5 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer text-slate-400"
+              className="p-1.5 hover:bg-[#F4F8FB] hover:text-[#0F172A] rounded-lg transition-colors cursor-pointer text-[#64748B]"
               id="sidebar-toggle-btn"
             >
               <X size={16} className="block lg:hidden" />
@@ -993,7 +978,7 @@ export default function App() {
           <nav className="flex-1 px-2 py-4 space-y-5 overflow-y-auto scrollbar-thin">
             {/* Core Operation Section */}
             <div className="space-y-1">
-              {sidebarOpen && <span className="text-4xs text-slate-500 font-extrabold uppercase tracking-widest block mb-1.5 px-2.5">Operations</span>}
+              {sidebarOpen && <span className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider block mb-1.5 px-2.5">Operations</span>}
               {([
                 { id: 'dashboard', name: 'Dashboard Overview', icon: LayoutDashboard },
                 { id: 'appointments', name: 'Calendar', icon: Calendar },
@@ -1011,18 +996,18 @@ export default function App() {
                   <button
                     key={tab.id}
                     onClick={() => handleNavigate(tab.id)}
-                    className={`w-full flex items-center justify-between p-2.5 rounded-lg text-xs font-bold tracking-wide transition-all cursor-pointer ${
+                    className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-bold tracking-wide transition-all duration-200 cursor-pointer ${
                       active
-                        ? 'bg-indigo-600 text-white shadow-xs'
-                        : 'text-slate-400 hover:bg-slate-800/40 hover:text-slate-200'
+                        ? 'bg-gradient-to-r from-[#0891B2] to-[#06B6D4] text-white shadow-md'
+                        : 'text-slate-600 hover:bg-[#ECFEFF] hover:text-[#0891B2]'
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <Icon size={15} className={`shrink-0 ${active ? 'text-white' : 'text-slate-400'}`} />
+                      <Icon size={15} className={`shrink-0 ${active ? 'text-white' : 'text-[#64748B]'}`} />
                       {sidebarOpen && <span className="truncate">{tab.name}</span>}
                     </div>
                     {sidebarOpen && tab.badge && tab.badge > 0 ? (
-                      <span className="text-4xs bg-cyan-500 text-slate-950 px-1.5 py-0.5 rounded-full font-extrabold animate-pulse">
+                      <span className="text-4xs bg-[#EF4444] text-white px-1.5 py-0.5 rounded-full font-extrabold animate-pulse">
                         {tab.badge}
                       </span>
                     ) : null}
@@ -1033,7 +1018,7 @@ export default function App() {
 
             {/* Business & Inventory Section */}
             <div className="space-y-1">
-              {sidebarOpen && <span className="text-4xs text-slate-500 font-extrabold uppercase tracking-widest block mb-1.5 px-2.5">Business</span>}
+              {sidebarOpen && <span className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider block mb-1.5 px-2.5">Business</span>}
               {([
                 { id: 'inventory', name: 'Stock & Inventory', icon: Package, badge: inventory.filter(item => item.quantity < (item.minThreshold ?? 5)).length, adminOnly: true },
                 { id: 'packages', name: 'Packages', icon: Percent, adminOnly: true },
@@ -1047,18 +1032,18 @@ export default function App() {
                   <button
                     key={tab.id}
                     onClick={() => handleNavigate(tab.id)}
-                    className={`w-full flex items-center justify-between p-2.5 rounded-lg text-xs font-bold tracking-wide transition-all cursor-pointer ${
+                    className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-bold tracking-wide transition-all duration-200 cursor-pointer ${
                       active
-                        ? 'bg-indigo-600 text-white shadow-xs'
-                        : 'text-slate-400 hover:bg-slate-800/40 hover:text-slate-200'
+                        ? 'bg-gradient-to-r from-[#0891B2] to-[#06B6D4] text-white shadow-md'
+                        : 'text-slate-600 hover:bg-[#ECFEFF] hover:text-[#0891B2]'
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <Icon size={15} className={`shrink-0 ${active ? 'text-white' : 'text-slate-400'}`} />
+                      <Icon size={15} className={`shrink-0 ${active ? 'text-white' : 'text-[#64748B]'}`} />
                       {sidebarOpen && <span className="truncate">{tab.name}</span>}
                     </div>
                     {sidebarOpen && tab.badge && tab.badge > 0 ? (
-                      <span className="text-4xs bg-amber-500 text-slate-950 px-1.5 py-0.5 rounded-full font-extrabold">
+                      <span className="text-4xs bg-amber-500 text-white px-1.5 py-0.5 rounded-full font-extrabold">
                         {tab.badge}
                       </span>
                     ) : null}
@@ -1069,7 +1054,7 @@ export default function App() {
 
             {/* Resources / Settings */}
             <div className="space-y-1">
-              {sidebarOpen && <span className="text-4xs text-slate-500 font-extrabold uppercase tracking-widest block mb-1.5 px-2.5">Resources</span>}
+              {sidebarOpen && <span className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider block mb-1.5 px-2.5">Resources</span>}
               {([
                 { id: 'profile', name: currentUser?.role === 'employee' ? 'My Profile' : 'Owner Profile', icon: User },
                 { id: 'settings', name: 'Settings', icon: Settings, adminOnly: true },
@@ -1083,14 +1068,14 @@ export default function App() {
                   <button
                     key={tab.id}
                     onClick={() => handleNavigate(tab.id)}
-                    className={`w-full flex items-center justify-between p-2.5 rounded-lg text-xs font-bold tracking-wide transition-all cursor-pointer ${
+                    className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-bold tracking-wide transition-all duration-200 cursor-pointer ${
                       active
-                        ? 'bg-indigo-600 text-white shadow-xs'
-                        : 'text-slate-400 hover:bg-slate-800/40 hover:text-slate-200'
+                        ? 'bg-gradient-to-r from-[#0891B2] to-[#06B6D4] text-white shadow-md'
+                        : 'text-slate-600 hover:bg-[#ECFEFF] hover:text-[#0891B2]'
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <Icon size={15} className={`shrink-0 ${active ? 'text-white' : 'text-slate-400'}`} />
+                      <Icon size={15} className={`shrink-0 ${active ? 'text-white' : 'text-[#64748B]'}`} />
                       {sidebarOpen && <span className="truncate">{tab.name}</span>}
                     </div>
                   </button>
@@ -1104,18 +1089,18 @@ export default function App() {
       {/* Main Panel space */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         
-        {/* Top Navbar with deep dark layout */}
-        <header className="h-16 border-b border-slate-800/60 bg-[#0B1329] px-4 md:px-6 flex items-center justify-between shrink-0 select-none">
+        {/* Top Navbar with light layout */}
+        <header className="h-16 border-b border-[#E5EDF3] bg-white px-4 md:px-6 flex items-center justify-between shrink-0 select-none">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-1.5 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer text-slate-400 lg:hidden"
+              className="p-1.5 hover:bg-[#F4F8FB] hover:text-[#0F172A] rounded-lg transition-colors cursor-pointer text-[#64748B] lg:hidden"
               title="Toggle Menu"
             >
               <Menu size={18} />
             </button>
-            <span className="text-sm font-extrabold text-white truncate max-w-[120px] sm:max-w-none">{settings.shopName}</span>
-            <span className="bg-indigo-500/10 text-indigo-400 text-4xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider border border-indigo-500/20 hidden sm:inline-block">Active Workspace</span>
+            <span className="text-sm font-extrabold text-[#0F172A] truncate max-w-[120px] sm:max-w-none">{settings.shopName}</span>
+            <span className="bg-[#CFFAFE] text-[#0E7490] text-4xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider border border-[#CFFAFE] hidden sm:inline-block">Active Workspace</span>
           </div>
 
           <div className="flex items-center gap-4 relative">
@@ -1123,9 +1108,9 @@ export default function App() {
             {/* Help Button */}
             <button
               onClick={() => handleNavigate('help')}
-              className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-slate-800/60 rounded-lg text-slate-300 hover:text-white text-xs font-bold transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-[#F4F8FB] rounded-lg text-[#334155] hover:text-[#0891B2] text-xs font-bold transition-all cursor-pointer"
             >
-              <HelpCircle size={15} className="text-slate-400" />
+              <HelpCircle size={15} className="text-[#64748B]" />
               <span>Help</span>
             </button>
 
@@ -1133,9 +1118,9 @@ export default function App() {
             {currentUser?.role !== 'employee' && (
               <button
                 onClick={() => handleNavigate('settings')}
-                className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-slate-800/60 rounded-lg text-slate-300 hover:text-white text-xs font-bold transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-[#F4F8FB] rounded-lg text-[#334155] hover:text-[#0891B2] text-xs font-bold transition-all cursor-pointer"
               >
-                <Settings size={15} className="text-slate-400" />
+                <Settings size={15} className="text-[#64748B]" />
                 <span>Settings</span>
               </button>
             )}
@@ -1146,23 +1131,23 @@ export default function App() {
                 await customAuth.signOut();
                 window.location.reload();
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-rose-950/40 rounded-lg text-slate-300 hover:text-rose-400 text-xs font-bold transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-rose-50 rounded-lg text-[#334155] hover:text-[#EF4444] text-xs font-bold transition-all cursor-pointer"
             >
-              <LogOut size={15} className="text-slate-400" />
+              <LogOut size={15} className="text-[#64748B]" />
               <span>Sign Out</span>
             </button>
 
-            <span className="h-6 w-px bg-slate-800/60 my-auto"></span>
+            <span className="h-6 w-px bg-[#E5EDF3] my-auto"></span>
 
             {/* Notification triggers */}
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="p-2 bg-slate-950 hover:bg-slate-900 border border-slate-800 rounded-xl text-slate-300 relative transition-all cursor-pointer"
+              className="p-2 bg-[#F4F8FB] hover:bg-[#E5EDF3] border border-[#CBD5E1] rounded-xl text-[#334155] relative transition-all cursor-pointer"
               id="top-notification-bell"
             >
               <Bell size={16} />
               {pendingLeads.length > 0 && (
-                <span className="absolute -top-1 -right-1 h-4 w-4 bg-rose-500 border-2 border-slate-950 text-white text-4xs font-black rounded-full flex items-center justify-center animate-bounce">
+                <span className="absolute -top-1 -right-1 h-4 w-4 bg-[#EF4444] border-2 border-white text-white text-4xs font-black rounded-full flex items-center justify-center animate-bounce">
                   {pendingLeads.length}
                 </span>
               )}
@@ -1170,40 +1155,40 @@ export default function App() {
 
             {/* Notifications self booking requests dropdown */}
             {showNotifications && (
-              <div className="absolute right-0 top-11 bg-[#111827] border border-slate-800 w-80 rounded-2xl shadow-xl p-4 space-y-3 z-40 animate-fade-in" id="leads-notifications-dropdown">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                  <span className="text-xs font-black text-white uppercase tracking-wide flex items-center gap-1.5">
-                    <Sparkles size={14} className="text-indigo-400" />
+              <div className="absolute right-0 top-11 bg-white border border-[#E5EDF3] w-80 rounded-2xl shadow-xl p-4 space-y-3 z-40 animate-fade-in" id="leads-notifications-dropdown">
+                <div className="flex items-center justify-between border-b border-[#E5EDF3] pb-2">
+                  <span className="text-xs font-black text-[#0F172A] uppercase tracking-wide flex items-center gap-1.5">
+                    <Sparkles size={14} className="text-[#0891B2]" />
                     Online Booking Requests
                   </span>
-                  <span className="text-3xs font-semibold bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded-full font-mono border border-indigo-500/20">
+                  <span className="text-3xs font-semibold bg-[#ECFEFF] text-[#0E7490] px-2 py-0.5 rounded-full font-sans border border-[#CFFAFE]">
                     {pendingLeads.length} new
                   </span>
                 </div>
 
                 <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
                   {pendingLeads.length === 0 ? (
-                    <div className="py-8 text-center text-slate-500">
+                    <div className="py-8 text-center text-[#64748B]">
                       <p className="text-2xs font-semibold">No pending self-bookings</p>
-                      <p className="text-4xs text-slate-500 mt-0.5">Simulate self-bookings inside the Public Portal.</p>
+                      <p className="text-4xs text-[#94A3B8] mt-0.5">Simulate self-bookings inside the Public Portal.</p>
                     </div>
                   ) : (
                     pendingLeads.map(lead => (
-                      <div key={lead.id} className="border border-slate-800 p-3 rounded-xl bg-slate-950 text-xs space-y-2">
+                      <div key={lead.id} className="border border-[#E5EDF3] p-3 rounded-xl bg-[#F4F8FB] text-xs space-y-2">
                         <div className="flex justify-between items-start gap-1">
                           <div>
-                            <strong className="font-bold text-white block">{lead.name}</strong>
-                            <span className="text-3xs text-slate-400 block font-mono">{lead.phone}</span>
+                            <strong className="font-bold text-[#0F172A] block">{lead.name}</strong>
+                            <span className="text-3xs text-[#64748B] block font-sans">{lead.phone}</span>
                           </div>
-                          <span className="font-mono font-extrabold text-indigo-400 text-3xs">${lead.totalPrice}</span>
+                          <span className="font-sans font-extrabold text-[#0891B2] text-3xs">₹{lead.totalPrice}</span>
                         </div>
 
-                        <div className="flex gap-1.5 items-center bg-slate-900 border border-slate-800 px-2 py-1 rounded text-3xs text-slate-300">
-                          <Car size={12} className="text-slate-400" />
+                        <div className="flex gap-1.5 items-center bg-white border border-[#E5EDF3] px-2 py-1 rounded text-3xs text-[#334155]">
+                          <Car size={12} className="text-[#64748B]" />
                           <span className="truncate">{lead.vehicle.year} {lead.vehicle.make} {lead.vehicle.model}</span>
                         </div>
 
-                        <div className="text-3xs text-slate-400 flex justify-between items-center">
+                        <div className="text-3xs text-[#64748B] flex justify-between items-center">
                           <span>Req: {lead.date} @ {lead.time}</span>
                         </div>
 
@@ -1211,13 +1196,13 @@ export default function App() {
                         <div className="flex gap-1.5 justify-end">
                           <button
                             onClick={() => handleDismissLead(lead.id)}
-                            className="px-2.5 py-1 bg-slate-900 hover:bg-rose-500/15 border border-slate-800 text-slate-400 hover:text-rose-400 text-3xs font-bold rounded cursor-pointer"
+                            className="px-2.5 py-1 bg-white hover:bg-rose-50 border border-[#CBD5E1] text-[#64748B] hover:text-[#EF4444] text-3xs font-bold rounded cursor-pointer"
                           >
                             Dismiss
                           </button>
                           <button
                             onClick={() => handleApproveLead(lead)}
-                            className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white text-3xs font-bold rounded flex items-center gap-0.5 cursor-pointer"
+                            className="px-2.5 py-1 bg-[#0891B2] hover:bg-[#0E7490] text-white text-3xs font-bold rounded flex items-center gap-0.5 cursor-pointer"
                           >
                             <Check size={10} /> Approve
                           </button>
@@ -1238,11 +1223,11 @@ export default function App() {
               <img
                 src={currentUser?.avatar || profile.avatar}
                 alt={currentUser?.name || profile.name}
-                className="h-8 w-8 rounded-full object-cover border border-indigo-500/20 bg-slate-950"
+                className="h-8 w-8 rounded-full object-cover border border-[#E5EDF3] bg-[#F4F8FB]"
               />
               <div className="hidden sm:block text-left select-none">
-                <span className="text-xs font-bold text-white block leading-tight">{currentUser?.name || profile.name}</span>
-                <span className="text-4xs text-indigo-400 font-semibold block uppercase tracking-wider">{currentUser?.role === 'employee' ? 'Employee' : profile.role}</span>
+                <span className="text-xs font-bold text-[#0F172A] block leading-tight">{currentUser?.name || profile.name}</span>
+                <span className="text-4xs text-[#0891B2] font-semibold block uppercase tracking-wider">{currentUser?.role === 'employee' ? 'Employee' : profile.role}</span>
               </div>
             </div>
 
@@ -1250,7 +1235,7 @@ export default function App() {
         </header>
 
         {/* Scrollable View Area */}
-        <main className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#070A13]" id="view-tabs-router">
+        <main className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#F4F8FB]" id="view-tabs-router">
           {activeTab === 'dashboard' && (
             <DashboardOverview
               appointments={appointments}

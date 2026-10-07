@@ -156,15 +156,15 @@ export default function CustomerCRM({
   return (
     <div className="space-y-6 animate-fade-in" id="crm-tab-root">
       
-      {/* Header matching image 2 exactly */}
-      <div className="flex justify-between items-center bg-slate-900/40 p-4 rounded-xl border border-slate-800">
+      {/* Header with high contrast light layout */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl border border-[#E5EDF3] shadow-md">
         <div>
-          <h1 className="text-xl font-extrabold text-white tracking-tight md:text-2xl">Clients</h1>
-          <p className="text-xs text-slate-400">Manage client information, contact logs, and history</p>
+          <h1 className="text-xl font-extrabold text-[#0F172A] tracking-tight md:text-2xl">Clients</h1>
+          <p className="text-xs text-[#475569]">Manage client information, contact logs, and history</p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="px-4 py-2 bg-[#0ea5e9] hover:bg-[#38bdf8] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
+          className="px-4 py-2.5 bg-[#0891B2] hover:bg-[#0E7490] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
         >
           <Plus size={16} />
           <span>Add Client</span>
@@ -173,14 +173,14 @@ export default function CustomerCRM({
 
       {/* Sub Tabs: Active Clients & Past JobsHistory */}
       <div className="flex justify-center">
-        <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800/80 w-full max-w-md">
+        <div className="flex bg-white p-1 rounded-2xl border border-[#E5EDF3] shadow-md w-full max-w-md">
           <button
             type="button"
             onClick={() => setActiveSubTab('active')}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer text-center ${
+            className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer text-center ${
               activeSubTab === 'active'
-                ? 'bg-[#0ea5e9] text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-gradient-to-r from-[#0891B2] to-[#06B6D4] text-white shadow-sm'
+                : 'text-[#475569] hover:text-[#0F172A]'
             }`}
           >
             Active Clients
@@ -188,10 +188,10 @@ export default function CustomerCRM({
           <button
             type="button"
             onClick={() => setActiveSubTab('history')}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer text-center ${
+            className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer text-center ${
               activeSubTab === 'history'
-                ? 'bg-[#0ea5e9] text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-gradient-to-r from-[#0891B2] to-[#06B6D4] text-white shadow-sm'
+                : 'text-[#475569] hover:text-[#0F172A]'
             }`}
           >
             Past JobsHistory
@@ -200,15 +200,15 @@ export default function CustomerCRM({
       </div>
 
       {/* Search Input Container */}
-      <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800 shadow-sm">
+      <div className="bg-white p-4 rounded-2xl border border-[#E5EDF3] shadow-md">
         <div className="relative">
-          <Search size={16} className="absolute left-3 top-3 text-slate-400" />
+          <Search size={16} className="absolute left-3 top-3.5 text-[#64748B]" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search clients..."
-            className="w-full text-xs pl-9 pr-4 py-2.5 rounded-lg border border-slate-700/50 bg-slate-950 text-white focus:bg-slate-900 focus:outline-hidden"
+            className="w-full text-xs pl-9 pr-4 py-2.5 rounded-lg border border-[#CBD5E1] bg-white text-[#1E293B] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none placeholder-[#94A3B8]"
           />
         </div>
       </div>
@@ -216,10 +216,10 @@ export default function CustomerCRM({
       {/* Active Clients Grid */}
       {activeSubTab === 'active' ? (
         filteredCustomers.length === 0 ? (
-          <div className="h-64 bg-[#131D35] border border-slate-800/40 rounded-xl flex flex-col items-center justify-center text-center p-6">
-            <Users className="text-slate-600 mb-2" size={40} />
-            <p className="text-sm font-semibold text-slate-400">No clients registered yet</p>
-            <p className="text-xs text-slate-500 mt-1">Click "Add Client" above to register your first profile.</p>
+          <div className="h-64 bg-white border border-[#E5EDF3] rounded-2xl shadow-md flex flex-col items-center justify-center text-center p-6">
+            <Users className="text-[#CBD5E1] mb-2" size={40} />
+            <p className="text-sm font-semibold text-[#475569]">No clients registered yet</p>
+            <p className="text-xs text-[#64748B] mt-1">Click "Add Client" above to register your first profile.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -228,7 +228,7 @@ export default function CustomerCRM({
               return (
                 <div
                   key={client.id}
-                  className="bg-[#131D35] p-5 rounded-xl border border-slate-800/60 hover:border-slate-700 transition-all flex flex-col justify-between relative group"
+                  className="bg-white p-5 rounded-2xl border border-[#E5EDF3] shadow-md hover:shadow-lg transition-all flex flex-col justify-between relative group border-t-[3px] border-t-[#0891B2]"
                 >
                   {/* Delete Client Action Button (Trash Can) */}
                   {onDeleteCustomer && (
@@ -238,7 +238,7 @@ export default function CustomerCRM({
                           onDeleteCustomer(client.id);
                         }
                       }}
-                      className="absolute top-4 right-4 p-1.5 bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white rounded-md transition-all cursor-pointer opacity-80 group-hover:opacity-100"
+                      className="absolute top-4 right-4 p-1.5 hover:bg-rose-50 text-[#EF4444] rounded-lg border border-rose-100 transition-all cursor-pointer opacity-80 group-hover:opacity-100"
                       title="Delete Client"
                     >
                       <Trash2 size={13} />
@@ -248,65 +248,65 @@ export default function CustomerCRM({
                   {/* Card Content */}
                   <div className="space-y-4">
                     <div>
-                      <h3 className="text-sm font-extrabold text-white">{client.name}</h3>
-                      <p className="text-xs text-cyan-400 font-semibold mt-0.5">
+                      <h3 className="text-sm font-bold text-[#0F172A]">{client.name}</h3>
+                      <p className="text-xs text-[#0891B2] font-semibold mt-0.5">
                         {primaryVehicle ? `${primaryVehicle.make} ${primaryVehicle.model || ''}`.trim() : 'No Vehicle Registered'}
                       </p>
                     </div>
 
                     {/* Contact Details */}
-                    <div className="space-y-2 text-xs text-slate-300 font-medium">
+                    <div className="space-y-2 text-xs text-[#1E293B] font-medium text-left">
                       <div className="flex items-center gap-2">
-                        <Phone size={13} className="text-slate-500" />
+                        <Phone size={13} className="text-[#64748B]" />
                         <span>{client.phone}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Mail size={13} className="text-slate-500" />
+                        <Mail size={13} className="text-[#64748B]" />
                         <span className="truncate block max-w-[200px]">{client.email || 'No email registered'}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <MapPin size={13} className="text-slate-500" />
+                        <MapPin size={13} className="text-[#64748B]" />
                         <span className="truncate block max-w-[200px]">{client.address || 'No address registered'}</span>
                       </div>
                     </div>
 
-                    <hr className="border-slate-800/60" />
+                    <hr className="border-[#E5EDF3]" />
 
                     {/* Brief Stats */}
-                    <div className="flex justify-between items-center text-xs font-bold text-slate-400">
+                    <div className="flex justify-between items-center text-xs font-bold text-[#475569]">
                       <div className="flex items-center gap-1.5">
-                        <Briefcase size={14} className="text-slate-500" />
+                        <Briefcase size={14} className="text-[#64748B]" />
                         <span>{client.totalJobs} Wash</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <span className="text-slate-500">Earn:</span>
-                        <span className="text-emerald-400 font-mono">₹{client.lifetimeSpend}</span>
+                        <span className="text-[#64748B]">Earn:</span>
+                        <span className="text-[#16A34A] font-bold">₹{client.lifetimeSpend}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Actions Row (Details, Book, Recurring) */}
-                  <div className="grid grid-cols-3 gap-1.5 mt-5 pt-4 border-t border-slate-800/50">
+                  <div className="grid grid-cols-3 gap-1.5 mt-5 pt-4 border-t border-[#E5EDF3]">
                     <button
                       onClick={() => {
                         setSelectedCustomerId(client.id);
                         setShowDetailsModal(true);
                       }}
-                      className="py-1.5 bg-slate-950 hover:bg-slate-900 border border-slate-850 text-[10px] font-bold rounded text-slate-300 hover:text-white flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                      className="py-1.5 bg-white hover:bg-slate-50 border border-[#CBD5E1] text-[10px] font-bold rounded-lg text-[#334155] flex items-center justify-center gap-1 cursor-pointer transition-colors"
                     >
                       <User size={10} />
                       <span>Details</span>
                     </button>
                     <button
                       onClick={() => handleBookClient(client)}
-                      className="py-1.5 bg-[#0ea5e9] hover:bg-[#38bdf8] text-white text-[10px] font-bold rounded flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                      className="py-1.5 bg-[#0891B2] hover:bg-[#0E7490] text-white text-[10px] font-bold rounded-lg flex items-center justify-center gap-1 cursor-pointer transition-colors"
                     >
                       <Calendar size={10} />
                       <span>Book</span>
                     </button>
                     <button
                       onClick={() => setShowRecurringMsg(client.name)}
-                      className="py-1.5 bg-slate-950 hover:bg-slate-900 border border-slate-850 text-[10px] font-bold rounded text-slate-300 hover:text-white flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                      className="py-1.5 bg-white hover:bg-slate-50 border border-[#CBD5E1] text-[10px] font-bold rounded-lg text-[#334155] flex items-center justify-center gap-1 cursor-pointer transition-colors"
                     >
                       <RefreshCw size={10} />
                       <span>Recurring</span>
@@ -320,15 +320,15 @@ export default function CustomerCRM({
         )
       ) : (
         /* Jobs History Tab view */
-        <div className="bg-[#131D35] border border-slate-850 rounded-xl p-5 shadow-md">
-          <h3 className="text-sm font-extrabold text-white mb-4 flex items-center gap-1.5">
-            <FileText size={16} className="text-[#0ea5e9]" />
+        <div className="bg-white border border-[#E5EDF3] rounded-2xl p-5 shadow-md text-left">
+          <h3 className="text-sm font-bold text-[#0F172A] mb-4 flex items-center gap-1.5">
+            <FileText size={16} className="text-[#0891B2]" />
             <span>Complete Jobs History log</span>
           </h3>
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+            <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="border-b border-slate-800/80 text-slate-400 font-bold">
+                <tr className="border-b border-[#E5EDF3] text-[#334155] font-bold">
                   <th className="py-2.5">Client</th>
                   <th className="py-2.5">Vehicle</th>
                   <th className="py-2.5">Service</th>
@@ -337,18 +337,18 @@ export default function CustomerCRM({
                   <th className="py-2.5 text-right">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/40 text-slate-300">
+              <tbody className="divide-y divide-[#E5EDF3] text-[#1E293B]">
                 {appointments
                   .filter(a => a.status === 'completed')
                   .map((apt) => (
-                    <tr key={apt.id} className="hover:bg-slate-800/20">
-                      <td className="py-3 font-semibold text-white">{apt.customerName}</td>
+                    <tr key={apt.id} className="hover:bg-[#F4F8FB]">
+                      <td className="py-3 font-semibold text-[#0F172A]">{apt.customerName}</td>
                       <td className="py-3 capitalize">{apt.vehicle.make} {apt.vehicle.model}</td>
-                      <td className="py-3 font-semibold text-[#0ea5e9]">{apt.serviceName}</td>
-                      <td className="py-3 font-mono text-slate-400">{apt.date} @ {apt.time}</td>
-                      <td className="py-3 text-right font-mono text-emerald-400 font-bold">₹{apt.price}</td>
+                      <td className="py-3 font-semibold text-[#0E7490]">{apt.serviceName}</td>
+                      <td className="py-3 font-mono text-[#475569]">{apt.date} @ {apt.time}</td>
+                      <td className="py-3 text-right font-semibold text-[#16A34A]">₹{apt.price}</td>
                       <td className="py-3 text-right">
-                        <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] font-black uppercase px-2 py-0.5 rounded">
+                        <span className="bg-emerald-100 text-emerald-800 border border-emerald-200 text-[9px] font-bold uppercase px-2 py-0.5 rounded">
                           COMPLETED
                         </span>
                       </td>
@@ -356,7 +356,7 @@ export default function CustomerCRM({
                   ))}
                 {appointments.filter(a => a.status === 'completed').length === 0 && (
                   <tr>
-                    <td colSpan={6} className="text-center py-8 text-slate-500 italic">
+                    <td colSpan={6} className="text-center py-8 text-[#64748B] italic">
                       No completed jobs logged in the system yet.
                     </td>
                   </tr>
@@ -367,19 +367,19 @@ export default function CustomerCRM({
         </div>
       )}
 
-      {/* Add New Client Modal matching image 3 layout exactly */}
+      {/* Add New Client Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-slate-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto animate-fade-in" id="add-client-modal">
-          <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl flex flex-col overflow-hidden animate-zoom-in text-slate-800">
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto animate-fade-in" id="add-client-modal">
+          <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl flex flex-col overflow-hidden animate-zoom-in text-[#1E293B] border border-[#E5EDF3]">
             {/* Modal Header */}
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white shrink-0">
+            <div className="p-5 border-b border-[#E5EDF3] flex items-center justify-between bg-white text-[#0F172A] shrink-0">
               <div className="flex items-center gap-2">
-                <Users size={18} className="text-[#0ea5e9]" />
-                <h2 className="text-base font-bold">Add New Client</h2>
+                <Users size={18} className="text-[#0891B2]" />
+                <h2 className="text-base font-bold text-[#0E7490]">Add New Client</h2>
               </div>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="p-1.5 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="p-1.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -391,25 +391,25 @@ export default function CustomerCRM({
               {/* Row 1: Name * & Phone */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Name *</label>
+                  <label className="text-xs font-medium text-[#1E293B] block mb-1">Name *</label>
                   <input
                     type="text"
                     required
                     value={custName}
                     onChange={(e) => setCustName(e.target.value)}
                     placeholder="Enter full name"
-                    className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-sky-500"
+                    className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Mobile Number *</label>
+                  <label className="text-xs font-medium text-[#1E293B] block mb-1">Mobile Number *</label>
                   <input
                     type="tel"
                     required
                     value={custPhone}
                     onChange={(e) => setCustPhone(e.target.value)}
                     placeholder="Enter mobile number"
-                    className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-sky-500"
+                    className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
                   />
                 </div>
               </div>
@@ -420,11 +420,11 @@ export default function CustomerCRM({
                     <AlertCircle size={16} />
                   </div>
                   <div className="flex-1 space-y-1">
-                    <h4 className="text-xs font-bold text-rose-950 flex items-center gap-1.5">
+                    <h4 className="text-xs font-bold text-[#EF4444] flex items-center gap-1.5">
                       <span>Duplicate Mobile Number Alert!</span>
-                      <span className="bg-rose-200/60 text-rose-800 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Conflict</span>
+                      <span className="bg-rose-200/60 text-[#EF4444] text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Conflict</span>
                     </h4>
-                    <p className="text-2xs text-rose-800 leading-relaxed font-medium">
+                    <p className="text-2xs text-[#EF4444] leading-relaxed font-medium">
                       The mobile number <strong className="font-bold">{custPhone}</strong> is already registered under the name <strong className="font-bold">{crmPhoneConflict.name}</strong>. You cannot register the same mobile number under a different name.
                     </p>
                     <div className="pt-2">
@@ -453,56 +453,56 @@ export default function CustomerCRM({
               {/* Row 2: Email & Vehicle Type */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Email</label>
+                  <label className="text-xs font-medium text-[#1E293B] block mb-1">Email</label>
                   <input
                     type="email"
                     value={custEmail}
                     onChange={(e) => setCustEmail(e.target.value)}
                     placeholder="Enter email address"
-                    className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-sky-500"
+                    className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Vehicle Type</label>
+                  <label className="text-xs font-medium text-[#1E293B] block mb-1">Vehicle Type</label>
                   <input
                     type="text"
                     required
                     value={custVehicleType}
                     onChange={(e) => setCustVehicleType(e.target.value)}
                     placeholder="e.g., Toyota Camry"
-                    className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-sky-500"
+                    className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
                   />
                 </div>
               </div>
 
               {/* Row 3: Address */}
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Address</label>
+                <label className="text-xs font-medium text-[#1E293B] block mb-1">Address</label>
                 <input
                   type="text"
                   value={custAddress}
                   onChange={(e) => setCustAddress(e.target.value)}
                   placeholder="Enter full address"
-                  className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-sky-500"
+                  className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
                 />
               </div>
 
               {/* Row 4: Notes */}
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Notes</label>
+                <label className="text-xs font-medium text-[#1E293B] block mb-1">Notes</label>
                 <textarea
                   value={custNotes}
                   onChange={(e) => setCustNotes(e.target.value)}
                   placeholder="Any important details about this client..."
-                  className="w-full text-xs rounded-lg border border-slate-200 p-2.5 bg-slate-50/50 text-slate-800 h-24 focus:outline-sky-500"
+                  className="w-full text-xs rounded-lg border border-[#CBD5E1] p-2.5 bg-white text-[#1E293B] placeholder-[#94A3B8] h-24 focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
                 />
               </div>
 
               {/* Submit Button */}
-              <div className="pt-4 border-t border-slate-100 flex gap-2">
+              <div className="pt-4 border-t border-[#E5EDF3] flex gap-2">
                 <button
                   type="submit"
-                  className="w-full py-3 bg-[#0ea5e9] hover:bg-[#38bdf8] text-white text-xs font-extrabold rounded-lg shadow-md transition-all cursor-pointer text-center"
+                  className="w-full py-3 bg-[#0891B2] hover:bg-[#0E7490] text-white text-xs font-bold rounded-lg shadow-md transition-all cursor-pointer text-center"
                 >
                   Add Client
                 </button>
@@ -515,68 +515,68 @@ export default function CustomerCRM({
 
       {/* Details View Modal */}
       {showDetailsModal && selectedCustomer && (
-        <div className="fixed inset-0 bg-slate-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto animate-fade-in">
-          <div className="bg-slate-900 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-zoom-in text-white border border-slate-800">
-            <div className="p-5 bg-slate-950 border-b border-slate-800 flex justify-between items-center">
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto animate-fade-in">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-zoom-in text-[#1E293B] border border-[#E5EDF3]">
+            <div className="p-5 bg-white border-b border-[#E5EDF3] flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <User size={18} className="text-[#0ea5e9]" />
-                <h3 className="font-bold text-sm">Client Information Profile</h3>
+                <User size={18} className="text-[#0891B2]" />
+                <h3 className="font-bold text-sm text-[#0E7490]">Client Information Profile</h3>
               </div>
               <button
                 onClick={() => setShowDetailsModal(false)}
-                className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
               >
                 <X size={16} />
               </button>
             </div>
             
             <div className="p-6 space-y-5">
-              <div className="flex items-center gap-3 pb-3 border-b border-slate-800/60">
-                <div className="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-black">
+              <div className="flex items-center gap-3 pb-3 border-b border-[#E5EDF3] text-left">
+                <div className="h-10 w-10 rounded-full bg-[#ECFEFF] text-[#0891B2] flex items-center justify-center text-sm font-bold border border-[#0891B2]/10">
                   {selectedCustomer.name.charAt(0)}
                 </div>
                 <div>
-                  <h4 className="font-extrabold text-base">{selectedCustomer.name}</h4>
-                  <p className="text-3xs text-slate-400">Created: {new Date(selectedCustomer.createdAt).toLocaleDateString()}</p>
+                  <h4 className="font-bold text-base text-[#0F172A]">{selectedCustomer.name}</h4>
+                  <p className="text-3xs text-[#64748B]">Created: {new Date(selectedCustomer.createdAt).toLocaleDateString()}</p>
                 </div>
               </div>
 
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between py-1 border-b border-slate-800/40">
-                  <span className="text-slate-400">Phone:</span>
-                  <span className="font-bold text-slate-200">{selectedCustomer.phone}</span>
+              <div className="space-y-2 text-xs text-left">
+                <div className="flex justify-between py-1 border-b border-[#E5EDF3]">
+                  <span className="text-[#64748B]">Phone:</span>
+                  <span className="font-bold text-[#1E293B]">{selectedCustomer.phone}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-slate-800/40">
-                  <span className="text-slate-400">Email:</span>
-                  <span className="font-bold text-slate-200">{selectedCustomer.email || 'N/A'}</span>
+                <div className="flex justify-between py-1 border-b border-[#E5EDF3]">
+                  <span className="text-[#64748B]">Email:</span>
+                  <span className="font-bold text-[#1E293B]">{selectedCustomer.email || '—'}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-slate-800/40">
-                  <span className="text-slate-400">Address:</span>
-                  <span className="font-bold text-slate-200">{selectedCustomer.address || 'N/A'}</span>
+                <div className="flex justify-between py-1 border-b border-[#E5EDF3]">
+                  <span className="text-[#64748B]">Address:</span>
+                  <span className="font-bold text-[#1E293B]">{selectedCustomer.address || '—'}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-slate-800/40">
-                  <span className="text-slate-400">Total Wash:</span>
-                  <span className="font-bold text-slate-200">{selectedCustomer.totalJobs}</span>
+                <div className="flex justify-between py-1 border-b border-[#E5EDF3]">
+                  <span className="text-[#64748B]">Total Wash:</span>
+                  <span className="font-bold text-[#1E293B]">{selectedCustomer.totalJobs}</span>
                 </div>
                 <div className="flex justify-between py-1">
-                  <span className="text-slate-400">Total Cost Earn:</span>
-                  <span className="font-bold text-emerald-400 font-mono">₹{selectedCustomer.lifetimeSpend}</span>
+                  <span className="text-[#64748B]">Total Cost Earn:</span>
+                  <span className="font-bold text-[#16A34A]">₹{selectedCustomer.lifetimeSpend}</span>
                 </div>
               </div>
 
               {selectedCustomer.notes && (
-                <div className="p-3 bg-slate-950/80 rounded-lg border border-slate-800/60 text-xs">
-                  <strong className="text-[10px] text-slate-400 block mb-1 uppercase tracking-wider">Client Notes / Specifications</strong>
-                  <p className="text-slate-300 italic">"{selectedCustomer.notes}"</p>
+                <div className="p-3 bg-[#F4F8FB] rounded-lg border border-[#E5EDF3] text-xs text-left">
+                  <strong className="text-[10px] text-[#64748B] block mb-1 uppercase tracking-wider">Client Notes / Specifications</strong>
+                  <p className="text-[#334155] italic">"{selectedCustomer.notes}"</p>
                 </div>
               )}
 
               {selectedCustHistory.length > 0 ? (
-                <div className="space-y-3 pt-2">
-                  <strong className="text-[10px] text-slate-400 block uppercase tracking-wider font-extrabold">
+                <div className="space-y-3 pt-2 text-left">
+                  <strong className="text-[10px] text-[#64748B] block uppercase tracking-wider font-extrabold">
                     Car Wash & Detailing History ({selectedCustHistory.length})
                   </strong>
-                  <div className="max-h-60 overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-slate-800">
+                  <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
                     {selectedCustHistory.map(job => {
                       const staffMember = job.assignedTo ? staff.find(s => s.id === job.assignedTo) : null;
                       const staffName = staffMember ? staffMember.name : 'Not Assigned';
@@ -584,48 +584,48 @@ export default function CustomerCRM({
                       // Status styling
                       let statusBadge = '';
                       if (job.status === 'completed') {
-                        statusBadge = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+                        statusBadge = 'bg-emerald-100 text-emerald-800 border-emerald-250';
                       } else if (job.status === 'in_progress') {
-                        statusBadge = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+                        statusBadge = 'bg-amber-100 text-amber-850 border-amber-200';
                       } else if (job.status === 'scheduled') {
-                        statusBadge = 'bg-sky-500/10 text-sky-400 border-sky-500/20';
+                        statusBadge = 'bg-[#CFFAFE] text-[#0E7490] border-[#0891B2]/20';
                       } else if (job.status === 'cancelled') {
-                        statusBadge = 'bg-red-500/10 text-red-400 border-red-500/20';
+                        statusBadge = 'bg-rose-100 text-[#EF4444] border-rose-200';
                       } else {
-                        statusBadge = 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+                        statusBadge = 'bg-slate-100 text-slate-800 border-slate-200';
                       }
 
                       return (
-                        <div key={job.id} className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80 text-xs flex flex-col gap-2 hover:border-slate-700/60 transition-colors">
+                        <div key={job.id} className="p-3 bg-[#F4F8FB] rounded-xl border border-[#E5EDF3] text-xs flex flex-col gap-2 hover:border-[#0891B2]/20 transition-colors">
                           <div className="flex justify-between items-start">
                             <div>
-                              <span className="font-extrabold text-white text-xs block">{job.serviceName}</span>
-                              <div className="flex items-center gap-1.5 mt-1 text-slate-400 text-[10px]">
-                                <Calendar size={10} className="text-[#0ea5e9]" />
-                                <span className="font-semibold font-mono">{job.date}</span>
+                              <span className="font-bold text-[#0F172A] text-xs block">{job.serviceName}</span>
+                              <div className="flex items-center gap-1.5 mt-1 text-[#64748B] text-[10px]">
+                                <Calendar size={10} className="text-[#0891B2]" />
+                                <span className="font-semibold">{job.date}</span>
                                 {job.time && (
                                   <>
-                                    <span className="text-slate-600">•</span>
-                                    <span className="font-semibold font-mono">{job.time}</span>
+                                    <span className="text-slate-300">•</span>
+                                    <span className="font-semibold">{job.time}</span>
                                   </>
                                 )}
                               </div>
                             </div>
                             <div className="flex flex-col items-end gap-1.5">
-                              <span className="font-mono text-emerald-400 font-extrabold text-xs">₹{job.price}</span>
-                              <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${statusBadge}`}>
+                              <span className="text-[#16A34A] font-bold text-xs">₹{job.price}</span>
+                              <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border ${statusBadge}`}>
                                 {job.status}
                               </span>
                             </div>
                           </div>
                           
-                          <div className="flex justify-between items-center pt-2 border-t border-slate-800/40 text-[10px] text-slate-300">
+                          <div className="flex justify-between items-center pt-2 border-t border-[#E5EDF3] text-[10px] text-[#334155]">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-slate-500 font-semibold">Cleaner:</span>
-                              <span className="font-bold text-indigo-400 bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10">{staffName}</span>
+                              <span className="text-[#64748B] font-semibold">Cleaner:</span>
+                              <span className="font-bold text-[#0E7490] bg-[#ECFEFF] px-2 py-0.5 rounded border border-[#0891B2]/10">{staffName}</span>
                             </div>
                             {job.vehicle && (
-                              <div className="text-[10px] font-bold text-slate-400">
+                              <div className="text-[10px] font-bold text-[#475569]">
                                 🚗 {job.vehicle.make} {job.vehicle.model || ''}
                               </div>
                             )}
@@ -636,7 +636,7 @@ export default function CustomerCRM({
                   </div>
                 </div>
               ) : (
-                <div className="text-center p-5 bg-slate-950/30 rounded-xl border border-dashed border-slate-800/50 text-slate-500 text-xs font-semibold">
+                <div className="text-center p-5 bg-[#F4F8FB] rounded-xl border border-dashed border-[#E5EDF3] text-[#64748B] text-xs font-semibold">
                   No detailing/wash history logged for this client yet.
                 </div>
               )}
@@ -647,17 +647,17 @@ export default function CustomerCRM({
 
       {/* Recurring Client notification Toast */}
       {showRecurringMsg && (
-        <div className="fixed bottom-5 right-5 z-50 p-4 bg-slate-900 border-2 border-[#0ea5e9] rounded-xl shadow-2xl text-white max-w-sm animate-zoom-in">
+        <div className="fixed bottom-5 right-5 z-50 p-4 bg-white border-2 border-[#0891B2] rounded-xl shadow-2xl text-[#1E293B] max-w-sm animate-zoom-in text-left">
           <div className="flex gap-2.5 items-start">
-            <Info className="text-[#0ea5e9] shrink-0 mt-0.5" size={16} />
+            <Info className="text-[#0891B2] shrink-0 mt-0.5" size={16} />
             <div>
-              <h4 className="text-xs font-extrabold">Recurring Detailing Active</h4>
-              <p className="text-[11px] text-slate-300 mt-1">
+              <h4 className="text-xs font-bold text-[#0F172A]">Recurring Detailing Active</h4>
+              <p className="text-[11px] text-[#475569] mt-1">
                 Automated monthly scheduling is active for <strong>{showRecurringMsg}</strong>. Reminder alerts are configured via SMS notifications.
               </p>
               <button
                 onClick={() => setShowRecurringMsg(null)}
-                className="mt-2.5 text-[10px] font-bold text-[#0ea5e9] hover:text-[#38bdf8] uppercase cursor-pointer"
+                className="mt-2.5 text-[10px] font-bold text-[#0891B2] hover:text-[#0E7490] uppercase cursor-pointer block"
               >
                 Close Window
               </button>

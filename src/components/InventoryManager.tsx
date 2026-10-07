@@ -176,9 +176,9 @@ export default function InventoryManager({
   };
 
   const getStatus = (item: InventoryItem) => {
-    if (item.quantity === 0) return { label: 'Out of Stock', color: 'bg-rose-500/15 text-rose-400 border-rose-500/20' };
-    if (isLowStock(item)) return { label: 'Low Stock', color: 'bg-amber-500/15 text-amber-400 border-amber-500/20' };
-    return { label: 'In Stock', color: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20' };
+    if (item.quantity === 0) return { label: 'Out of Stock', color: 'bg-rose-100 text-[#EF4444] border-rose-200' };
+    if (isLowStock(item)) return { label: 'Low Stock', color: 'bg-amber-100 text-[#D97706] border-amber-250' };
+    return { label: 'In Stock', color: 'bg-emerald-100 text-[#16A34A] border-emerald-200' };
   };
 
   const filteredItems = inventory.filter(item => {
@@ -198,12 +198,12 @@ export default function InventoryManager({
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-xl font-extrabold text-white tracking-tight md:text-2xl">Inventory & Stock Tracking</h1>
-          <p className="text-xs text-slate-400">Manage essential car washing supplies: shampoo, paper mats, and air fresheners</p>
+          <h1 className="text-xl font-extrabold text-[#0F172A] tracking-tight md:text-2xl">Inventory & Stock Tracking</h1>
+          <p className="text-xs text-[#475569]">Manage essential car washing supplies: shampoo, paper mats, and air fresheners</p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+          className="px-4 py-2.5 bg-[#0891B2] hover:bg-[#0E7490] text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
         >
           <Plus size={16} />
           Add Item
@@ -212,18 +212,18 @@ export default function InventoryManager({
 
       {/* Alert Reminders for Low Stock Items */}
       {inventory.some(isLowStock) && (
-        <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl flex items-start gap-3 text-amber-300 animate-fade-in" id="low-stock-alert-reminder">
-          <AlertTriangle className="shrink-0 mt-0.5 text-amber-400" size={16} />
+        <div className="bg-[#FEF08A] border border-[#FACC15] p-4 rounded-xl flex items-start gap-3 text-[#854D0E] animate-fade-in" id="low-stock-alert-reminder">
+          <AlertTriangle className="shrink-0 mt-0.5 text-[#D97706]" size={16} />
           <div className="text-xs space-y-1">
             <strong className="font-extrabold block uppercase tracking-wide">⚠️ Low Stock Alert Warning</strong>
-            <p className="text-slate-300 font-medium leading-relaxed">
+            <p className="text-[#854D0E] font-medium leading-relaxed">
               The following inventory items have fallen below their minimum stock threshold limit:
             </p>
             <div className="flex flex-wrap gap-2 mt-2">
               {inventory.filter(isLowStock).map(item => {
                 const thresh = item.minThreshold ?? 5;
                 return (
-                  <span key={item.id} className="bg-amber-500/20 border border-amber-500/30 text-amber-300 font-mono font-bold text-4xs px-2.5 py-1 rounded-md uppercase">
+                  <span key={item.id} className="bg-white border border-[#FACC15] text-[#854D0E] font-bold text-4xs px-2.5 py-1 rounded-md uppercase shadow-xs">
                     {item.name}: {item.quantity} {item.unit} (Limit: <span className="underline">{thresh}</span>)
                   </span>
                 );
@@ -235,33 +235,33 @@ export default function InventoryManager({
 
       {/* Grid Overview Info */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl flex items-center gap-4">
-          <div className="h-10 w-10 bg-indigo-500/10 text-indigo-400 rounded-lg flex items-center justify-center">
+        <div className="bg-white border border-[#E5EDF3] p-5 rounded-2xl flex items-center gap-4 shadow-md border-t-[3px] border-t-[#0891B2] hover:-translate-y-0.5 transition-all duration-200">
+          <div className="h-10 w-10 bg-[#ECFEFF] text-[#0891B2] rounded-xl flex items-center justify-center">
             <Package size={20} />
           </div>
           <div>
-            <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Total Items</span>
-            <strong className="text-lg font-black text-white">{inventory.length}</strong>
+            <span className="text-xs text-[#64748B] font-bold uppercase tracking-wider block">Total Items</span>
+            <strong className="text-lg font-black text-[#0F172A]">{inventory.length}</strong>
           </div>
         </div>
 
-        <div className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl flex items-center gap-4">
-          <div className="h-10 w-10 bg-amber-500/10 text-amber-400 rounded-lg flex items-center justify-center">
+        <div className="bg-white border border-[#E5EDF3] p-5 rounded-2xl flex items-center gap-4 shadow-md border-t-[3px] border-t-[#FACC15] hover:-translate-y-0.5 transition-all duration-200">
+          <div className="h-10 w-10 bg-amber-50 text-[#FACC15] rounded-xl flex items-center justify-center">
             <AlertTriangle size={20} />
           </div>
           <div>
-            <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Low Stock Alerts</span>
-            <strong className={`text-lg font-black ${lowStockCount > 0 ? 'text-amber-400' : 'text-slate-500'}`}>{lowStockCount}</strong>
+            <span className="text-xs text-[#64748B] font-bold uppercase tracking-wider block">Low Stock Alerts</span>
+            <strong className={`text-lg font-black ${lowStockCount > 0 ? 'text-[#D97706]' : 'text-slate-500'}`}>{lowStockCount}</strong>
           </div>
         </div>
 
-        <div className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl flex items-center gap-4">
-          <div className="h-10 w-10 bg-emerald-500/10 text-emerald-400 rounded-lg flex items-center justify-center">
+        <div className="bg-white border border-[#E5EDF3] p-5 rounded-2xl flex items-center gap-4 shadow-md border-t-[3px] border-t-[#16A34A] hover:-translate-y-0.5 transition-all duration-200">
+          <div className="h-10 w-10 bg-[#DCFCE7] text-[#16A34A] rounded-xl flex items-center justify-center">
             <ShoppingBag size={20} />
           </div>
           <div>
-            <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Total Estimated Value</span>
-            <strong className="text-lg font-black text-emerald-400 font-mono">
+            <span className="text-xs text-[#64748B] font-bold uppercase tracking-wider block">Total Estimated Value</span>
+            <strong className="text-lg font-black text-[#16A34A]">
               ₹{inventory.reduce((sum, item) => sum + (item.quantity * item.costPrice), 0).toFixed(2)}
             </strong>
           </div>
@@ -269,36 +269,36 @@ export default function InventoryManager({
       </div>
 
       {/* Table & Filtering */}
-      <div className="bg-[#131D35] border border-slate-800/40 rounded-xl overflow-hidden flex flex-col">
-        <div className="p-4 border-b border-slate-800/40 flex gap-3 justify-between items-center bg-slate-900/10">
+      <div className="bg-white border border-[#E5EDF3] rounded-2xl shadow-md overflow-hidden flex flex-col">
+        <div className="p-4 border-b border-[#E5EDF3] flex gap-3 justify-between items-center bg-[#F4F8FB]">
           <div className="relative w-full">
-            <Search size={14} className="absolute left-3 top-3 text-slate-500" />
+            <Search size={14} className="absolute left-3 top-3 text-slate-400" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search products..."
-              className="w-full text-xs pl-9 pr-4 py-2 border border-slate-800 rounded-lg bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500"
+              className="w-full text-xs pl-9 pr-4 py-2 border border-[#CBD5E1] rounded-lg bg-white text-[#1E293B] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
             />
           </div>
         </div>
 
         {/* Inventory List */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-left border-collapse text-sm">
             <thead>
-              <tr className="border-b border-slate-800 text-slate-400 text-3xs font-extrabold uppercase tracking-wider bg-slate-950">
+              <tr className="border-b border-[#E5EDF3] text-[#334155] text-xs font-bold uppercase tracking-wider bg-[#F4F8FB]">
                 <th className="py-3 px-4">Product Name</th>
                 <th className="py-3 px-4 text-center">Stock Level</th>
                 <th className="py-3 px-4">Unit Price</th>
                 <th className="py-3 px-4 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/40 text-slate-300">
+            <tbody className="divide-y divide-[#E5EDF3] text-[#1E293B]">
               {filteredItems.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="p-8 text-center text-slate-500 font-medium">
-                    <Package size={28} className="mx-auto mb-2 text-slate-600" />
+                  <td colSpan={4} className="p-12 text-center text-slate-500 font-medium">
+                    <Package size={28} className="mx-auto mb-2 text-[#CBD5E1]" />
                     No supply items found in database.
                   </td>
                 </tr>
@@ -306,16 +306,21 @@ export default function InventoryManager({
                 filteredItems.map(item => {
                   const status = getStatus(item);
                   return (
-                    <tr key={item.id} className="hover:bg-slate-900/30 transition-all">
-                      <td className="py-3.5 px-4 font-bold text-white">
-                        {item.name}
+                    <tr key={item.id} className="hover:bg-[#F4F8FB] transition-all">
+                      <td className="py-3.5 px-4 font-semibold text-[#0F172A]">
+                        <div className="flex items-center gap-2">
+                          <span>{item.name}</span>
+                          {isLowStock(item) && (
+                            <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded-full border border-amber-200">Low</span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <div className="flex flex-col items-center">
                           <div className="flex items-center justify-center gap-2">
                             <button
                               onClick={() => handleAdjustQuantity(item.id, -1)}
-                              className="p-1 hover:bg-slate-800 rounded bg-slate-950 text-slate-400 border border-slate-800 cursor-pointer"
+                              className="p-1.5 hover:bg-slate-50 rounded-lg border border-[#CBD5E1] text-[#334155] cursor-pointer transition-colors"
                             >
                               <Minus size={10} />
                             </button>
@@ -327,32 +332,32 @@ export default function InventoryManager({
                                 const updated = inventory.map(it => it.id === item.id ? { ...it, quantity: val } : it);
                                 onUpdateInventory(updated);
                               }}
-                              className="w-14 text-center font-mono font-bold text-white bg-slate-950 border border-slate-850 rounded py-1 focus:outline-hidden focus:border-indigo-500"
+                              className="w-14 text-center font-bold text-[#0F172A] bg-white border border-[#CBD5E1] rounded-lg py-1 focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
                             />
-                            <span className="text-slate-400 text-[10px] ml-1 font-semibold">{item.unit}</span>
+                            <span className="text-[#475569] text-xs font-semibold">{item.unit}</span>
                             <button
                               onClick={() => handleAdjustQuantity(item.id, 1)}
-                              className="p-1 hover:bg-slate-800 rounded bg-slate-950 text-slate-400 border border-slate-800 cursor-pointer"
+                              className="p-1.5 hover:bg-slate-50 rounded-lg border border-[#CBD5E1] text-[#334155] cursor-pointer transition-colors"
                             >
                               <Plus size={10} />
                             </button>
                           </div>
-                          <span className="text-[10px] text-slate-500 mt-1 block font-mono">
-                            Threshold: {item.minThreshold ?? 5}
+                          <span className="text-[10px] text-slate-500 mt-1 block">
+                            Threshold limit: {item.minThreshold ?? 5}
                           </span>
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 font-mono font-semibold text-slate-400">
+                      <td className="py-3.5 px-4 font-semibold text-[#0F172A]">
                         ₹{item.costPrice.toFixed(2)}
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <div className="flex justify-center items-center gap-2">
                           <button
                             onClick={() => handleOpenEdit(item)}
-                            className="px-2 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded border border-indigo-500/20 transition-all cursor-pointer flex items-center gap-1 text-[10px] font-bold"
+                            className="px-2.5 py-1 bg-[#ECFEFF] hover:bg-[#CFFAFE] text-[#0E7490] rounded-lg border border-[#0891B2]/15 transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
                             title="Edit Item"
                           >
-                            <Edit3 size={11} />
+                            <Edit3 size={12} />
                             <span>Edit</span>
                           </button>
                           <button
@@ -361,10 +366,10 @@ export default function InventoryManager({
                                 handleDeleteItem(item.id);
                               }
                             }}
-                            className="px-2 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded border border-rose-500/20 transition-all cursor-pointer flex items-center gap-1 text-[10px] font-bold"
+                            className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-[#EF4444] rounded-lg border border-rose-200 transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
                             title="Delete Item"
                           >
-                            <Trash2 size={11} />
+                            <Trash2 size={12} />
                             <span>Delete</span>
                           </button>
                         </div>
@@ -380,71 +385,71 @@ export default function InventoryManager({
 
       {/* Add Item Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111827] border border-slate-800 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-zoom-in">
-            <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900 text-white">
-              <h2 className="text-sm font-extrabold uppercase tracking-wider flex items-center gap-2">
-                <Package size={16} className="text-indigo-400" />
-                Add Item
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-[#E5EDF3] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-zoom-in text-[#1E293B]">
+            <div className="p-5 border-b border-[#E5EDF3] flex items-center justify-between bg-white text-[#0F172A]">
+              <h2 className="text-sm font-extrabold uppercase tracking-wider flex items-center gap-2 text-[#0E7490]">
+                <Package size={16} className="text-[#0891B2]" />
+                Add Stock Item
               </h2>
-              <button onClick={() => setShowAddModal(false)} className="p-1 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white">
+              <button onClick={() => setShowAddModal(false)} className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
                 <X size={18} />
               </button>
             </div>
 
             <form onSubmit={handleAddItem} className="p-6 space-y-4">
               <div className="space-y-1">
-                <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Product Name *</label>
+                <label className="text-xs text-[#1E293B] font-medium block">Product Name *</label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Hydrophobic Ceramic Pro 50ml"
-                  className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500"
+                  className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Stock Level Quantity *</label>
+                  <label className="text-xs text-[#1E293B] font-medium block">Stock Level Quantity *</label>
                   <input
                     type="number"
                     required
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
                     placeholder="e.g. 15"
-                    className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500 font-bold"
+                    className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none font-bold"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Alert Threshold</label>
+                  <label className="text-xs text-[#1E293B] font-medium block">Alert Threshold</label>
                   <input
                     type="number"
                     required
                     value={minThreshold}
                     onChange={(e) => setMinThreshold(e.target.value)}
                     placeholder="e.g. 5"
-                    className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500 font-semibold"
+                    className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none font-semibold"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Unit</label>
+                  <label className="text-xs text-[#1E293B] font-medium block mb-1">Unit</label>
                   <input
                     type="text"
                     required
                     value={unit}
                     onChange={(e) => setUnit(e.target.value)}
                     placeholder="e.g. litres, sheets, pieces"
-                    className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white text-center focus:outline-hidden"
+                    className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] text-center placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Unit Price (₹)</label>
+                  <label className="text-xs text-[#1E293B] font-medium block mb-1">Unit Price (₹)</label>
                   <input
                     type="number"
                     step="0.01"
@@ -452,22 +457,22 @@ export default function InventoryManager({
                     value={costPrice}
                     onChange={(e) => setCostPrice(e.target.value)}
                     placeholder="0.00"
-                    className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white text-center focus:outline-hidden font-mono"
+                    className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] text-center placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none font-semibold"
                   />
                 </div>
               </div>
 
-              <div className="border-t border-slate-800 pt-4 flex justify-end gap-2">
+              <div className="border-t border-[#E5EDF3] pt-4 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-lg transition-all"
+                  className="px-4 py-2 bg-white border border-[#CBD5E1] hover:bg-slate-50 text-[#334155] text-xs font-bold rounded-lg transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition-all shadow-sm cursor-pointer"
+                  className="px-5 py-2 bg-[#0891B2] hover:bg-[#0E7490] text-white text-xs font-bold rounded-lg transition-all shadow-md cursor-pointer"
                 >
                   Confirm Entry
                 </button>
@@ -479,71 +484,71 @@ export default function InventoryManager({
 
       {/* Edit Item Modal */}
       {showEditModal && editingItem && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-[#111827] border border-slate-800 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-zoom-in">
-            <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900 text-white">
-              <h2 className="text-sm font-extrabold uppercase tracking-wider flex items-center gap-2">
-                <Edit3 size={16} className="text-indigo-400" />
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-white border border-[#E5EDF3] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-zoom-in text-[#1E293B]">
+            <div className="p-5 border-b border-[#E5EDF3] flex items-center justify-between bg-white text-[#0F172A]">
+              <h2 className="text-sm font-extrabold uppercase tracking-wider flex items-center gap-2 text-[#0E7490]">
+                <Edit3 size={16} className="text-[#0891B2]" />
                 Edit Inventory Item
               </h2>
-              <button onClick={() => { setShowEditModal(false); setEditingItem(null); }} className="p-1 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors cursor-pointer">
+              <button onClick={() => { setShowEditModal(false); setEditingItem(null); }} className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
                 <X size={18} />
               </button>
             </div>
 
             <form onSubmit={handleSaveEdit} className="p-6 space-y-4">
               <div className="space-y-1">
-                <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Product Name *</label>
+                <label className="text-xs text-[#1E293B] font-medium block">Product Name *</label>
                 <input
                   type="text"
                   required
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   placeholder="e.g. Hydrophobic Ceramic Pro 50ml"
-                  className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500 font-semibold"
+                  className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none font-semibold"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Stock Level Quantity *</label>
+                  <label className="text-xs text-[#1E293B] font-medium block">Stock Level Quantity *</label>
                   <input
                     type="number"
                     required
                     value={editQuantity}
                     onChange={(e) => setEditQuantity(e.target.value)}
                     placeholder="e.g. 15"
-                    className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500 font-bold"
+                    className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none font-bold"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Alert Threshold</label>
+                  <label className="text-xs text-[#1E293B] font-medium block">Alert Threshold</label>
                   <input
                     type="number"
                     required
                     value={editMinThreshold}
                     onChange={(e) => setEditMinThreshold(e.target.value)}
                     placeholder="e.g. 5"
-                    className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500 font-semibold"
+                    className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none font-semibold"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Unit</label>
+                  <label className="text-xs text-[#1E293B] font-medium block mb-1">Unit</label>
                   <input
                     type="text"
                     required
                     value={editUnit}
                     onChange={(e) => setEditUnit(e.target.value)}
                     placeholder="e.g. litres, sheets, pieces"
-                    className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white text-center focus:outline-hidden font-semibold"
+                    className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] text-center placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="text-4xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Unit Price (₹)</label>
+                  <label className="text-xs text-[#1E293B] font-medium block mb-1">Unit Price (₹)</label>
                   <input
                     type="number"
                     step="0.01"
@@ -551,22 +556,22 @@ export default function InventoryManager({
                     value={editCostPrice}
                     onChange={(e) => setEditCostPrice(e.target.value)}
                     placeholder="0.00"
-                    className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white text-center focus:outline-hidden font-mono font-semibold"
+                    className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] text-center placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none font-semibold"
                   />
                 </div>
               </div>
 
-              <div className="border-t border-slate-800 pt-4 flex justify-end gap-2">
+              <div className="border-t border-[#E5EDF3] pt-4 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => { setShowEditModal(false); setEditingItem(null); }}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-lg transition-all cursor-pointer"
+                  className="px-4 py-2 bg-white border border-[#CBD5E1] hover:bg-slate-50 text-[#334155] text-xs font-bold rounded-lg transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#0ea5e9] hover:bg-[#38bdf8] text-white text-xs font-bold rounded-lg transition-all shadow-sm cursor-pointer"
+                  className="px-5 py-2 bg-[#0891B2] hover:bg-[#0E7490] text-white text-xs font-bold rounded-lg transition-all shadow-md cursor-pointer"
                 >
                   Save Changes
                 </button>

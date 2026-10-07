@@ -372,17 +372,29 @@ export default function DashboardOverview({
     return Math.round((checked / keys.length) * 100);
   };
 
-  // Booking Status Breakdown calculations
-  const totalScheduled = appointments.filter(a => a.status === 'scheduled').length;
-  const totalCompleted = appointments.filter(a => a.status === 'completed').length;
-  const grandTotal = totalScheduled + totalCompleted;
+  // Booking Status Breakdown calculations for Donut Chart (r=30, circumference = 188.495)
+  const countCompleted = appointments.filter(a => a.status === 'completed').length;
+  const countScheduled = appointments.filter(a => a.status === 'scheduled').length;
+  const countPending = appointments.filter(a => ['in_progress', 'quality_check', 'ready'].includes(a.status)).length;
+  const countCancelled = appointments.filter(a => a.status === 'cancelled').length;
+  
+  const totalChartBookings = countCompleted + countScheduled + countPending + countCancelled;
 
-  const scheduledPercent = grandTotal > 0 ? Math.round((totalScheduled / grandTotal) * 100) : 50;
-  const completedPercent = grandTotal > 0 ? Math.round((totalCompleted / grandTotal) * 100) : 50;
+  const pctCompleted = totalChartBookings > 0 ? Math.round((countCompleted / totalChartBookings) * 100) : 0;
+  const pctScheduled = totalChartBookings > 0 ? Math.round((countScheduled / totalChartBookings) * 100) : 0;
+  const pctPending = totalChartBookings > 0 ? Math.round((countPending / totalChartBookings) * 100) : 0;
+  const pctCancelled = totalChartBookings > 0 ? Math.round((countCancelled / totalChartBookings) * 100) : 0;
 
-  const circumference = 157.08;
-  const scheduledStroke = (scheduledPercent / 100) * circumference;
-  const completedStroke = (completedPercent / 100) * circumference;
+  const donutCircumference = 188.495;
+  const strokeCompleted = (pctCompleted / 100) * donutCircumference;
+  const strokeScheduled = (pctScheduled / 100) * donutCircumference;
+  const strokePending = (pctPending / 100) * donutCircumference;
+  const strokeCancelled = (pctCancelled / 100) * donutCircumference;
+
+  const offsetCompleted = 0;
+  const offsetScheduled = strokeCompleted;
+  const offsetPending = strokeCompleted + strokeScheduled;
+  const offsetCancelled = strokeCompleted + strokeScheduled + strokePending;
 
   const pendingApts = appointments.filter(a => {
     if (a.status === 'cancelled') return false;
@@ -418,77 +430,88 @@ export default function DashboardOverview({
           animation: scaleUpCorner 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
         .chart-bar-hover:hover {
-          filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.6));
-          fill: #38bdf8 !important;
+          filter: drop-shadow(0 0 6px rgba(8, 145, 178, 0.4));
+          fill: #0891B2 !important;
         }
       `}</style>
 
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white rounded-xl p-6 border border-slate-800 shadow-md">
-        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-          Welcome back, Dr Washit.
-        </h1>
+      <div className="relative bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white rounded-2xl p-6 border border-slate-800 shadow-md overflow-hidden" id="welcome-banner-element">
+        {/* Subtle decorative bubble shapes */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-2 right-12 w-8 h-8 rounded-full bg-white/10 animate-bounce" style={{ animationDuration: '4s' }} />
+          <div className="absolute bottom-3 right-24 w-12 h-12 rounded-full bg-white/10 animate-pulse" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-6 right-4 w-5 h-5 rounded-full bg-white/5 animate-pulse" />
+        </div>
+        <div className="relative z-10 space-y-1">
+          <h1 className="text-2xl font-extrabold tracking-tight md:text-3xl text-white">
+            Welcome back, Dr Washit.
+          </h1>
+          <p className="text-sm font-medium text-white/90">
+            Here's what's happening at your car wash today.
+          </p>
+        </div>
       </div>
 
       {/* KPI Row */}
       {currentUser?.role === 'employee' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4" id="kpi-dashboard-grid-employee">
           {/* Card 1: Active Jobs Queue */}
-          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
+          <div className="bg-white dashboard-card p-5 rounded-2xl border-t-[3px] border-t-[#0891B2] border-x border-b border-[#E5EDF3] shadow-md flex items-center justify-between">
             <div className="space-y-1">
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Active Jobs Queue</span>
-              <span className="text-2xl font-extrabold text-[#38bdf8] font-mono">{activeJobs.length}</span>
-              <span className="text-slate-500 text-3xs font-medium block">Jobs currently being serviced</span>
+              <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wider block">Active Jobs Queue</span>
+              <span className="text-2xl font-extrabold text-[#0891B2] font-sans tabular-nums">{activeJobs.length}</span>
+              <span className="text-[#64748B] text-[10px] font-medium block">Jobs currently being serviced</span>
             </div>
-            <div className="p-3 bg-sky-500/10 text-[#38bdf8] rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
+            <div className="p-2.5 bg-[#ECFEFF] text-[#0891B2] rounded-xl flex items-center justify-center font-bold text-lg h-10 w-10 shrink-0">
               <Car size={20} />
             </div>
           </div>
 
           {/* Card 2: Upcoming Scheduled Jobs */}
-          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
+          <div className="bg-white dashboard-card p-5 rounded-2xl border-t-[3px] border-t-[#0891B2] border-x border-b border-[#E5EDF3] shadow-md flex items-center justify-between">
             <div className="space-y-1">
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Scheduled Jobs</span>
-              <span className="text-2xl font-extrabold text-indigo-400 font-mono">{scheduledJobs.length}</span>
-              <span className="text-slate-500 text-3xs font-medium block">Upcoming bookings today/later</span>
+              <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wider block">Scheduled Jobs</span>
+              <span className="text-2xl font-extrabold text-[#0891B2] font-sans tabular-nums">{scheduledJobs.length}</span>
+              <span className="text-[#64748B] text-[10px] font-medium block">Upcoming bookings today/later</span>
             </div>
-            <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
+            <div className="p-2.5 bg-[#ECFEFF] text-[#0891B2] rounded-xl flex items-center justify-center font-bold text-lg h-10 w-10 shrink-0">
               <Calendar size={20} />
             </div>
           </div>
 
           {/* Card 3: Completed Jobs */}
-          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
+          <div className="bg-white dashboard-card p-5 rounded-2xl border-t-[3px] border-t-[#16A34A] border-x border-b border-[#E5EDF3] shadow-md flex items-center justify-between">
             <div className="space-y-1">
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Completed Jobs</span>
-              <span className="text-2xl font-extrabold text-emerald-400 font-mono">{completedJobs.length}</span>
-              <span className="text-slate-500 text-3xs font-medium block">Successfully finished tasks</span>
+              <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wider block">Completed Jobs</span>
+              <span className="text-2xl font-extrabold text-[#16A34A] font-sans tabular-nums">{completedJobs.length}</span>
+              <span className="text-[#64748B] text-[10px] font-medium block">Successfully finished tasks</span>
             </div>
-            <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
+            <div className="p-2.5 bg-[#E8F5E9] text-[#16A34A] rounded-xl flex items-center justify-center font-bold text-lg h-10 w-10 shrink-0">
               <CheckCircle size={20} />
             </div>
           </div>
 
           {/* Card 4: Low Stock Alerts */}
-          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
+          <div className="bg-white dashboard-card p-5 rounded-2xl border-t-[3px] border-t-[#FACC15] border-x border-b border-[#E5EDF3] shadow-md flex items-center justify-between">
             <div className="space-y-1">
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Low Stock Alerts</span>
-              <span className={`text-2xl font-extrabold font-mono ${lowStockCount > 0 ? 'text-amber-400' : 'text-slate-300'}`}>{lowStockCount}</span>
-              <span className="text-slate-500 text-3xs font-medium block">{lowStockCount === 0 ? 'All shampoo/mats in stock' : `${lowStockCount} items need stock`}</span>
+              <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wider block">Low Stock Alerts</span>
+              <span className={`text-2xl font-extrabold font-sans tabular-nums ${lowStockCount > 0 ? 'text-amber-500' : 'text-slate-450'}`}>{lowStockCount}</span>
+              <span className="text-[#64748B] text-[10px] font-medium block">{lowStockCount === 0 ? 'All shampoo/mats in stock' : `${lowStockCount} items need stock`}</span>
             </div>
-            <div className="p-3 bg-amber-500/10 text-amber-400 rounded-lg flex items-center justify-center h-11 w-11 shrink-0">
-              <Package size={22} />
+            <div className="p-2.5 bg-[#FFFDE7] text-[#FACC15] rounded-xl flex items-center justify-center font-bold text-lg h-10 w-10 shrink-0">
+              <Package size={20} />
             </div>
           </div>
 
-          {/* Card 5: Online Booking Requests */}
-          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
+          {/* Card 5: Booking Requests */}
+          <div className="bg-white dashboard-card p-5 rounded-2xl border-t-[3px] border-t-[#EF4444] border-x border-b border-[#E5EDF3] shadow-md flex items-center justify-between">
             <div className="space-y-1">
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Booking Requests</span>
-              <span className="text-2xl font-extrabold text-pink-400 font-mono">{pendingLeadsCount}</span>
-              <span className="text-slate-500 text-3xs font-medium block">New self-booking requests</span>
+              <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wider block">Booking Requests</span>
+              <span className="text-2xl font-extrabold text-[#EF4444] font-sans tabular-nums">{pendingLeadsCount}</span>
+              <span className="text-[#64748B] text-[10px] font-medium block">New self-booking requests</span>
             </div>
-            <div className="p-3 bg-pink-500/10 text-pink-400 rounded-lg flex items-center justify-center h-11 w-11 shrink-0">
+            <div className="p-2.5 bg-[#FFEBEE] text-[#EF4444] rounded-xl flex items-center justify-center font-bold text-lg h-10 w-10 shrink-0">
               <Zap size={20} />
             </div>
           </div>
@@ -498,69 +521,206 @@ export default function DashboardOverview({
           {/* Card 1: Daily Profit */}
           <button
             onClick={() => setShowDailyProfitModal(true)}
-            className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 hover:border-sky-500/50 transition-all shadow-xs flex items-center justify-between text-left cursor-pointer w-full group relative overflow-hidden"
+            className="bg-gradient-to-br from-white to-[#F0FDFA] hover:to-[#E6FDF9] p-5 rounded-2xl border-t-4 border-t-[#0891B2] border-x border-b border-[#E5EDF3] transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-[#0891B2]/10 hover:-translate-y-1 flex flex-col justify-between text-left cursor-pointer w-full group relative overflow-hidden"
           >
-            <div className="space-y-1">
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block group-hover:text-sky-300 transition-colors">Daily Profit</span>
-              <span className="text-2xl font-extrabold text-[#38bdf8] font-mono">₹{dailyProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              <span className="text-slate-500 text-3xs font-medium block group-hover:text-slate-300 transition-colors">Click to view list →</span>
+            {/* Top row: Badge top right, and info top left */}
+            <div className="flex justify-between items-start w-full">
+              <div className="space-y-1">
+                <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wider block">Daily Profit</span>
+                <span className="text-[28px] font-extrabold text-[#0F172A] font-sans tabular-nums leading-none">
+                  ₹{dailyProfit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </span>
+              </div>
+              
+              {/* Badge top right corner */}
+              {dailyProfit > 0 && (
+                <span className="inline-flex items-center gap-0.5 bg-[#16A34A]/10 text-[#16A34A] text-[9px] px-2 py-0.5 rounded-full font-extrabold shadow-2xs shrink-0">
+                  <span>↑</span>
+                  <span>+8%</span>
+                </span>
+              )}
             </div>
-            <div className="p-3 bg-sky-500/10 text-[#38bdf8] group-hover:bg-[#38bdf8]/20 transition-all rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
-              ₹
+
+            {/* Middle row: Label + Icon */}
+            <div className="flex items-center justify-between w-full mt-4">
+              <div className="space-y-1">
+                <span className="text-[#0891B2] text-[10px] font-bold tracking-wider flex items-center gap-1 group-hover:translate-x-1 transition-all duration-200">
+                  <span>Click to view list</span>
+                  <span>→</span>
+                </span>
+              </div>
+              
+              {/* Larger Icon box with white icon and gradient bg */}
+              <div className="p-2.5 h-12 w-12 bg-gradient-to-br from-[#0891B2] to-[#06B6D4] text-white rounded-xl flex items-center justify-center font-bold shadow-md shrink-0">
+                <span className="text-base font-black">₹</span>
+              </div>
+            </div>
+
+            {/* Sparkline at bottom */}
+            <div className="w-full h-5 mt-3 opacity-85">
+              <svg className="w-full h-full" viewBox="0 0 100 20" preserveAspectRatio="none">
+                <path d="M0 15 Q15 5, 30 12 T60 3 T90 10 L100 5" fill="none" stroke="#0891B2" strokeWidth="2.5" strokeLinecap="round" />
+              </svg>
             </div>
           </button>
 
           {/* Card 2: Total Profit */}
           <button
             onClick={() => setShowTotalProfitModal(true)}
-            className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 hover:border-emerald-500/50 transition-all shadow-xs flex items-center justify-between text-left cursor-pointer w-full group relative overflow-hidden"
+            className="bg-gradient-to-br from-white to-[#F0FDF4] hover:to-[#E6FDF2] p-5 rounded-2xl border-t-4 border-t-[#16A34A] border-x border-b border-[#E5EDF3] transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-[#16A34A]/10 hover:-translate-y-1 flex flex-col justify-between text-left cursor-pointer w-full group relative overflow-hidden"
           >
-            <div className="space-y-1">
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block group-hover:text-emerald-300 transition-colors">Total Profit</span>
-              <span className="text-2xl font-extrabold text-emerald-400 font-mono">₹{totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              <span className="text-slate-500 text-3xs font-medium block group-hover:text-slate-300 transition-colors">Click to view list →</span>
+            {/* Top row: Badge top right, and info top left */}
+            <div className="flex justify-between items-start w-full">
+              <div className="space-y-1">
+                <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wider block">Total Profit</span>
+                <span className="text-[28px] font-extrabold text-[#0F172A] font-sans tabular-nums leading-none">
+                  ₹{totalProfit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </span>
+              </div>
+              
+              {/* Badge top right corner */}
+              {totalProfit > 0 && (
+                <span className="inline-flex items-center gap-0.5 bg-[#16A34A]/10 text-[#16A34A] text-[9px] px-2 py-0.5 rounded-full font-extrabold shadow-2xs shrink-0">
+                  <span>↑</span>
+                  <span>+12%</span>
+                </span>
+              )}
             </div>
-            <div className="p-3 bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-500/20 transition-all rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
-              ₹
+
+            {/* Middle row: Label + Icon */}
+            <div className="flex items-center justify-between w-full mt-4">
+              <div className="space-y-1">
+                <span className="text-[#16A34A] text-[10px] font-bold tracking-wider flex items-center gap-1 group-hover:translate-x-1 transition-all duration-200">
+                  <span>Click to view list</span>
+                  <span>→</span>
+                </span>
+              </div>
+              
+              {/* Larger Icon box with white icon and gradient bg */}
+              <div className="p-2.5 h-12 w-12 bg-gradient-to-br from-[#16A34A] to-[#22C55E] text-white rounded-xl flex items-center justify-center font-bold shadow-md shrink-0">
+                <span className="text-base font-black">₹</span>
+              </div>
+            </div>
+
+            {/* Sparkline at bottom */}
+            <div className="w-full h-5 mt-3 opacity-85">
+              <svg className="w-full h-full" viewBox="0 0 100 20" preserveAspectRatio="none">
+                <path d="M0 18 Q20 2, 40 10 T70 5 T100 2" fill="none" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round" />
+              </svg>
             </div>
           </button>
 
           {/* Card 3: Total Revenue */}
-          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Total Revenue</span>
-              <span className="text-2xl font-extrabold text-sky-400 font-mono">₹{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              <span className="text-slate-500 text-3xs font-medium block">₹{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} this month</span>
+          <div className="bg-gradient-to-br from-white to-[#EFF6FF] p-5 rounded-2xl border-t-4 border-t-[#2563EB] border-x border-b border-[#E5EDF3] transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-[#2563EB]/10 hover:-translate-y-1 flex flex-col justify-between text-left w-full group relative overflow-hidden">
+            {/* Top row: Badge top right, and info top left */}
+            <div className="flex justify-between items-start w-full">
+              <div className="space-y-1">
+                <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wider block">Total Revenue</span>
+                <span className="text-[28px] font-extrabold text-[#0F172A] font-sans tabular-nums leading-none">
+                  ₹{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </span>
+              </div>
+              
+              {/* Badge top right corner */}
+              {totalRevenue > 0 && (
+                <span className="inline-flex items-center gap-0.5 bg-[#16A34A]/10 text-[#16A34A] text-[9px] px-2 py-0.5 rounded-full font-extrabold shadow-2xs shrink-0">
+                  <span>↑</span>
+                  <span>+15%</span>
+                </span>
+              )}
             </div>
-            <div className="p-3 bg-sky-500/10 text-sky-400 rounded-lg flex items-center justify-center font-bold text-xl h-11 w-11 shrink-0">
-              ₹
+
+            {/* Middle row: Label + Icon */}
+            <div className="flex items-center justify-between w-full mt-4">
+              <div className="space-y-1">
+                <span className="text-[#2563EB] text-[10px] font-bold tracking-wider">
+                  ₹{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} this month
+                </span>
+              </div>
+              
+              {/* Larger Icon box with white icon and gradient bg */}
+              <div className="p-2.5 h-12 w-12 bg-gradient-to-br from-[#2563EB] to-[#3B82F6] text-white rounded-xl flex items-center justify-center font-bold shadow-md shrink-0">
+                <span className="text-base font-black">₹</span>
+              </div>
+            </div>
+
+            {/* Sparkline at bottom */}
+            <div className="w-full h-5 mt-3 opacity-85">
+              <svg className="w-full h-full" viewBox="0 0 100 20" preserveAspectRatio="none">
+                <path d="M0 15 L20 12 L40 16 L60 8 L80 14 L100 4" fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" />
+              </svg>
             </div>
           </div>
 
           {/* Card 4: Low Stock Alerts */}
-          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Low Stock Alerts</span>
-              <span className={`text-2xl font-extrabold font-mono ${lowStockCount > 0 ? 'text-amber-400' : 'text-slate-300'}`}>{lowStockCount}</span>
-              <span className="text-slate-500 text-3xs font-medium block">{lowStockCount === 0 ? 'all items in stock' : `${lowStockCount} items need stock`}</span>
+          <div className="bg-gradient-to-br from-white to-[#FEFCE8] p-5 rounded-2xl border-t-4 border-t-[#FACC15] border-x border-b border-[#E5EDF3] transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-[#FACC15]/10 hover:-translate-y-1 flex flex-col justify-between text-left w-full group relative overflow-hidden">
+            {/* Top row: Badge top right, and info top left */}
+            <div className="flex justify-between items-start w-full">
+              <div className="space-y-1">
+                <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wider block">Low Stock Alerts</span>
+                <span className={`text-[28px] font-extrabold font-sans tabular-nums leading-none ${lowStockCount > 0 ? 'text-[#D97706]' : 'text-[#0F172A]'}`}>
+                  {lowStockCount || '0'}
+                </span>
+              </div>
+              
+              {/* Badge top right corner */}
+              {lowStockCount > 0 && (
+                <span className="inline-flex items-center bg-amber-500/10 text-amber-600 text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider shadow-2xs shrink-0">
+                  alert
+                </span>
+              )}
             </div>
-            <div className="p-3 bg-amber-500/10 text-amber-400 rounded-lg flex items-center justify-center h-11 w-11 shrink-0">
-              <Package size={22} />
+
+            {/* Middle row: Label + Icon */}
+            <div className="flex items-center justify-between w-full mt-4">
+              <div className="space-y-1">
+                <span className="text-[#D97706] text-[10px] font-bold tracking-wider">
+                  {lowStockCount === 0 ? 'all items in stock' : `${lowStockCount} items need stock`}
+                </span>
+              </div>
+              
+              {/* Larger Icon box with white icon and gradient bg */}
+              <div className="p-2.5 h-12 w-12 bg-gradient-to-br from-[#FACC15] to-[#F59E0B] text-white rounded-xl flex items-center justify-center font-bold shadow-md shrink-0">
+                <Package size={22} className="text-white" />
+              </div>
             </div>
           </div>
 
           {/* Card 5: Pending Client Payments */}
           <button
             onClick={() => setShowPendingListModal(true)}
-            className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-rose-500/20 hover:border-rose-500/50 transition-all shadow-xs flex items-center justify-between text-left cursor-pointer w-full group relative overflow-hidden"
+            className="bg-gradient-to-br from-white to-[#FEF2F2] hover:to-[#FEE2E2] p-5 rounded-2xl border-t-4 border-t-[#EF4444] border-x border-b border-[#E5EDF3] transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-[#EF4444]/10 hover:-translate-y-1 flex flex-col justify-between text-left cursor-pointer w-full group relative overflow-hidden"
           >
-            <div className="space-y-1">
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">Pending Payments</span>
-              <span className="text-2xl font-extrabold text-rose-400 font-mono">₹{pendingPaymentsTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              <span className="text-slate-500 text-3xs font-medium block group-hover:text-rose-300 transition-colors">Click to view list →</span>
+            {/* Top row: Badge top right, and info top left */}
+            <div className="flex justify-between items-start w-full">
+              <div className="space-y-1">
+                <span className="text-[#64748B] text-xs font-semibold uppercase tracking-wider block">Pending Payments</span>
+                <span className="text-[28px] font-extrabold text-[#EF4444] font-sans tabular-nums leading-none">
+                  ₹{pendingPaymentsTotal.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </span>
+              </div>
+              
+              {/* Badge top right corner */}
+              {pendingPaymentsTotal > 0 && (
+                <span className="inline-flex items-center bg-rose-500/10 text-rose-600 text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider shadow-2xs shrink-0">
+                  due
+                </span>
+              )}
             </div>
-            <div className="p-3 bg-rose-500/10 text-rose-400 group-hover:bg-rose-500/20 transition-all rounded-lg flex items-center justify-center h-11 w-11 shrink-0">
-              <CreditCard size={22} />
+
+            {/* Middle row: Label + Icon */}
+            <div className="flex items-center justify-between w-full mt-4">
+              <div className="space-y-1">
+                <span className="text-[#EF4444] text-[10px] font-bold tracking-wider flex items-center gap-1 group-hover:translate-x-1 transition-all duration-200">
+                  <span>Click to view list</span>
+                  <span>→</span>
+                </span>
+              </div>
+              
+              {/* Larger Icon box with white icon and gradient bg */}
+              <div className="p-2.5 h-12 w-12 bg-gradient-to-br from-[#EF4444] to-[#F43F5E] text-white rounded-xl flex items-center justify-center font-bold shadow-md shrink-0">
+                <CreditCard size={22} className="text-white" />
+              </div>
             </div>
           </button>
         </div>
@@ -569,16 +729,16 @@ export default function DashboardOverview({
       {/* Two Column Layout: Quick Actions & Quick Expense Tracker */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Left: Quick Actions (col-span-7) */}
-        <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs space-y-4 lg:col-span-7 flex flex-col justify-between">
+        <div className="bg-white p-5 rounded-2xl border border-[#E5EDF3] shadow-md lg:col-span-7 flex flex-col justify-between">
           <div className="space-y-1">
-            <h3 className="text-base font-bold text-white">Quick Actions</h3>
-            <p className="text-3xs text-slate-400">Instantly register bookings or browse database tabs</p>
+            <h3 className="text-base font-bold text-[#0F172A]">Quick Actions</h3>
+            <p className="text-3xs text-[#64748B]">Instantly register bookings or browse database tabs</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
             {/* New Booking Button */}
             <button
               onClick={() => onNavigate('bookings_new')}
-              className="p-4 h-24 rounded-xl flex flex-col items-center justify-center gap-2 transition-all duration-300 cursor-pointer text-center bg-[#0ea5e9] hover:bg-[#38bdf8] hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:shadow-sky-500/20 text-white font-semibold text-xs border-0 shadow-sm shadow-sky-500/10"
+              className="p-4 h-24 rounded-xl flex flex-col items-center justify-center gap-2 transition-all duration-300 cursor-pointer text-center bg-[#0ea5e9] hover:bg-[#0E7490] hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg hover:shadow-sky-500/20 text-white font-semibold text-xs border-0 shadow-sm"
             >
               <Plus size={20} className="stroke-[2.5]" />
               <span>New Booking</span>
@@ -587,7 +747,7 @@ export default function DashboardOverview({
             {/* Calendar Button */}
             <button
               onClick={() => onNavigate('appointments')}
-              className="p-4 h-24 rounded-xl flex flex-col items-center justify-center gap-2 transition-all duration-300 cursor-pointer text-center bg-[#18223c] hover:bg-slate-800/80 hover:-translate-y-1 hover:scale-[1.02] border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-medium text-xs"
+              className="p-4 h-24 rounded-xl flex flex-col items-center justify-center gap-2 transition-all duration-300 cursor-pointer text-center bg-white hover:bg-[#ECFEFF] hover:-translate-y-1 hover:scale-[1.02] border border-[#0891B2] text-[#0891B2] hover:text-[#0E7490] font-medium text-xs"
             >
               <Calendar size={18} />
               <span>Calendar</span>
@@ -596,7 +756,7 @@ export default function DashboardOverview({
             {/* Clients Button */}
             <button
               onClick={() => onNavigate('crm')}
-              className="p-4 h-24 rounded-xl flex flex-col items-center justify-center gap-2 transition-all duration-300 cursor-pointer text-center bg-[#18223c] hover:bg-slate-800/80 hover:-translate-y-1 hover:scale-[1.02] border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-medium text-xs"
+              className="p-4 h-24 rounded-xl flex flex-col items-center justify-center gap-2 transition-all duration-300 cursor-pointer text-center bg-white hover:bg-[#ECFEFF] hover:-translate-y-1 hover:scale-[1.02] border border-[#0891B2] text-[#0891B2] hover:text-[#0E7490] font-medium text-xs"
             >
               <Users size={18} />
               <span>Clients</span>
@@ -605,44 +765,44 @@ export default function DashboardOverview({
         </div>
 
         {/* Right: Quick Expense Tracker (col-span-5) */}
-        <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs space-y-4 lg:col-span-5 flex flex-col justify-between">
+        <div className="bg-white p-5 rounded-2xl border border-[#E5EDF3] shadow-md lg:col-span-5 flex flex-col justify-between">
           <div className="space-y-1">
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
+            <h3 className="text-base font-bold text-[#0F172A] flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span>
               <span>Quick Expense Tracker</span>
             </h3>
-            <p className="text-3xs text-slate-400">Log any workshop/studio expense instantly below</p>
+            <p className="text-3xs text-[#64748B]">Log any workshop/studio expense instantly below</p>
           </div>
 
           <form onSubmit={handleQuickAddExpense} className="grid grid-cols-1 sm:grid-cols-12 gap-2 pt-2 items-end">
             <div className="sm:col-span-8 space-y-1">
-              <label className="text-[10px] text-slate-400 font-bold uppercase block">Expense Name *</label>
+              <label className="text-[10px] text-[#64748B] font-bold uppercase block">Expense Name *</label>
               <input
                 type="text"
                 required
                 value={expName}
                 onChange={(e) => setExpName(e.target.value)}
                 placeholder="e.g. Microfiber towels"
-                className="text-xs p-2 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-rose-500 placeholder-slate-600 font-semibold"
+                className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#334155] focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/15 placeholder-[#94A3B8] font-medium"
               />
             </div>
             
             <div className="sm:col-span-4 space-y-1">
-              <label className="text-[10px] text-slate-400 font-bold uppercase block">Amount (₹) *</label>
+              <label className="text-[10px] text-[#64748B] font-bold uppercase block">Amount (₹) *</label>
               <input
                 type="number"
                 required
                 value={expAmount}
                 onChange={(e) => setExpAmount(e.target.value)}
                 placeholder="350"
-                className="text-xs p-2 border border-slate-800 rounded-lg w-full bg-slate-950 text-white font-mono focus:outline-hidden focus:border-rose-500 placeholder-slate-600 font-bold text-rose-400"
+                className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#334155] font-sans tabular-nums focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/15 placeholder-[#94A3B8] font-semibold"
               />
             </div>
 
             <div className="sm:col-span-12 pt-2">
               <button
                 type="submit"
-                className="w-full py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg transition-all shadow-sm shadow-rose-950/20 cursor-pointer flex items-center justify-center gap-1 hover:scale-[1.01]"
+                className="w-full py-2 bg-[#0891B2] hover:bg-[#0E7490] text-white text-xs font-bold rounded-lg transition-all shadow-sm cursor-pointer flex items-center justify-center gap-1 hover:scale-[1.01]"
               >
                 <span>Log Expense</span>
               </button>
@@ -651,14 +811,14 @@ export default function DashboardOverview({
 
           {/* Today's logged expenses summary inline list */}
           {expenses && expenses.filter(e => e.date === todayStr).length > 0 && (
-            <div className="border-t border-slate-800/40 pt-2 text-[10px] space-y-1">
-              <span className="text-slate-400 block font-bold uppercase tracking-wider">Today's Expenses:</span>
+            <div className="border-t border-[#E5EDF3] pt-2 text-[10px] space-y-1">
+              <span className="text-[#64748B] block font-bold uppercase tracking-wider">Today's Expenses:</span>
               <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
                 {expenses.filter(e => e.date === todayStr).map((e: any) => (
-                  <span key={e.id} className="bg-rose-500/10 border border-rose-500/20 text-rose-300 px-2 py-1 rounded font-medium flex items-center gap-1.5 font-mono">
+                  <span key={e.id} className="bg-rose-50/50 border border-rose-100 text-[#EF4444] px-2.5 py-1 rounded-lg font-medium flex items-center gap-1.5 font-sans tabular-nums shadow-xs">
                     <span>{e.name}</span>
-                    <span className="text-slate-500">•</span>
-                    <span className="font-bold text-rose-400">₹{e.amount}</span>
+                    <span className="text-slate-300">•</span>
+                    <span className="font-bold text-[#EF4444]">₹{e.amount}</span>
                     <button
                       type="button"
                       onClick={() => {
@@ -666,7 +826,7 @@ export default function DashboardOverview({
                           onUpdateExpenses(expenses.filter(item => item.id !== e.id));
                         }
                       }}
-                      className="text-rose-500 hover:text-rose-300 transition-colors p-0.5 rounded-full hover:bg-rose-500/20 ml-0.5 cursor-pointer flex items-center justify-center shrink-0"
+                      className="text-[#EF4444] hover:text-[#EF4444]/80 transition-colors p-0.5 rounded-full hover:bg-rose-100/50 ml-0.5 cursor-pointer flex items-center justify-center shrink-0"
                       title="Delete Expense"
                     >
                       <X size={10} className="stroke-[2.5]" />
@@ -741,13 +901,13 @@ export default function DashboardOverview({
             </div>
           </div>
         ) : (
-          <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs lg:col-span-2 space-y-4 text-slate-100">
+          <div className="bg-white dashboard-card p-5 rounded-2xl border border-[#E5EDF3] shadow-md lg:col-span-2 space-y-4 text-slate-700">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5 flex items-center gap-2">
-                <TrendingUp size={18} className="text-sky-400" />
+                <TrendingUp size={18} className="text-[#0891B2]" />
                 <div>
-                  <h3 className="text-base font-bold text-white">Revenue Trend</h3>
-                  <p className="text-xs text-slate-400">Monthly revenue analytics trend</p>
+                  <h3 className="text-base font-bold text-[#0F172A]">Revenue Trend</h3>
+                  <p className="text-xs text-[#64748B]">Monthly revenue analytics trend</p>
                 </div>
               </div>
               
@@ -755,16 +915,16 @@ export default function DashboardOverview({
               <div className="relative">
                 <button
                   onClick={() => setShowRevenueDropdown(!showRevenueDropdown)}
-                  className="flex items-center gap-1.5 text-[10px] font-bold text-slate-200 bg-slate-900/80 border border-slate-700/60 rounded-lg px-2.5 py-1.5 cursor-pointer hover:bg-slate-800 hover:border-slate-600 transition-all"
+                  className="flex items-center gap-1.5 text-[10px] font-bold text-[#334155] bg-white border border-[#CBD5E1] rounded-lg px-2.5 py-1.5 cursor-pointer hover:bg-[#F4F8FB] hover:border-[#94A3B8] transition-all"
                 >
                   <span>{revenueRangeLabels[revenueRange]}</span>
-                  <ChevronDown size={12} className={`text-slate-400 transition-transform duration-200 ${showRevenueDropdown ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={12} className="text-[#64748B] transition-transform duration-200" style={{ transform: showRevenueDropdown ? 'rotate(180deg)' : 'none' }} />
                 </button>
                 
                 {showRevenueDropdown && (
                   <>
                     <div className="fixed inset-0 z-30" onClick={() => setShowRevenueDropdown(false)} />
-                    <div className="absolute right-0 mt-1.5 w-36 bg-slate-900 border border-slate-700 rounded-lg shadow-xl z-40 py-1 origin-top-right animate-scale-up-corner">
+                    <div className="absolute right-0 mt-1.5 w-36 bg-white border border-[#E5EDF3] rounded-lg shadow-lg z-40 py-1 origin-top-right animate-scale-up-corner">
                       {(['1m', '3m', '6m', 'all'] as const).map((opt) => (
                         <button
                           key={opt}
@@ -774,12 +934,12 @@ export default function DashboardOverview({
                           }}
                           className={`w-full text-left px-3 py-2 text-[10px] font-semibold transition-colors flex items-center justify-between ${
                             revenueRange === opt
-                              ? 'bg-sky-500/10 text-sky-400'
-                              : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                              ? 'bg-[#ECFEFF] text-[#0891B2]'
+                              : 'text-[#334155] hover:bg-[#F4F8FB] hover:text-[#0F172A]'
                           }`}
                         >
                           <span>{revenueRangeLabels[opt]}</span>
-                          {revenueRange === opt && <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />}
+                          {revenueRange === opt && <span className="h-1.5 w-1.5 rounded-full bg-[#0891B2]" />}
                         </button>
                       ))}
                     </div>
@@ -797,21 +957,21 @@ export default function DashboardOverview({
                     left: `${((trendPoints[hoveredIndex].x) / chartWidth) * 100}%`,
                     top: `${((trendPoints[hoveredIndex].y - 12) / chartHeight) * 100}%`,
                   }}
-                  className="absolute -translate-x-1/2 -translate-y-full bg-slate-900/95 border border-slate-700/80 text-white rounded-lg p-2.5 shadow-xl z-20 whitespace-nowrap pointer-events-none transition-all duration-150 backdrop-blur-xs"
+                  className="absolute -translate-x-1/2 -translate-y-full bg-white border border-[#E5EDF3] text-[#334155] rounded-xl p-3 shadow-xl z-20 whitespace-nowrap pointer-events-none transition-all duration-150"
                 >
                   <div className="flex flex-col gap-0.5 text-left">
-                    <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">
+                    <span className="text-[10px] font-bold text-[#0891B2] uppercase tracking-wider">
                       {revenueTrendData[hoveredIndex].label} Revenue
                     </span>
-                    <span className="text-sm font-extrabold text-white font-mono">
+                    <span className="text-sm font-extrabold text-[#0F172A] font-sans tabular-nums">
                       ₹{revenueTrendData[hoveredIndex].amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
-                    <span className="text-[9px] text-slate-400">
+                    <span className="text-[9px] text-[#64748B]">
                       {revenueTrendData[hoveredIndex].amount > 28 ? 'Completed customer jobs' : 'Standard baseline flow'}
                     </span>
                   </div>
                   {/* Tooltip caret */}
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-white"></div>
                 </div>
               )}
 
@@ -823,8 +983,8 @@ export default function DashboardOverview({
               >
                 <defs>
                   <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.0" />
+                    <stop offset="0%" stopColor="#0891B2" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#0891B2" stopOpacity="0.0" />
                   </linearGradient>
                 </defs>
 
@@ -839,20 +999,21 @@ export default function DashboardOverview({
                   const ratio = idx / 4;
                   const y = chartHeight - paddingBottom - (ratio * graphHeight);
                   return (
-                    <g key={idx} className="opacity-70">
+                    <g key={idx} className="opacity-90">
                       <line
                         x1={paddingLeft}
                         y1={y}
                         x2={chartWidth - paddingRight}
                         y2={y}
-                        stroke="#1e293b"
+                        stroke="#E2E8F0"
                         strokeWidth="1"
+                        strokeDasharray="4 4"
                       />
                       <text
                         x={paddingLeft - 10}
                         y={y + 3}
                         textAnchor="end"
-                        className="fill-slate-400 text-[10px] font-mono font-medium"
+                        className="fill-[#64748B] text-[10px] font-sans font-medium"
                       >
                         {value}
                       </text>
@@ -871,7 +1032,7 @@ export default function DashboardOverview({
                 <path
                   d={trendLinePath}
                   fill="none"
-                  stroke="#0ea5e9"
+                  stroke="#0891B2"
                   strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -884,7 +1045,7 @@ export default function DashboardOverview({
                     y1={paddingTop}
                     x2={trendPoints[hoveredIndex].x}
                     y2={chartHeight - paddingBottom}
-                    stroke="#38bdf8"
+                    stroke="#0891B2"
                     strokeWidth="1.5"
                     strokeDasharray="4 4"
                   />
@@ -902,7 +1063,7 @@ export default function DashboardOverview({
                       y={y}
                       textAnchor="middle"
                       className={`text-[10px] font-semibold ${
-                        isCurrentMonth ? 'fill-sky-400 font-bold' : 'fill-slate-400'
+                        isCurrentMonth ? 'fill-[#0891B2] font-bold' : 'fill-[#64748B]'
                       }`}
                     >
                       {data.label}
@@ -921,7 +1082,7 @@ export default function DashboardOverview({
                           cx={p.x}
                           cy={p.y}
                           r="8"
-                          className="fill-sky-500/20 animate-ping"
+                          className="fill-[#0891B2]/20 animate-ping"
                         />
                       )}
                       <circle
@@ -930,10 +1091,10 @@ export default function DashboardOverview({
                         r={isHovered ? "5.5" : "3.5"}
                         className={`stroke-white stroke-[1.5] transition-all duration-150 ${
                           isHovered
-                            ? 'fill-sky-500'
+                            ? 'fill-[#0891B2]'
                             : isCurrentMonth
-                              ? 'fill-sky-400'
-                              : 'fill-slate-500'
+                              ? 'fill-[#0891B2]'
+                              : 'fill-[#64748B]'
                         }`}
                       />
                     </g>
@@ -963,13 +1124,13 @@ export default function DashboardOverview({
         )}
 
         {/* Bar Chart: Booking Activity */}
-        <div className="bg-[#131D35] dashboard-card p-5 rounded-xl border border-slate-800/40 shadow-xs space-y-4 text-slate-100 relative">
+        <div className="bg-white dashboard-card p-5 rounded-2xl border border-[#E5EDF3] shadow-md space-y-4 text-slate-700 relative">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5 flex items-center gap-2">
-              <Calendar size={18} className="text-sky-400" />
+              <Calendar size={18} className="text-[#0891B2]" />
               <div>
-                <h3 className="text-base font-bold text-white">Booking Activity</h3>
-                <p className="text-xs text-slate-400">Weekly booking volume</p>
+                <h3 className="text-base font-bold text-[#0F172A]">Booking Activity</h3>
+                <p className="text-xs text-[#64748B]">Weekly booking volume</p>
               </div>
             </div>
             
@@ -977,16 +1138,16 @@ export default function DashboardOverview({
             <div className="relative">
               <button
                 onClick={() => setShowBookingDropdown(!showBookingDropdown)}
-                className="flex items-center gap-1.5 text-[10px] font-bold text-slate-200 bg-slate-900/80 border border-slate-700/60 rounded-lg px-2.5 py-1.5 cursor-pointer hover:bg-slate-800 hover:border-slate-600 transition-all"
+                className="flex items-center gap-1.5 text-[10px] font-bold text-[#334155] bg-white border border-[#CBD5E1] rounded-lg px-2.5 py-1.5 cursor-pointer hover:bg-[#F4F8FB] hover:border-[#94A3B8] transition-all"
               >
                 <span>{bookingRangeLabels[bookingRange]}</span>
-                <ChevronDown size={12} className={`text-slate-400 transition-transform duration-200 ${showBookingDropdown ? 'rotate-180' : ''}`} />
+                <ChevronDown size={12} className="text-[#64748B] transition-transform duration-200" style={{ transform: showBookingDropdown ? 'rotate(180deg)' : 'none' }} />
               </button>
               
               {showBookingDropdown && (
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setShowBookingDropdown(false)} />
-                  <div className="absolute right-0 mt-1.5 w-36 bg-slate-900 border border-slate-700 rounded-lg shadow-xl z-40 py-1 origin-top-right animate-scale-up-corner">
+                  <div className="absolute right-0 mt-1.5 w-36 bg-white border border-[#E5EDF3] rounded-lg shadow-lg z-40 py-1 origin-top-right animate-scale-up-corner">
                     {(['7d', '30d', '90d'] as const).map((opt) => (
                       <button
                         key={opt}
@@ -996,12 +1157,12 @@ export default function DashboardOverview({
                         }}
                         className={`w-full text-left px-3 py-2 text-[10px] font-semibold transition-colors flex items-center justify-between ${
                           bookingRange === opt
-                            ? 'bg-sky-500/10 text-sky-400'
-                            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                            ? 'bg-[#ECFEFF] text-[#0891B2]'
+                            : 'text-[#334155] hover:bg-[#F4F8FB] hover:text-[#0F172A]'
                         }`}
                       >
                         <span>{bookingRangeLabels[opt]}</span>
-                        {bookingRange === opt && <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />}
+                        {bookingRange === opt && <span className="h-1.5 w-1.5 rounded-full bg-[#0891B2]" />}
                       </button>
                     ))}
                   </div>
@@ -1018,11 +1179,11 @@ export default function DashboardOverview({
                   left: `${((30 + hoveredBarIndex * (255 / bookingActivityData.length) + (255 / bookingActivityData.length) / 2) / 300) * 100}%`,
                   top: `${((180 - 25 - (bookingActivityData[hoveredBarIndex].count / maxBookingCount) * 135 - 12) / 180) * 100}%`,
                 }}
-                className="absolute -translate-x-1/2 -translate-y-full bg-slate-900/95 border border-slate-700/80 text-white rounded-lg p-2 shadow-xl z-20 whitespace-nowrap pointer-events-none transition-all duration-150 text-[10px]"
+                className="absolute -translate-x-1/2 -translate-y-full bg-white border border-[#E5EDF3] text-[#334155] rounded-xl p-2.5 shadow-xl z-20 whitespace-nowrap pointer-events-none transition-all duration-150 text-xs"
               >
-                <span className="font-extrabold text-sky-400 font-mono">{bookingActivityData[hoveredBarIndex].count} Bookings</span>
-                <span className="block text-[8px] text-slate-400">{bookingActivityData[hoveredBarIndex].label} slot activity</span>
-                <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                <span className="font-extrabold text-[#0891B2] font-sans tabular-nums">{bookingActivityData[hoveredBarIndex].count} Bookings</span>
+                <span className="block text-[8px] text-[#64748B]">{bookingActivityData[hoveredBarIndex].label} slot activity</span>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-white"></div>
               </div>
             )}
 
@@ -1114,148 +1275,231 @@ export default function DashboardOverview({
       {/* Real-time Detail Bay Monitor & Today's Agenda replaced with Booking Status Breakdown and Quick Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6" id="dashboard-active-agenda-row">
         {/* Booking Status Breakdown */}
-        <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs lg:col-span-3 space-y-4 text-slate-100 flex flex-col justify-between">
+        <div className="bg-white p-5 rounded-2xl border border-[#E5EDF3] shadow-md lg:col-span-3 space-y-4 text-slate-700 flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <Briefcase size={18} className="text-[#10b981]" />
+            <h3 className="text-base font-bold text-[#0F172A] flex items-center gap-2">
+              <Briefcase size={18} className="text-[#0891B2]" />
               Booking Status Breakdown
             </h3>
           </div>
 
-          <div className="flex flex-col items-center justify-center flex-1 py-4 space-y-4">
-            <span className="text-sm font-bold text-[#38bdf8] transition-all">Scheduled: {scheduledPercent}%</span>
-            
+          <div className="flex flex-col items-center justify-center flex-1 py-4 space-y-5">
+            {/* Donut Chart with total count in the center */}
             <div className="relative w-44 h-44 flex items-center justify-center">
               <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                {/* Scheduled slice (light blue) */}
+                {/* Base circle background */}
                 <circle
                   cx="50"
                   cy="50"
-                  r="25"
+                  r="30"
                   fill="transparent"
-                  stroke="#38bdf8"
-                  strokeWidth="50"
-                  strokeDasharray={`${scheduledStroke} ${circumference}`}
-                  strokeDashoffset="0"
-                  className="transition-all duration-500"
+                  stroke="#F4F8FB"
+                  strokeWidth="12"
                 />
                 {/* Completed slice (green) */}
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="25"
-                  fill="transparent"
-                  stroke="#10b981"
-                  strokeWidth="50"
-                  strokeDasharray={`${completedStroke} ${circumference}`}
-                  strokeDashoffset={-scheduledStroke}
-                  className="transition-all duration-500"
-                />
+                {pctCompleted > 0 && (
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="30"
+                    fill="transparent"
+                    stroke="#16A34A"
+                    strokeWidth="12"
+                    strokeDasharray={`${strokeCompleted} ${donutCircumference}`}
+                    strokeDashoffset={-offsetCompleted}
+                    className="transition-all duration-500"
+                  />
+                )}
+                {/* Scheduled slice (aqua) */}
+                {pctScheduled > 0 && (
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="30"
+                    fill="transparent"
+                    stroke="#0891B2"
+                    strokeWidth="12"
+                    strokeDasharray={`${strokeScheduled} ${donutCircumference}`}
+                    strokeDashoffset={-offsetScheduled}
+                    className="transition-all duration-500"
+                  />
+                )}
+                {/* Pending slice (yellow) */}
+                {pctPending > 0 && (
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="30"
+                    fill="transparent"
+                    stroke="#FACC15"
+                    strokeWidth="12"
+                    strokeDasharray={`${strokePending} ${donutCircumference}`}
+                    strokeDashoffset={-offsetPending}
+                    className="transition-all duration-500"
+                  />
+                )}
+                {/* Cancelled slice (red) */}
+                {pctCancelled > 0 && (
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="30"
+                    fill="transparent"
+                    stroke="#EF4444"
+                    strokeWidth="12"
+                    strokeDasharray={`${strokeCancelled} ${donutCircumference}`}
+                    strokeDashoffset={-offsetCancelled}
+                    className="transition-all duration-500"
+                  />
+                )}
               </svg>
+
+              {/* Total bookings count in center */}
+              <div className="absolute flex flex-col items-center justify-center">
+                <span className="text-3xl font-extrabold text-[#0F172A] font-sans tabular-nums leading-none">
+                  {appointments.length || '0'}
+                </span>
+                <span className="text-[10px] text-[#64748B] font-bold uppercase tracking-wider mt-0.5">
+                  Bookings
+                </span>
+              </div>
             </div>
 
-            <span className="text-sm font-bold text-[#10b981] transition-all">Completed: {completedPercent}%</span>
+            {/* Legend below showing colored dots */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full pt-2 border-t border-[#E5EDF3]/80">
+              <div className="flex items-center gap-2 justify-center">
+                <span className="h-3 w-3 rounded-full bg-[#16A34A] shrink-0" />
+                <div className="text-center sm:text-left">
+                  <span className="text-sm font-semibold block" style={{ color: '#334155' }}>Completed</span>
+                  <span className="text-[10px] text-[#64748B] font-semibold font-sans block tabular-nums">{countCompleted} ({pctCompleted}%)</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 justify-center">
+                <span className="h-3 w-3 rounded-full bg-[#0891B2] shrink-0" />
+                <div className="text-center sm:text-left">
+                  <span className="text-sm font-semibold block" style={{ color: '#334155' }}>Scheduled</span>
+                  <span className="text-[10px] text-[#64748B] font-semibold font-sans block tabular-nums">{countScheduled} ({pctScheduled}%)</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 justify-center">
+                <span className="h-3 w-3 rounded-full bg-[#FACC15] shrink-0" />
+                <div className="text-center sm:text-left">
+                  <span className="text-sm font-semibold block" style={{ color: '#334155' }}>Pending</span>
+                  <span className="text-[10px] text-[#64748B] font-semibold font-sans block tabular-nums">{countPending} ({pctPending}%)</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 justify-center">
+                <span className="h-3 w-3 rounded-full bg-[#EF4444] shrink-0" />
+                <div className="text-center sm:text-left">
+                  <span className="text-sm font-semibold block" style={{ color: '#334155' }}>Cancelled</span>
+                  <span className="text-[10px] text-[#64748B] font-semibold font-sans block tabular-nums">{countCancelled} ({pctCancelled}%)</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Quick Stats */}
         {currentUser?.role === 'employee' ? (
-          <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs lg:col-span-2 space-y-4 text-slate-100 flex flex-col justify-between">
+          <div className="bg-white p-5 rounded-2xl border border-[#E5EDF3] shadow-md lg:col-span-2 space-y-4 text-slate-700 flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Users size={18} className="text-[#f97316]" />
+              <h3 className="text-base font-bold text-[#0F172A] flex items-center gap-2">
+                <Users size={18} className="text-[#0891B2]" />
                 Quick Stats
               </h3>
             </div>
 
-            <div className="space-y-2.5 flex-1 flex flex-col justify-center py-2">
+            <div className="space-y-2 flex-1 flex flex-col justify-center py-2">
               {/* Row 1: Total Bookings */}
-              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
-                <span className="text-slate-300 font-semibold">Total Bookings</span>
-                <span className="font-extrabold text-white font-mono text-sm">{appointments.length}</span>
+              <div className="flex items-center justify-between bg-[#F4F8FB] px-4 py-2.5 rounded-lg border border-[#E5EDF3] text-xs">
+                <span className="font-medium" style={{ color: '#334155' }}>Total Bookings</span>
+                <span className="font-bold font-sans tabular-nums text-sm" style={{ color: '#0F172A' }}>{appointments.length || '0'}</span>
               </div>
 
               {/* Row 2: Total Clients */}
-              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
-                <span className="text-slate-300 font-semibold">Total Clients</span>
-                <span className="font-extrabold text-white font-mono text-sm">{customers.length}</span>
+              <div className="flex items-center justify-between bg-[#F4F8FB] px-4 py-2.5 rounded-lg border border-[#E5EDF3] text-xs">
+                <span className="font-medium" style={{ color: '#334155' }}>Total Clients</span>
+                <span className="font-bold font-sans tabular-nums text-sm" style={{ color: '#0F172A' }}>{customers.length || '0'}</span>
               </div>
 
               {/* Row 3: Active Detailing Jobs */}
-              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
-                <span className="text-slate-300 font-semibold">Active Detailing Jobs</span>
-                <span className="font-extrabold text-sky-400 font-mono text-sm">{activeJobs.length}</span>
+              <div className="flex items-center justify-between bg-[#F4F8FB] px-4 py-2.5 rounded-lg border border-[#E5EDF3] text-xs">
+                <span className="font-medium" style={{ color: '#334155' }}>Active Detailing Jobs</span>
+                <span className="font-bold font-sans tabular-nums text-sm" style={{ color: '#0891B2' }}>{activeJobs.length || '0'}</span>
               </div>
 
               {/* Row 4: Scheduled Upcoming */}
-              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
-                <span className="text-slate-300 font-semibold">Scheduled Upcoming</span>
-                <span className="font-extrabold text-indigo-400 font-mono text-sm">{scheduledJobs.length}</span>
+              <div className="flex items-center justify-between bg-[#F4F8FB] px-4 py-2.5 rounded-lg border border-[#E5EDF3] text-xs">
+                <span className="font-medium" style={{ color: '#334155' }}>Scheduled Upcoming</span>
+                <span className="font-bold font-sans tabular-nums text-sm" style={{ color: '#0891B2' }}>{scheduledJobs.length || '0'}</span>
               </div>
 
               {/* Row 5: Low Stock Items */}
-              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
-                <span className="text-slate-300 font-semibold">Low Stock Alerts</span>
-                <span className="font-extrabold text-amber-400 font-mono text-sm">{lowStockCount}</span>
+              <div className="flex items-center justify-between bg-[#F4F8FB] px-4 py-2.5 rounded-lg border border-[#E5EDF3] text-xs">
+                <span className="font-medium" style={{ color: '#334155' }}>Low Stock Alerts</span>
+                <span className="font-bold font-sans tabular-nums text-sm" style={{ color: lowStockCount > 0 ? '#EF4444' : '#64748B' }}>{lowStockCount || '0'}</span>
               </div>
 
               {/* Row 6: Pending Requests */}
-              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
-                <span className="text-slate-300 font-semibold">New Requests Pending</span>
-                <span className="font-extrabold text-pink-400 font-mono text-sm">{pendingLeadsCount}</span>
+              <div className="flex items-center justify-between bg-[#F4F8FB] px-4 py-2.5 rounded-lg border border-[#E5EDF3] text-xs">
+                <span className="font-medium" style={{ color: '#334155' }}>New Requests Pending</span>
+                <span className="font-bold font-sans tabular-nums text-sm" style={{ color: pendingLeadsCount > 0 ? '#EF4444' : '#64748B' }}>{pendingLeadsCount || '0'}</span>
               </div>
             </div>
           </div>
         ) : (
-          <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs lg:col-span-2 space-y-4 text-slate-100 flex flex-col justify-between">
+          <div className="bg-white p-5 rounded-2xl border border-[#E5EDF3] shadow-md lg:col-span-2 space-y-4 text-slate-700 flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Users size={18} className="text-[#f97316]" />
+              <h3 className="text-base font-bold text-[#0F172A] flex items-center gap-2">
+                <Users size={18} className="text-[#0891B2]" />
                 Quick Stats
               </h3>
             </div>
 
-            <div className="space-y-2.5 flex-1 flex flex-col justify-center py-2">
+            <div className="space-y-2 flex-1 flex flex-col justify-center py-2">
               {/* Row 1: Total Bookings */}
-              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
-                <span className="text-slate-300 font-semibold">Total Bookings</span>
-                <span className="font-extrabold text-white font-mono text-sm">{appointments.length}</span>
+              <div className="flex items-center justify-between bg-[#F4F8FB] px-4 py-2.5 rounded-lg border border-[#E5EDF3] text-xs">
+                <span className="font-medium" style={{ color: '#334155' }}>Total Bookings</span>
+                <span className="font-bold font-sans tabular-nums text-sm" style={{ color: '#0F172A' }}>{appointments.length || '0'}</span>
               </div>
 
               {/* Row 2: Total Clients */}
-              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
-                <span className="text-slate-300 font-semibold">Total Clients</span>
-                <span className="font-extrabold text-white font-mono text-sm">{customers.length}</span>
+              <div className="flex items-center justify-between bg-[#F4F8FB] px-4 py-2.5 rounded-lg border border-[#E5EDF3] text-xs">
+                <span className="font-medium" style={{ color: '#334155' }}>Total Clients</span>
+                <span className="font-bold font-sans tabular-nums text-sm" style={{ color: '#0F172A' }}>{customers.length || '0'}</span>
               </div>
 
               {/* Row 3: Monthly Profit */}
-              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
-                <span className="text-slate-300 font-semibold">Monthly Profit</span>
-                <span className="font-extrabold text-[#10b981] font-mono text-sm">₹{totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <div className="flex items-center justify-between bg-[#F4F8FB] px-4 py-2.5 rounded-lg border border-[#E5EDF3] text-xs">
+                <span className="font-medium" style={{ color: '#334155' }}>Monthly Profit</span>
+                <span className="font-bold font-sans tabular-nums text-sm" style={{ color: '#16A34A' }}>₹{totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
 
               {/* Row 4: Monthly Revenue */}
-              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
-                <span className="text-slate-300 font-semibold">Monthly Revenue</span>
-                <span className="font-extrabold text-[#38bdf8] font-mono text-sm">₹{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <div className="flex items-center justify-between bg-[#F4F8FB] px-4 py-2.5 rounded-lg border border-[#E5EDF3] text-xs">
+                <span className="font-medium" style={{ color: '#334155' }}>Monthly Revenue</span>
+                <span className="font-bold font-sans tabular-nums text-sm" style={{ color: '#0891B2' }}>₹{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
 
               {/* Row 5: Monthly Expenses */}
-              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
-                <span className="text-slate-300 font-semibold">Monthly Expenses</span>
-                <span className="font-extrabold text-rose-500 font-mono text-sm">₹{totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <div className="flex items-center justify-between bg-[#F4F8FB] px-4 py-2.5 rounded-lg border border-[#E5EDF3] text-xs">
+                <span className="font-medium" style={{ color: '#334155' }}>Monthly Expenses</span>
+                <span className="font-bold font-sans tabular-nums text-sm" style={{ color: '#EF4444' }}>₹{totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
 
               {/* Row 6: Profit Margin */}
-              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
-                <span className="text-slate-300 font-semibold">Profit Margin</span>
-                <span className="font-extrabold text-white font-mono text-sm">{(totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0).toFixed(1)}%</span>
+              <div className="flex items-center justify-between bg-[#F4F8FB] px-4 py-2.5 rounded-lg border border-[#E5EDF3] text-xs">
+                <span className="font-medium" style={{ color: '#334155' }}>Profit Margin</span>
+                <span className="font-bold font-sans tabular-nums text-sm" style={{ color: '#16A34A' }}>{(totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0).toFixed(1)}%</span>
               </div>
 
               {/* Row 7: Average Job Value */}
-              <div className="flex items-center justify-between bg-slate-900/40 px-4 py-3 rounded-lg border border-slate-800/10 text-xs">
-                <span className="text-slate-300 font-semibold">Average Job Value</span>
-                <span className="font-extrabold text-white font-mono text-sm">₹{averageJobValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <div className="flex items-center justify-between bg-[#F4F8FB] px-4 py-2.5 rounded-lg border border-[#E5EDF3] text-xs">
+                <span className="font-medium" style={{ color: '#334155' }}>Average Job Value</span>
+                <span className="font-bold font-sans tabular-nums text-sm" style={{ color: '#0F172A' }}>₹{averageJobValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
           </div>
@@ -1264,17 +1508,17 @@ export default function DashboardOverview({
 
       {/* Pending Payments Modal */}
       {showPendingListModal && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-xs flex items-center justify-center z-50 p-4" id="pending-payments-modal">
-          <div className="bg-[#0B1329] border border-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-scale-up-corner">
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center z-50 p-4" id="pending-payments-modal">
+          <div className="bg-white border border-[#E5EDF3] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-scale-up-corner">
             {/* Header */}
-            <div className="p-5 border-b border-slate-800/60 flex items-center justify-between bg-slate-900/40">
+            <div className="p-5 border-b border-[#E5EDF3] flex items-center justify-between bg-[#F4F8FB]">
               <div>
-                <h3 className="text-base font-extrabold text-white flex items-center gap-2">
-                  <CreditCard className="text-rose-400" size={18} />
+                <h3 className="text-base font-extrabold text-[#0F172A] flex items-center gap-2">
+                  <CreditCard className="text-[#EF4444]" size={18} />
                   Pending Client Payments Details
                 </h3>
-                <p className="text-3xs text-slate-400 mt-1">
-                  Showing all clients with remaining unpaid balances. Total Pending: <strong className="text-rose-400 font-mono">₹{pendingPaymentsTotal.toLocaleString()}</strong>
+                <p className="text-3xs text-[#64748B] mt-1">
+                  Showing all clients with remaining unpaid balances. Total Pending: <strong className="text-[#EF4444] font-sans">₹{pendingPaymentsTotal.toLocaleString()}</strong>
                 </p>
               </div>
               <button
@@ -1282,39 +1526,39 @@ export default function DashboardOverview({
                   setShowPendingListModal(false);
                   setEditingAptId(null);
                 }}
-                className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="p-1.5 hover:bg-[#E5EDF3] rounded-lg text-[#64748B] hover:text-[#0F172A] transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
 
             {/* Filter Search */}
-            <div className="p-4 border-b border-slate-800/40 bg-slate-950/20">
+            <div className="p-4 border-b border-[#E5EDF3] bg-[#F4F8FB]/50">
               <div className="relative">
-                <Search size={14} className="absolute left-3 top-3 text-slate-500" />
+                <Search size={14} className="absolute left-3 top-3 text-[#64748B]" />
                 <input
                   type="text"
                   placeholder="Filter by client name, phone or invoice number..."
                   value={pendingSearchTerm}
                   onChange={(e) => setPendingSearchTerm(e.target.value)}
-                  className="w-full text-xs pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-hidden focus:border-indigo-500"
+                  className="w-full text-xs pl-9 pr-4 py-2 bg-white border border-[#CBD5E1] rounded-lg text-[#334155] focus:outline-none focus:border-[#0891B2]"
                 />
               </div>
             </div>
 
             {/* Content Table / List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
               {filteredPendingApts.length === 0 ? (
-                <div className="py-12 text-center text-slate-500">
-                  <CheckCircle size={32} className="mx-auto mb-2 text-emerald-500" />
-                  <p className="text-xs font-bold text-white">No pending payments found!</p>
-                  <p className="text-3xs text-slate-400 mt-1">All filtered client invoices are settled and fully paid.</p>
+                <div className="py-12 text-center text-[#64748B]">
+                  <CheckCircle size={32} className="mx-auto mb-2 text-[#16A34A]" />
+                  <p className="text-xs font-bold text-[#0F172A]">No pending payments found!</p>
+                  <p className="text-3xs text-[#64748B] mt-1">All filtered client invoices are settled and fully paid.</p>
                 </div>
               ) : (
-                <div className="border border-slate-800/60 rounded-xl overflow-hidden bg-[#131D35]">
-                  <table className="w-full text-left border-collapse text-3xs">
+                <div className="border border-[#E5EDF3] rounded-xl overflow-hidden bg-white">
+                  <table className="w-full text-left border-collapse text-3xs bg-white">
                     <thead>
-                      <tr className="border-b border-slate-800 text-slate-400 font-extrabold uppercase bg-slate-950">
+                      <tr className="border-b border-[#E5EDF3] text-[#64748B] font-extrabold uppercase bg-[#F4F8FB]">
                         <th className="py-3 px-4">Client Details</th>
                         <th className="py-3 px-4">Vehicle & Service</th>
                         <th className="py-3 px-4">Job Info</th>
@@ -1322,7 +1566,7 @@ export default function DashboardOverview({
                         <th className="py-3 px-4 text-center">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-800/40 text-slate-300">
+                    <tbody className="divide-y divide-[#E5EDF3] text-[#334155]">
                       {filteredPendingApts.map(apt => {
                         const balance = Math.max(0, apt.price - (apt.paidAmount ?? 0));
                         const isEditing = editingAptId === apt.id;
@@ -1358,32 +1602,32 @@ export default function DashboardOverview({
                         };
 
                         return (
-                          <tr key={apt.id} className="hover:bg-slate-900/30 transition-all">
+                          <tr key={apt.id} className="hover:bg-[#ECFEFF]/50 transition-all">
                             {/* Client details */}
                             <td className="py-3.5 px-4">
-                              <strong className="font-bold text-white block text-xs">{apt.customerName}</strong>
-                              <span className="text-slate-400 block mt-0.5">{apt.customerPhone}</span>
-                              <span className="text-slate-500 block text-4xs font-mono">{apt.customerEmail}</span>
+                              <strong className="font-bold text-[#0F172A] block text-xs">{apt.customerName}</strong>
+                              <span className="text-[#64748B] block mt-0.5">{apt.customerPhone}</span>
+                              <span className="text-[#64748B] block text-4xs font-sans">{apt.customerEmail}</span>
                             </td>
                             {/* Vehicle & service */}
                             <td className="py-3.5 px-4">
-                              <span className="text-slate-200 block font-semibold">{apt.serviceName}</span>
-                              <span className="text-slate-400 block mt-0.5 text-4xs bg-slate-900 border border-slate-800/40 px-1.5 py-0.5 rounded-sm inline-block">
+                              <span className="text-[#0F172A] block font-semibold">{apt.serviceName}</span>
+                              <span className="text-[#0891B2] block mt-0.5 text-4xs bg-[#CFFAFE] border border-[#CFFAFE] px-1.5 py-0.5 rounded-sm inline-block font-sans">
                                 {apt.vehicle.year} {apt.vehicle.make} {apt.vehicle.model} ({apt.vehicle.size.toUpperCase()})
                               </span>
                             </td>
                             {/* Job info */}
                             <td className="py-3.5 px-4">
-                              <span className="text-slate-300 block font-mono">{apt.date}</span>
-                              <span className="text-slate-400 block font-mono mt-0.5">{apt.time}</span>
-                              <span className="text-slate-500 block text-4xs font-mono mt-0.5">{apt.invoiceNumber || 'No Invoice'}</span>
+                              <span className="text-[#334155] block font-sans">{apt.date}</span>
+                              <span className="text-[#64748B] block font-sans mt-0.5">{apt.time}</span>
+                              <span className="text-[#64748B] block text-4xs font-sans mt-0.5">{apt.invoiceNumber || 'No Invoice'}</span>
                             </td>
                             {/* Billing stats */}
-                            <td className="py-3.5 px-4 text-right font-mono">
+                            <td className="py-3.5 px-4 text-right font-sans tabular-nums">
                               <div className="space-y-0.5">
-                                <div>Price: <span className="font-bold text-white">₹{apt.price.toFixed(2)}</span></div>
-                                <div className="text-slate-400">Paid: <span className="text-emerald-400">₹{(apt.paidAmount ?? 0).toFixed(2)}</span></div>
-                                <div className="text-rose-400 font-bold border-t border-slate-800/80 pt-0.5 mt-0.5">
+                                <div>Price: <span className="font-bold text-[#0F172A]">₹{apt.price.toFixed(2)}</span></div>
+                                <div className="text-[#64748B]">Paid: <span className="text-[#16A34A] font-semibold">₹{(apt.paidAmount ?? 0).toFixed(2)}</span></div>
+                                <div className="text-[#EF4444] font-bold border-t border-[#E5EDF3] pt-0.5 mt-0.5">
                                   Pending: <span>₹{balance.toFixed(2)}</span>
                                 </div>
                               </div>
@@ -1392,24 +1636,24 @@ export default function DashboardOverview({
                             <td className="py-3.5 px-4">
                               <div className="flex flex-col items-center gap-1.5">
                                 {isEditing ? (
-                                  <div className="flex items-center gap-1 bg-slate-950 p-1 border border-slate-800 rounded-lg">
+                                  <div className="flex items-center gap-1 bg-[#F4F8FB] p-1 border border-[#CBD5E1] rounded-lg">
                                     <input
                                       type="number"
                                       step="0.01"
                                       placeholder="Amount"
                                       value={newPaidAmount}
                                       onChange={(e) => setNewPaidAmount(e.target.value)}
-                                      className="w-20 bg-transparent text-white border-0 text-center text-xs p-1 focus:outline-hidden"
+                                      className="w-20 bg-transparent text-[#334155] border-0 text-center text-xs p-1 focus:outline-none font-semibold font-sans tabular-nums"
                                     />
                                     <button
                                       onClick={handleSavePayment}
-                                      className="bg-emerald-600 hover:bg-emerald-500 text-white text-4xs px-2 py-1 rounded font-bold cursor-pointer transition-colors"
+                                      className="bg-[#16A34A] hover:bg-[#16A34A]/90 text-white text-4xs px-2 py-1 rounded font-bold cursor-pointer transition-colors"
                                     >
                                       Save
                                     </button>
                                     <button
                                       onClick={() => setEditingAptId(null)}
-                                      className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-4xs px-2 py-1 rounded font-bold cursor-pointer transition-colors"
+                                      className="bg-[#CBD5E1]/50 hover:bg-[#CBD5E1]/80 text-[#334155] text-4xs px-2 py-1 rounded font-bold cursor-pointer transition-colors"
                                     >
                                       Cancel
                                     </button>
@@ -1421,14 +1665,14 @@ export default function DashboardOverview({
                                         setEditingAptId(apt.id);
                                         setNewPaidAmount((apt.paidAmount ?? 0).toString());
                                       }}
-                                      className="px-2 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 text-4xs font-bold rounded cursor-pointer transition-all"
+                                      className="px-2 py-1 bg-[#ECFEFF] hover:bg-[#CFFAFE] text-[#0891B2] border border-[#CFFAFE] text-4xs font-bold rounded cursor-pointer transition-all"
                                       title="Update partial payment"
                                     >
                                       Update Payment
                                     </button>
                                     <button
                                       onClick={handleQuickFullyPaid}
-                                      className="px-2 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-4xs font-bold rounded cursor-pointer transition-all"
+                                      className="px-2 py-1 bg-[#E8F5E9] hover:bg-[#C8E6C9] text-[#16A34A] border border-[#C8E6C9] text-4xs font-bold rounded cursor-pointer transition-all"
                                       title="Mark as fully paid"
                                     >
                                       Mark Paid
@@ -1447,13 +1691,13 @@ export default function DashboardOverview({
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t border-slate-800/60 bg-slate-900/30 flex justify-end">
+            <div className="p-4 border-t border-[#E5EDF3] bg-[#F4F8FB] flex justify-end">
               <button
                 onClick={() => {
                   setShowPendingListModal(false);
                   setEditingAptId(null);
                 }}
-                className="px-4 py-1.5 bg-slate-800 hover:bg-slate-705 text-slate-300 hover:text-white text-xs font-bold rounded-lg border border-slate-700 transition-colors cursor-pointer"
+                className="px-4 py-1.5 bg-[#CBD5E1]/30 hover:bg-[#CBD5E1]/50 text-[#334155] hover:text-[#0F172A] text-xs font-bold rounded-lg border border-[#CBD5E1]/50 transition-colors cursor-pointer"
               >
                 Close details
               </button>
@@ -1464,71 +1708,71 @@ export default function DashboardOverview({
 
       {/* Daily Profit Modal */}
       {showDailyProfitModal && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-xs flex items-center justify-center z-50 p-4" id="daily-profit-modal">
-          <div className="bg-[#0B1329] border border-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-scale-up-corner">
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center z-50 p-4" id="daily-profit-modal">
+          <div className="bg-white border border-[#E5EDF3] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-scale-up-corner">
             {/* Header */}
-            <div className="p-5 border-b border-slate-800/60 flex items-center justify-between bg-slate-900/40">
+            <div className="p-5 border-b border-[#E5EDF3] flex items-center justify-between bg-[#F4F8FB]">
               <div>
-                <h3 className="text-base font-extrabold text-white flex items-center gap-2">
-                  <span className="p-1.5 bg-sky-500/10 text-[#38bdf8] rounded-md font-mono">₹</span>
+                <h3 className="text-base font-extrabold text-[#0F172A] flex items-center gap-2">
+                  <span className="p-1.5 bg-[#ECFEFF] text-[#0891B2] rounded-md font-sans font-bold">₹</span>
                   Daily Profit Breakdown & History
                 </h3>
-                <p className="text-3xs text-slate-400 mt-1">
-                  Today's Date: <span className="font-mono font-bold text-white">{todayStr}</span>
+                <p className="text-3xs text-[#64748B] mt-1">
+                  Today's Date: <span className="font-sans font-bold text-[#0F172A]">{todayStr}</span>
                 </p>
               </div>
               <button
                 onClick={() => setShowDailyProfitModal(false)}
-                className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="p-1.5 hover:bg-[#E5EDF3] rounded-lg text-[#64748B] hover:text-[#0F172A] transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
 
             {/* Profit Summary Banner */}
-            <div className="p-5 bg-slate-950/40 border-b border-slate-800/40 grid grid-cols-3 gap-4 text-center">
-              <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800/30">
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Today's Revenue</span>
-                <strong className="text-lg font-black text-sky-400 font-mono">₹{todayCompletedJobs.reduce((sum, a) => sum + a.price, 0).toFixed(2)}</strong>
+            <div className="p-5 bg-[#F4F8FB]/50 border-b border-[#E5EDF3] grid grid-cols-3 gap-4 text-center">
+              <div className="bg-white p-3 rounded-xl border border-[#E5EDF3] shadow-xs">
+                <span className="text-[10px] text-[#64748B] font-bold uppercase tracking-wider block">Today's Revenue</span>
+                <strong className="text-lg font-black text-[#0891B2] font-sans tabular-nums">₹{todayCompletedJobs.reduce((sum, a) => sum + a.price, 0).toFixed(2)}</strong>
               </div>
-              <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800/30">
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Today's Expenses</span>
-                <strong className="text-lg font-black text-rose-400 font-mono">₹{expenses ? expenses.filter(e => e.date === todayStr).reduce((sum, e) => sum + e.amount, 0).toFixed(2) : '0.00'}</strong>
+              <div className="bg-white p-3 rounded-xl border border-[#E5EDF3] shadow-xs">
+                <span className="text-[10px] text-[#64748B] font-bold uppercase tracking-wider block">Today's Expenses</span>
+                <strong className="text-lg font-black text-[#EF4444] font-sans tabular-nums">₹{expenses ? expenses.filter(e => e.date === todayStr).reduce((sum, e) => sum + e.amount, 0).toFixed(2) : '0.00'}</strong>
               </div>
-              <div className="bg-slate-900/80 p-3 rounded-xl border border-sky-500/20 shadow-lg shadow-sky-500/5">
-                <span className="text-[10px] text-sky-300 font-bold uppercase tracking-wider block">Net Daily Profit</span>
-                <strong className="text-xl font-black text-[#38bdf8] font-mono">₹{dailyProfit.toFixed(2)}</strong>
+              <div className="bg-white p-3 rounded-xl border border-[#0891B2]/20 shadow-md">
+                <span className="text-[10px] text-[#0891B2] font-bold uppercase tracking-wider block">Net Daily Profit</span>
+                <strong className="text-xl font-black text-[#16A34A] font-sans tabular-nums">₹{dailyProfit.toFixed(2)}</strong>
               </div>
             </div>
 
             {/* Split Content Lists */}
-            <div className="flex-1 overflow-y-auto p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex-1 overflow-y-auto p-5 grid grid-cols-1 md:grid-cols-2 gap-6 bg-white">
               {/* Left Column: Earnings (Revenue) */}
-              <div className="space-y-3 font-semibold text-xs">
-                <h4 className="text-xs font-extrabold text-white uppercase tracking-wider flex items-center justify-between border-b border-slate-850 pb-2">
+              <div className="space-y-3 font-semibold text-xs text-[#334155]">
+                <h4 className="text-xs font-extrabold text-[#0F172A] uppercase tracking-wider flex items-center justify-between border-b border-[#E5EDF3] pb-2">
                   <span>Revenue: Detailing Jobs Completed</span>
-                  <span className="bg-sky-500/10 text-sky-400 px-2 py-0.5 rounded text-[10px] font-bold">{todayCompletedJobs.length} Wash</span>
+                  <span className="bg-[#ECFEFF] text-[#0891B2] px-2 py-0.5 rounded text-[10px] font-bold">{todayCompletedJobs.length} Wash</span>
                 </h4>
 
                 <div className="space-y-2.5 max-h-[45vh] overflow-y-auto pr-1">
                   {todayCompletedJobs.length === 0 ? (
-                    <div className="py-12 text-center text-slate-500 bg-slate-900/20 rounded-xl border border-dashed border-slate-800/40">
-                      <p className="text-xs font-semibold text-slate-400">No washes completed yet today</p>
-                      <p className="text-[10px] text-slate-500 mt-0.5">Mark scheduled washes as "Completed" in Bookings.</p>
+                    <div className="py-12 text-center text-[#64748B] bg-[#F4F8FB]/50 rounded-xl border border-dashed border-[#E5EDF3]">
+                      <p className="text-xs font-semibold text-[#64748B]">No washes completed yet today</p>
+                      <p className="text-[10px] text-[#94A3B8] mt-0.5">Mark scheduled washes as "Completed" in Bookings.</p>
                     </div>
                   ) : (
                     todayCompletedJobs.map(apt => (
-                      <div key={apt.id} className="p-3 bg-slate-900/40 hover:bg-slate-900/60 transition-colors border border-slate-800/40 rounded-xl space-y-1 text-left">
+                      <div key={apt.id} className="p-3 bg-[#F4F8FB] hover:bg-[#ECFEFF]/40 transition-colors border border-[#E5EDF3] rounded-xl space-y-1 text-left">
                         <div className="flex justify-between items-start">
                           <div>
-                            <strong className="font-bold text-white text-xs block">{apt.customerName}</strong>
-                            <span className="text-[11px] text-indigo-400 font-medium block">{apt.serviceName}</span>
+                            <strong className="font-bold text-[#0F172A] text-xs block">{apt.customerName}</strong>
+                            <span className="text-[11px] text-[#0891B2] font-medium block">{apt.serviceName}</span>
                           </div>
-                          <span className="font-mono text-[#38bdf8] font-black text-xs">+₹{apt.price}</span>
+                          <span className="font-sans font-bold text-[#16A34A] text-xs">+₹{apt.price}</span>
                         </div>
-                        <div className="flex justify-between items-center text-[10px] text-slate-400 border-t border-slate-800/30 pt-1 mt-1 font-mono">
+                        <div className="flex justify-between items-center text-[10px] text-[#64748B] border-t border-[#E5EDF3] pt-1 mt-1 font-sans">
                           <span>{apt.time} • {apt.vehicle?.make}</span>
-                          <span className="text-emerald-400 font-bold uppercase text-[9px]">{apt.paymentStatus}</span>
+                          <span className="text-[#16A34A] font-bold uppercase text-[9px]">{apt.paymentStatus}</span>
                         </div>
                       </div>
                     ))
@@ -1538,33 +1782,33 @@ export default function DashboardOverview({
 
               {/* Right Column: Expenditures (Expenses) */}
               <div className="space-y-3">
-                <h4 className="text-xs font-extrabold text-white uppercase tracking-wider flex items-center justify-between border-b border-slate-850 pb-2">
+                <h4 className="text-xs font-extrabold text-[#0F172A] uppercase tracking-wider flex items-center justify-between border-b border-[#E5EDF3] pb-2">
                   <span>Expenses: Today's Shop Costs</span>
-                  <span className="bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded text-[10px] font-bold">{expenses ? expenses.filter(e => e.date === todayStr).length : 0} Logged</span>
+                  <span className="bg-rose-50 text-[#EF4444] px-2 py-0.5 rounded text-[10px] font-bold">{expenses ? expenses.filter(e => e.date === todayStr).length : 0} Logged</span>
                 </h4>
 
                 <div className="space-y-2.5 max-h-[45vh] overflow-y-auto pr-1">
                   {!expenses || expenses.filter(e => e.date === todayStr).length === 0 ? (
-                    <div className="py-12 text-center text-slate-500 bg-slate-900/20 rounded-xl border border-dashed border-slate-800/40">
-                      <p className="text-xs font-semibold text-slate-400">No expenses logged today</p>
-                      <p className="text-[10px] text-slate-500 mt-0.5">Use the "Quick Expense Tracker" to log overhead costs.</p>
+                    <div className="py-12 text-center text-[#64748B] bg-[#F4F8FB]/50 rounded-xl border border-dashed border-[#E5EDF3]">
+                      <p className="text-xs font-semibold text-[#64748B]">No expenses logged today</p>
+                      <p className="text-[10px] text-[#94A3B8] mt-0.5">Use the "Quick Expense Tracker" to log overhead costs.</p>
                     </div>
                   ) : (
                     expenses.filter(e => e.date === todayStr).map((e: any) => (
-                      <div key={e.id} className="p-3 bg-slate-900/40 hover:bg-slate-900/60 transition-colors border border-slate-800/40 rounded-xl space-y-1 text-left">
+                      <div key={e.id} className="p-3 bg-[#F4F8FB] hover:bg-[#ECFEFF]/40 transition-colors border border-[#E5EDF3] rounded-xl space-y-1 text-left">
                         <div className="flex justify-between items-start">
                           <div>
-                            <strong className="font-bold text-white text-xs block">{e.name || e.title}</strong>
+                            <strong className="font-bold text-[#0F172A] text-xs block">{e.name || e.title}</strong>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-rose-400 font-black text-xs">-₹{e.amount}</span>
+                            <span className="font-sans font-bold text-[#EF4444] text-xs">-₹{e.amount}</span>
                             <button
                               onClick={() => {
                                 if (onUpdateExpenses) {
                                   onUpdateExpenses(expenses.filter(item => item.id !== e.id));
                                 }
                               }}
-                              className="p-1 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded transition-colors cursor-pointer flex items-center justify-center"
+                              className="p-1 text-[#64748B] hover:text-[#EF4444] hover:bg-rose-50 rounded transition-colors cursor-pointer flex items-center justify-center"
                               title="Delete Expense"
                             >
                               <X size={12} />
@@ -1572,7 +1816,7 @@ export default function DashboardOverview({
                           </div>
                         </div>
                         {e.notes && (
-                          <p className="text-[10px] text-slate-400 border-t border-slate-800/30 pt-1 mt-1 italic">
+                          <p className="text-[10px] text-[#64748B] border-t border-[#E5EDF3] pt-1 mt-1 italic">
                             "{e.notes}"
                           </p>
                         )}
@@ -1584,10 +1828,10 @@ export default function DashboardOverview({
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t border-slate-800/60 bg-slate-900/30 flex justify-end">
+            <div className="p-4 border-t border-[#E5EDF3] bg-[#F4F8FB] flex justify-end">
               <button
                 onClick={() => setShowDailyProfitModal(false)}
-                className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold rounded-lg border border-slate-700 transition-colors cursor-pointer"
+                className="px-4 py-1.5 bg-[#CBD5E1]/30 hover:bg-[#CBD5E1]/50 text-[#334155] hover:text-[#0F172A] text-xs font-bold rounded-lg border border-[#CBD5E1]/50 transition-colors cursor-pointer"
               >
                 Close details
               </button>
@@ -1598,70 +1842,70 @@ export default function DashboardOverview({
 
       {/* Total Profit Modal */}
       {showTotalProfitModal && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-xs flex items-center justify-center z-50 p-4" id="total-profit-modal">
-          <div className="bg-[#0B1329] border border-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-scale-up-corner">
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center z-50 p-4" id="total-profit-modal">
+          <div className="bg-white border border-[#E5EDF3] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-scale-up-corner">
             {/* Header */}
-            <div className="p-5 border-b border-slate-800/60 flex items-center justify-between bg-slate-900/40">
+            <div className="p-5 border-b border-[#E5EDF3] flex items-center justify-between bg-[#F4F8FB]">
               <div>
-                <h3 className="text-base font-extrabold text-white flex items-center gap-2">
-                  <span className="p-1.5 bg-emerald-500/10 text-emerald-400 rounded-md font-mono">₹</span>
+                <h3 className="text-base font-extrabold text-[#0F172A] flex items-center gap-2">
+                  <span className="p-1.5 bg-[#E8F5E9] text-[#16A34A] rounded-md font-sans font-bold">₹</span>
                   Total Profit Breakdown & History
                 </h3>
-                <p className="text-3xs text-slate-400 mt-1">
+                <p className="text-3xs text-[#64748B] mt-1">
                   Showing lifetime statistics of revenue and expenditures.
                 </p>
               </div>
               <button
                 onClick={() => setShowTotalProfitModal(false)}
-                className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="p-1.5 hover:bg-[#E5EDF3] rounded-lg text-[#64748B] hover:text-[#0F172A] transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
 
             {/* Profit Summary Banner */}
-            <div className="p-5 bg-slate-950/40 border-b border-slate-800/40 grid grid-cols-3 gap-4 text-center">
-              <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800/30">
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Total Revenue</span>
-                <strong className="text-lg font-black text-sky-400 font-mono">₹{totalRevenue.toFixed(2)}</strong>
+            <div className="p-5 bg-[#F4F8FB]/50 border-b border-[#E5EDF3] grid grid-cols-3 gap-4 text-center">
+              <div className="bg-white p-3 rounded-xl border border-[#E5EDF3] shadow-xs">
+                <span className="text-[10px] text-[#64748B] font-bold uppercase tracking-wider block">Total Revenue</span>
+                <strong className="text-lg font-black text-[#0891B2] font-sans tabular-nums">₹{totalRevenue.toFixed(2)}</strong>
               </div>
-              <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800/30">
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Total Expenses</span>
-                <strong className="text-lg font-black text-rose-400 font-mono">₹{totalExpenses.toFixed(2)}</strong>
+              <div className="bg-white p-3 rounded-xl border border-[#E5EDF3] shadow-xs">
+                <span className="text-[10px] text-[#64748B] font-bold uppercase tracking-wider block">Total Expenses</span>
+                <strong className="text-lg font-black text-[#EF4444] font-sans tabular-nums">₹{totalExpenses.toFixed(2)}</strong>
               </div>
-              <div className="bg-slate-900/80 p-3 rounded-xl border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
-                <span className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider block">Net Total Profit</span>
-                <strong className="text-xl font-black text-emerald-400 font-mono">₹{totalProfit.toFixed(2)}</strong>
+              <div className="bg-white p-3 rounded-xl border border-[#16A34A]/20 shadow-md">
+                <span className="text-[10px] text-[#16A34A] font-bold uppercase tracking-wider block">Net Total Profit</span>
+                <strong className="text-xl font-black text-[#16A34A] font-sans tabular-nums">₹{totalProfit.toFixed(2)}</strong>
               </div>
             </div>
 
             {/* Split Content Lists */}
-            <div className="flex-1 overflow-y-auto p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex-1 overflow-y-auto p-5 grid grid-cols-1 md:grid-cols-2 gap-6 bg-white">
               {/* Left Column: Earnings (Revenue) */}
               <div className="space-y-3">
-                <h4 className="text-xs font-extrabold text-white uppercase tracking-wider flex items-center justify-between border-b border-slate-850 pb-2">
+                <h4 className="text-xs font-extrabold text-[#0F172A] uppercase tracking-wider flex items-center justify-between border-b border-[#E5EDF3] pb-2">
                   <span>Completed Detailing Jobs</span>
-                  <span className="bg-sky-500/10 text-sky-400 px-2 py-0.5 rounded text-[10px] font-bold">{completedJobs.length} Completed</span>
+                  <span className="bg-[#ECFEFF] text-[#0891B2] px-2 py-0.5 rounded text-[10px] font-bold">{completedJobs.length} Completed</span>
                 </h4>
 
                 <div className="space-y-2.5 max-h-[45vh] overflow-y-auto pr-1">
                   {completedJobs.length === 0 ? (
-                    <div className="py-12 text-center text-slate-500 bg-slate-900/20 rounded-xl border border-dashed border-slate-800/40">
-                      <p className="text-xs font-semibold text-slate-400">No completed washes in database</p>
+                    <div className="py-12 text-center text-[#64748B] bg-[#F4F8FB]/50 rounded-xl border border-dashed border-[#E5EDF3]">
+                      <p className="text-xs font-semibold text-[#64748B]">No completed washes in database</p>
                     </div>
                   ) : (
                     completedJobs.map(apt => (
-                      <div key={apt.id} className="p-3 bg-slate-900/40 hover:bg-slate-900/60 transition-colors border border-slate-800/40 rounded-xl space-y-1 text-left">
+                      <div key={apt.id} className="p-3 bg-[#F4F8FB] hover:bg-[#ECFEFF]/40 transition-colors border border-[#E5EDF3] rounded-xl space-y-1 text-left">
                         <div className="flex justify-between items-start">
                           <div>
-                            <strong className="font-bold text-white text-xs block">{apt.customerName}</strong>
-                            <span className="text-[11px] text-indigo-400 font-medium block">{apt.serviceName}</span>
+                            <strong className="font-bold text-[#0F172A] text-xs block">{apt.customerName}</strong>
+                            <span className="text-[11px] text-[#0891B2] font-medium block">{apt.serviceName}</span>
                           </div>
-                          <span className="font-mono text-sky-400 font-black text-xs">+₹{apt.price}</span>
+                          <span className="font-sans font-bold text-[#16A34A] text-xs">+₹{apt.price}</span>
                         </div>
-                        <div className="flex justify-between items-center text-[10px] text-slate-400 border-t border-slate-800/30 pt-1 mt-1 font-mono">
+                        <div className="flex justify-between items-center text-[10px] text-[#64748B] border-t border-[#E5EDF3] pt-1 mt-1 font-sans">
                           <span>{apt.date} • {apt.time}</span>
-                          <span className="text-emerald-400 font-bold uppercase text-[9px]">{apt.paymentStatus}</span>
+                          <span className="text-[#16A34A] font-bold uppercase text-[9px]">{apt.paymentStatus}</span>
                         </div>
                       </div>
                     ))
@@ -1671,41 +1915,41 @@ export default function DashboardOverview({
 
               {/* Right Column: Expenditures (Expenses) */}
               <div className="space-y-3">
-                <h4 className="text-xs font-extrabold text-white uppercase tracking-wider flex items-center justify-between border-b border-slate-850 pb-2">
+                <h4 className="text-xs font-extrabold text-[#0F172A] uppercase tracking-wider flex items-center justify-between border-b border-[#E5EDF3] pb-2">
                   <span>All Logged Business Expenses</span>
-                  <span className="bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded text-[10px] font-bold">{expenses ? expenses.length : 0} Logged</span>
+                  <span className="bg-rose-50 text-[#EF4444] px-2 py-0.5 rounded text-[10px] font-bold">{expenses ? expenses.length : 0} Logged</span>
                 </h4>
 
                 <div className="space-y-2.5 max-h-[45vh] overflow-y-auto pr-1">
                   {!expenses || expenses.length === 0 ? (
-                    <div className="py-12 text-center text-slate-500 bg-slate-900/20 rounded-xl border border-dashed border-slate-800/40">
-                      <p className="text-xs font-semibold text-slate-400">No historical expenses found</p>
+                    <div className="py-12 text-center text-[#64748B] bg-[#F4F8FB]/50 rounded-xl border border-dashed border-[#E5EDF3]">
+                      <p className="text-xs font-semibold text-[#64748B]">No historical expenses found</p>
                     </div>
                   ) : (
                     expenses.map((e: any) => (
-                      <div key={e.id} className="p-3 bg-slate-900/40 hover:bg-slate-900/60 transition-colors border border-slate-800/40 rounded-xl space-y-1 text-left">
+                      <div key={e.id} className="p-3 bg-[#F4F8FB] hover:bg-[#ECFEFF]/40 transition-colors border border-[#E5EDF3] rounded-xl space-y-1 text-left">
                         <div className="flex justify-between items-start">
                           <div>
-                            <strong className="font-bold text-white text-xs block">{e.name || e.title}</strong>
+                            <strong className="font-bold text-[#0F172A] text-xs block">{e.name || e.title}</strong>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-rose-400 font-black text-xs">-₹{e.amount}</span>
+                            <span className="font-sans font-bold text-[#EF4444] text-xs">-₹{e.amount}</span>
                             <button
                               onClick={() => {
                                 if (onUpdateExpenses) {
                                   onUpdateExpenses(expenses.filter(item => item.id !== e.id));
                                 }
                               }}
-                              className="p-1 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded transition-colors cursor-pointer flex items-center justify-center"
+                              className="p-1 text-[#64748B] hover:text-[#EF4444] hover:bg-rose-50 rounded transition-colors cursor-pointer flex items-center justify-center"
                               title="Delete Expense"
                             >
                               <X size={12} />
                             </button>
                           </div>
                         </div>
-                        <div className="flex justify-between items-center text-[10px] text-slate-400 border-t border-slate-800/30 pt-1 mt-1 font-mono">
+                        <div className="flex justify-between items-center text-[10px] text-[#64748B] border-t border-[#E5EDF3] pt-1 mt-1 font-sans">
                           <span>{e.date}</span>
-                          {e.vendor && <span className="text-slate-400 truncate max-w-[120px]">Vendor: {e.vendor}</span>}
+                          {e.vendor && <span className="text-[#64748B] truncate max-w-[120px]">Vendor: {e.vendor}</span>}
                         </div>
                       </div>
                     ))
@@ -1715,10 +1959,10 @@ export default function DashboardOverview({
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t border-slate-800/60 bg-slate-900/30 flex justify-end">
+            <div className="p-4 border-t border-[#E5EDF3] bg-[#F4F8FB] flex justify-end">
               <button
                 onClick={() => setShowTotalProfitModal(false)}
-                className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold rounded-lg border border-slate-700 transition-colors cursor-pointer"
+                className="px-4 py-1.5 bg-[#CBD5E1]/30 hover:bg-[#CBD5E1]/50 text-[#334155] hover:text-[#0F172A] text-xs font-bold rounded-lg border border-[#CBD5E1]/50 transition-colors cursor-pointer"
               >
                 Close details
               </button>

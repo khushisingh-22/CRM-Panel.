@@ -27,7 +27,8 @@ import {
   Upload,
   MessageSquare,
   Send,
-  ExternalLink
+  ExternalLink,
+  Phone
 } from 'lucide-react';
 import { Appointment, Customer, ServicePackage, Staff, ShopSettings } from '../types/crm';
 import { sendWhatsAppMessage } from '../utils/whatsapp';
@@ -561,18 +562,18 @@ export default function BookingsManager({
     <div className="space-y-6 animate-fade-in" id="bookings-management-panel">
       
       {/* Header section matches screen layout perfectly */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl border border-[#E5EDF3]">
         <div className="flex items-center gap-3">
           <button
             onClick={() => onNavigate('dashboard')}
-            className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 hover:bg-[#ECFEFF] text-[#0891B2] hover:text-[#0E7490] rounded-xl transition-colors cursor-pointer border border-[#E5EDF3] bg-white shadow-2xs"
             title="Back to Dashboard"
           >
             &larr; Back
           </button>
           <div>
-            <h1 className="text-xl font-extrabold text-white tracking-tight md:text-2xl">Bookings</h1>
-            <p className="text-xs text-slate-400">View and update vehicle detailing service status</p>
+            <h1 className="text-xl font-extrabold text-[#0F172A] tracking-tight md:text-2xl">Bookings</h1>
+            <p className="text-xs text-[#64748B]">View and update vehicle detailing service status</p>
           </div>
         </div>
 
@@ -580,16 +581,16 @@ export default function BookingsManager({
           {/* Analytics shortcut */}
           <button
             onClick={() => onNavigate('dashboard')}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-bold rounded-lg border border-slate-800/80 flex items-center gap-1.5 transition-all cursor-pointer"
+            className="px-4 py-2.5 bg-white hover:bg-[#ECFEFF] text-[#0891B2] text-xs font-bold rounded-xl border border-[#0891B2] flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
           >
-            <TrendingUp size={14} className="text-cyan-400" />
+            <TrendingUp size={14} className="text-[#0891B2]" />
             <span>Analytics</span>
           </button>
 
           {/* New Booking Button */}
           <button
             onClick={() => setShowNewModal(true)}
-            className="px-4 py-2 bg-[#0ea5e9] hover:bg-[#38bdf8] text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
+            className="px-4 py-2.5 bg-gradient-to-r from-[#0891B2] to-[#06B6D4] hover:from-[#0E7490] hover:to-[#0891B2] text-white text-xs font-bold rounded-xl shadow-md flex items-center gap-1.5 transition-all cursor-pointer"
           >
             <Plus size={16} />
             <span>New Booking</span>
@@ -598,24 +599,24 @@ export default function BookingsManager({
       </div>
 
       {/* Filters row with Search and Dropdown Statuses */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-900/60 p-4 rounded-xl border border-slate-800 shadow-xs">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-white p-4 rounded-2xl border border-[#E5EDF3] shadow-xs">
         <div className="relative md:col-span-2">
-          <Search size={16} className="absolute left-3 top-3 text-slate-400" />
+          <Search size={16} className="absolute left-3 top-3 text-[#94A3B8]" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by client, vehicle, or service..."
-            className="w-full text-xs pl-9 pr-4 py-2.5 rounded-lg border border-slate-700/50 bg-slate-950 text-white focus:bg-slate-900 focus:outline-hidden"
+            className="w-full text-xs pl-9 pr-4 py-2.5 rounded-lg border border-[#CBD5E1] bg-white text-[#1E293B] placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
           />
         </div>
 
         <div className="relative">
-          <Filter size={14} className="absolute left-3 top-3 text-slate-400" />
+          <Filter size={14} className="absolute left-3 top-3.5 text-[#94A3B8]" />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full text-xs pl-9 pr-8 py-2.5 rounded-lg border border-slate-700/50 bg-slate-950 text-white focus:bg-slate-900 focus:outline-hidden appearance-none cursor-pointer font-semibold"
+            className="w-full text-xs pl-9 pr-8 py-2.5 rounded-lg border border-[#CBD5E1] bg-white text-[#1E293B] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none appearance-none cursor-pointer font-bold"
           >
             <option value="all">All Statuses</option>
             <option value="scheduled">Scheduled</option>
@@ -625,61 +626,60 @@ export default function BookingsManager({
             <option value="completed">Completed</option>
             <option value="cancelled">Cancelled</option>
           </select>
-          <ChevronDown size={14} className="absolute right-3 top-3.5 text-slate-400 pointer-events-none" />
+          <ChevronDown size={14} className="absolute right-3 top-3.5 text-[#64748B] pointer-events-none" />
         </div>
       </div>
 
       {/* Grid of lists & details */}
       {filteredApts.length === 0 ? (
-        <div className="h-64 bg-[#131D35] border border-slate-800/40 rounded-xl flex flex-col items-center justify-center text-center p-6">
-          <Calendar className="text-slate-600 mb-2" size={40} />
-          <p className="text-sm font-semibold text-slate-400">No bookings match search or filters</p>
-          <p className="text-xs text-slate-500 mt-1">Book a new appointment to see it here.</p>
+        <div className="h-64 bg-white border border-[#E5EDF3] rounded-2xl flex flex-col items-center justify-center text-center p-6 shadow-md animate-fade-in">
+          <Calendar className="text-[#CBD5E1] mb-2" size={40} />
+          <p className="text-sm font-semibold text-[#475569]">No bookings match search or filters</p>
+          <p className="text-xs text-[#64748B] mt-1">Book a new appointment to see it here.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredApts.map((apt) => {
-            let borderClass = "border-slate-800";
-            let badgeClass = "bg-sky-500/10 text-sky-400 border border-sky-500/15";
-            let glowClass = "";
+            let leftBorderColor = "border-l-[#0891B2]"; // default aqua for Scheduled
+            let badgeClass = "bg-cyan-50 text-[#0E7490] border border-cyan-200";
 
             if (apt.status === 'completed') {
-              borderClass = "border-emerald-500/80";
-              badgeClass = "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25";
-              glowClass = "shadow-lg shadow-emerald-500/5";
-            } else if (apt.status === 'in_progress') {
-              borderClass = "border-indigo-500";
-              badgeClass = "bg-indigo-550/20 text-indigo-300 border border-indigo-500/25";
-              glowClass = "shadow-lg shadow-indigo-500/5";
+              leftBorderColor = "border-l-[#16A34A]";
+              badgeClass = "bg-emerald-50 text-[#16A34A] border border-emerald-200";
             } else if (apt.status === 'cancelled') {
-              borderClass = "border-rose-500/60";
-              badgeClass = "bg-rose-500/15 text-rose-400 border border-rose-500/25";
-              glowClass = "shadow-lg shadow-rose-500/5";
+              leftBorderColor = "border-l-[#EF4444]";
+              badgeClass = "bg-rose-50 text-[#EF4444] border border-rose-250";
+            } else if (apt.status === 'pending') {
+              leftBorderColor = "border-l-[#FACC15]";
+              badgeClass = "bg-yellow-50 text-[#854D0E] border border-yellow-200";
+            } else {
+              // scheduled, in_progress, quality_check, ready
+              leftBorderColor = "border-l-[#0891B2]";
+              badgeClass = "bg-cyan-50 text-[#0E7490] border border-cyan-200";
             }
 
             const tech = staff.find(s => s.id === apt.assignedTo);
 
             return (
-              <div key={apt.id} className={`bg-[#131D35]/95 p-5 rounded-xl border ${borderClass} ${glowClass} transition-all space-y-4 text-left relative flex flex-col justify-between`}>
+              <div key={apt.id} className={`bg-white p-5 rounded-2xl border-y border-r border-[#E5EDF3] border-l-4 ${leftBorderColor} hover:-translate-y-1 hover:shadow-xl transition-all duration-300 space-y-4 text-left relative flex flex-col justify-between shadow-xs`}>
                 <div className="space-y-4">
                   
                   {/* Header section of the Card */}
-                  <div className="flex justify-between items-start border-b border-slate-800/40 pb-3">
+                  <div className="flex justify-between items-start border-b border-[#E5EDF3] pb-3">
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <h3 className="text-sm font-extrabold text-white flex items-center gap-1.5">
-                          <User size={13} className="shrink-0 text-indigo-400" />
+                        <h3 className="text-sm font-extrabold text-[#0F172A] flex items-center gap-1.5">
+                          <User size={13} className="shrink-0 text-[#0891B2]" />
                           <span>{apt.customerName}</span>
                         </h3>
                         <button
                           onClick={() => handleOpenEdit(apt)}
-                          className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
+                          className="p-1 hover:bg-[#ECFEFF] rounded text-[#0891B2] hover:text-[#0E7490] transition-colors cursor-pointer"
                           title="Edit Client Info"
                         >
                           <Edit2 size={11} />
                         </button>
                       </div>
-                      <p className="text-[10px] font-mono font-bold text-slate-400 mt-0.5">{apt.customerPhone}</p>
                     </div>
                     
                     <div className="flex items-center gap-1.5">
@@ -691,7 +691,7 @@ export default function BookingsManager({
                               onDeleteAppointment(apt.id);
                             }
                           }}
-                          className="p-1 bg-rose-500/10 text-rose-400 hover:text-rose-300 rounded hover:bg-rose-500/20 transition-all border border-rose-500/20 cursor-pointer"
+                          className="p-1 bg-rose-50 text-[#EF4444] hover:text-white rounded hover:bg-[#EF4444] transition-all border border-rose-200 cursor-pointer"
                           title="Delete Booking"
                         >
                           <Trash2 size={11} className="stroke-[2.5]" />
@@ -706,41 +706,41 @@ export default function BookingsManager({
                   {/* Notes/Service description */}
                   <div className="space-y-2">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[11px] font-black text-indigo-400 block">{apt.serviceName}</span>
+                      <span className="text-[12px] font-black text-[#0891B2] block">{apt.serviceName}</span>
                       {apt.isMonthlyPackage && (
-                        <span className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-[8px] font-black uppercase px-2 py-0.5 rounded-md tracking-wider">
+                        <span className="bg-[#ECFEFF] text-[#0E7490] border border-cyan-200 text-[8px] font-black uppercase px-2 py-0.5 rounded-md tracking-wider">
                           VIP Package
                         </span>
                       )}
                     </div>
 
                     {apt.isMonthlyPackage && (
-                      <div className="p-3.5 rounded-xl bg-indigo-950/40 border border-indigo-900/40 space-y-2.5 animate-fade-in shadow-xs">
+                      <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E5EDF3] space-y-2.5 shadow-xs">
                         <div className="flex items-center justify-between">
-                          <span className="text-[9px] font-extrabold text-indigo-300 uppercase tracking-wider">Wash Progress Tracker</span>
-                          <span className="text-[10px] font-mono font-bold text-white px-2 py-0.5 rounded bg-slate-950 border border-indigo-900/40">
+                          <span className="text-[9px] font-extrabold text-[#0E7490] uppercase tracking-wider">Wash Progress Tracker</span>
+                          <span className="text-[10px] font-bold text-[#0F172A] px-2 py-0.5 rounded bg-white border border-[#E5EDF3]">
                             {apt.packageWashNumber ?? 1} / {apt.packageTotalWashes ?? 4}
                           </span>
                         </div>
                         {/* Progress bar */}
-                        <div className="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden border border-slate-900">
+                        <div className="w-full bg-[#E5EDF3] rounded-full h-1.5 overflow-hidden border border-slate-100">
                           <div
                             className={`h-full transition-all duration-300 ${
                               (apt.packageWashNumber ?? 1) >= (apt.packageTotalWashes ?? 4)
-                                ? 'bg-emerald-500'
-                                : 'bg-indigo-500 animate-pulse'
+                                ? 'bg-[#16A34A]'
+                                : 'bg-[#0891B2]'
                             }`}
                             style={{
                               width: `${Math.min(
-                                ((((apt.packageWashNumber ?? 1) / (apt.packageTotalWashes ?? 4)) * 100)),
+                                (((apt.packageWashNumber ?? 1) / (apt.packageTotalWashes ?? 4)) * 100),
                                 100
                               )}%`
                             }}
                           />
                         </div>
                         {/* Increment/Decrement Buttons */}
-                        <div className="flex items-center justify-between gap-2 border-t border-indigo-900/25 pt-2">
-                          <span className="text-[9px] text-slate-400 font-semibold">Update Wash Count:</span>
+                        <div className="flex items-center justify-between gap-2 border-t border-[#CBD5E1]/20 pt-2">
+                          <span className="text-[9px] text-[#64748B] font-semibold">Update Wash Count:</span>
                           <div className="flex items-center gap-1.5">
                             <button
                               type="button"
@@ -753,7 +753,7 @@ export default function BookingsManager({
                                   });
                                 }
                               }}
-                              className="p-1 rounded bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-colors cursor-pointer"
+                              className="p-1 rounded bg-white hover:bg-slate-50 text-[#334155] border border-[#CBD5E1] transition-colors cursor-pointer"
                               title="Decrease wash number"
                             >
                               <Minus size={10} />
@@ -767,7 +767,7 @@ export default function BookingsManager({
                                   packageWashNumber: current + 1
                                 });
                               }}
-                              className="p-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white transition-colors cursor-pointer"
+                              className="p-1 rounded bg-[#0891B2] hover:bg-[#0E7490] text-white transition-colors cursor-pointer"
                               title="Increase wash number"
                             >
                               <Plus size={10} />
@@ -782,7 +782,7 @@ export default function BookingsManager({
                                   });
                                 }
                               }}
-                              className="text-[9px] text-indigo-400 hover:text-rose-400 transition-colors uppercase font-black pl-1 cursor-pointer"
+                              className="text-[9px] text-[#0891B2] hover:text-[#0E7490] transition-colors uppercase font-black pl-1 cursor-pointer"
                             >
                               Reset
                             </button>
@@ -792,48 +792,55 @@ export default function BookingsManager({
                     )}
 
                     {apt.notes && (
-                      <p className="text-[10px] text-slate-400 leading-relaxed bg-slate-950/20 p-2 rounded-lg border border-slate-850 font-medium">
+                      <p className="text-[11px] text-[#475569] leading-relaxed bg-[#F8FAFC] p-2.5 rounded-xl border border-[#E5EDF3] font-medium">
                         {apt.notes}
                       </p>
                     )}
                   </div>
 
-                  {/* Timing block inside the card */}
-                  <div className="p-3.5 rounded-lg bg-slate-950/40 border border-slate-850/80 space-y-2 text-[10px] font-medium text-slate-300">
+                  {/* Inner Time Box: Started/Ended/Duration */}
+                  <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E5EDF3] space-y-2.5 text-xs">
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-400">Started:</span>
-                      <span className="font-mono font-bold text-slate-300">{(apt as any).startedAt || `${apt.date}, ${apt.time}:00`}</span>
+                      <span className="text-[#64748B] font-semibold">Started:</span>
+                      <span className="text-sm font-medium text-[#0F172A]">{(apt as any).startedAt || `${apt.date}, ${apt.time}:00`}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-400">Ended:</span>
-                      <span className="font-mono font-bold text-slate-300">{(apt as any).endedAt || `${apt.date}, ${parseInt(apt.time.split(':')[0]) + 1}:${apt.time.split(':')[1]}:00`}</span>
+                      <span className="text-[#64748B] font-semibold">Ended:</span>
+                      <span className="text-sm font-medium text-[#0F172A]">{(apt as any).endedAt || `${apt.date}, ${parseInt(apt.time.split(':')[0]) + 1}:${apt.time.split(':')[1]}:00`}</span>
                     </div>
-                    <div className="flex items-center justify-between border-t border-slate-800/60 pt-1.5 mt-1.5">
-                      <span className="text-slate-400">Duration:</span>
-                      <span className="font-mono font-bold text-slate-300">{(apt as any).durationHours || '1.5'} hours</span>
+                    <div className="flex items-center justify-between border-t border-[#E5EDF3] pt-2 mt-2">
+                      <span className="text-[#64748B] font-semibold">Duration:</span>
+                      <span className="text-sm font-medium text-[#0F172A]">{(apt as any).durationHours || '1.5'} hours</span>
                     </div>
                     <button
                       onClick={() => handleOpenTimes(apt)}
-                      className="w-full mt-2 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 text-[9px] font-bold rounded-md border border-slate-800/80 transition-all flex items-center justify-center gap-1 cursor-pointer"
+                      className="w-full mt-2 py-1.5 bg-white hover:bg-[#ECFEFF] text-[#0891B2] text-[10px] font-bold rounded-xl border border-[#0891B2] transition-all flex items-center justify-center gap-1 cursor-pointer"
                     >
-                      <Edit2 size={10} />
+                      <Edit2 size={11} />
                       <span>Edit Times</span>
                     </button>
                   </div>
 
                   {/* Customer Details info block inside the card */}
-                  <div className="space-y-2 text-[10px] font-medium text-slate-300 border-t border-slate-800/40 pt-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-400">Mobile:</span>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-white">{apt.customerPhone}</span>
-                        <div className="flex gap-1">
+                  <div className="space-y-2 text-xs font-medium text-[#1E293B] border-t border-[#E5EDF3] pt-3">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-[#64748B] font-semibold">Mobile:</span>
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-sm font-medium text-[#0F172A]">{apt.customerPhone}</span>
+                        <div className="flex gap-1.5">
                           <a
                             href={`sms:${apt.customerPhone}?body=${encodeURIComponent(getFormattedMessage(apt, undefined, undefined, undefined, ownerUid))}`}
-                            className="p-1 hover:bg-slate-800 rounded text-sky-400 hover:text-sky-300 transition-colors"
-                            title="Send Free SMS (Message Box)"
+                            className="h-6 w-6 rounded-full bg-[#ECFEFF] text-[#0891B2] hover:bg-[#0891B2] hover:text-white flex items-center justify-center transition-colors shadow-2xs"
+                            title="Send Free SMS"
                           >
                             <Send size={10} />
+                          </a>
+                          <a
+                            href={`tel:${apt.customerPhone}`}
+                            className="h-6 w-6 rounded-full bg-[#ECFEFF] text-[#0891B2] hover:bg-[#0891B2] hover:text-white flex items-center justify-center transition-colors shadow-2xs"
+                            title="Call Customer"
+                          >
+                            <Phone size={10} />
                           </a>
                           {settings.whatsappMode === 'api' ? (
                             <button
@@ -842,7 +849,7 @@ export default function BookingsManager({
                                 handleSendBackgroundWhatsApp(apt.customerPhone, msg);
                               }}
                               disabled={whatsappSending}
-                              className="p-1 hover:bg-slate-800 rounded text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer"
+                              className="h-6 w-6 rounded-full bg-[#ECFEFF] text-[#0891B2] hover:bg-[#0891B2] hover:text-white flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
                               title="Send Background WhatsApp via API"
                             >
                               <MessageSquare size={10} />
@@ -852,8 +859,8 @@ export default function BookingsManager({
                               href={`https://wa.me/${apt.customerPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(getFormattedMessage(apt, undefined, undefined, undefined, ownerUid))}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="p-1 hover:bg-slate-800 rounded text-emerald-400 hover:text-emerald-300 transition-colors"
-                              title="Send Free WhatsApp Chat (Direct Redirect)"
+                              className="h-6 w-6 rounded-full bg-[#ECFEFF] text-[#0891B2] hover:bg-[#0891B2] hover:text-white flex items-center justify-center transition-colors shadow-2xs"
+                              title="Send Free WhatsApp Chat"
                             >
                               <ExternalLink size={10} />
                             </a>
@@ -862,28 +869,28 @@ export default function BookingsManager({
                       </div>
                     </div>
                     {apt.customerEmail && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Email:</span>
-                        <span className="truncate max-w-[150px]">{apt.customerEmail}</span>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-[#64748B] font-semibold">Email:</span>
+                        <span className="truncate max-w-[150px] text-sm font-medium text-[#0F172A]">{apt.customerEmail}</span>
                       </div>
                     )}
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Vehicle Type:</span>
-                      <span className="capitalize">{apt.vehicle.year} {apt.vehicle.make} {apt.vehicle.model}</span>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-[#64748B] font-semibold">Vehicle Type:</span>
+                      <span className="capitalize text-sm font-medium text-[#0F172A]">{apt.vehicle.year} {apt.vehicle.make} {apt.vehicle.model}</span>
                     </div>
-                    <div className="flex justify-between font-mono">
-                      <span className="text-slate-400 font-sans">Date & Slot:</span>
-                      <span>{apt.date} @ {apt.time}</span>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-[#64748B] font-semibold">Date & Slot:</span>
+                      <span className="text-sm font-medium text-[#0F172A]">{apt.date} @ {apt.time}</span>
                     </div>
-                    <div className="flex justify-between items-center border-t border-slate-800/30 pt-2">
-                      <span className="text-slate-400">Price Details:</span>
+                    <div className="flex justify-between items-center text-xs border-t border-[#E5EDF3] pt-2.5">
+                      <span className="text-[#64748B] font-semibold">Price Details:</span>
                       <div className="flex items-center gap-1.5">
-                        <span className="font-mono font-bold text-emerald-400">₹{apt.price}</span>
+                        <span className="text-sm font-bold text-[#16A34A]">₹{apt.price}</span>
                       </div>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-400">Customer Paid:</span>
-                      <span className="font-mono font-bold text-emerald-400">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-[#64748B] font-semibold">Customer Paid:</span>
+                      <span className="text-sm font-bold text-[#16A34A]">
                         ₹{apt.paidAmount ?? (apt.paymentStatus === 'paid' || apt.status === 'completed' || apt.paymentStatus === 'discount' ? apt.price : 0)}
                       </span>
                     </div>
@@ -892,15 +899,15 @@ export default function BookingsManager({
                 </div>
 
                 {/* Footer section inside the Card */}
-                <div className="mt-4 pt-3.5 border-t border-slate-800/60 space-y-3 shrink-0">
-                  <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Update Status</span>
+                <div className="mt-4 pt-3.5 border-t border-[#E5EDF3] space-y-3 shrink-0">
+                  <span className="text-[10px] text-[#64748B] font-extrabold uppercase tracking-wider block">Update Status</span>
                   <div className="grid grid-cols-3 gap-1.5">
                     <button
                       onClick={() => handleQuickStatusChange(apt, 'in_progress')}
-                      className={`py-1.5 rounded-lg text-[9px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-0.5 transition-all cursor-pointer ${
+                      className={`py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-0.5 transition-all cursor-pointer ${
                         apt.status === 'in_progress'
-                          ? 'bg-indigo-600 text-white shadow-md'
-                          : 'bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'
+                          ? 'bg-[#0891B2] text-white shadow-sm'
+                          : 'bg-[#ECFEFF] hover:bg-[#CFFAFE] text-[#0E7490]'
                       }`}
                     >
                       <Play size={10} />
@@ -908,10 +915,10 @@ export default function BookingsManager({
                     </button>
                     <button
                       onClick={() => handleQuickStatusChange(apt, 'completed')}
-                      className={`py-1.5 rounded-lg text-[9px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-0.5 transition-all cursor-pointer ${
+                      className={`py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-0.5 transition-all cursor-pointer ${
                         apt.status === 'completed'
-                          ? 'bg-emerald-600 text-white shadow-md'
-                          : 'bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'
+                          ? 'bg-[#16A34A] text-white shadow-sm'
+                          : 'bg-emerald-50 hover:bg-emerald-100 text-[#16A34A]'
                       }`}
                     >
                       <Check size={10} />
@@ -919,10 +926,10 @@ export default function BookingsManager({
                     </button>
                     <button
                       onClick={() => handleQuickStatusChange(apt, 'cancelled')}
-                      className={`py-1.5 rounded-lg text-[9px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-0.5 transition-all cursor-pointer ${
+                      className={`py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-0.5 transition-all cursor-pointer ${
                         apt.status === 'cancelled'
-                          ? 'bg-rose-900 text-rose-200 border border-rose-850'
-                          : 'bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'
+                          ? 'bg-[#EF4444] text-white shadow-sm'
+                          : 'bg-rose-50 hover:bg-rose-100 text-[#EF4444]'
                       }`}
                     >
                       <X size={10} />
@@ -933,10 +940,10 @@ export default function BookingsManager({
                   <div className="flex gap-1.5 pt-1">
                     <button
                       onClick={() => onNavigate('billing')}
-                      className="flex-1 py-1.5 bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-350 hover:text-white text-[9px] font-black uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer"
+                      className="flex-1 py-1.5 bg-white hover:bg-[#ECFEFF] border border-[#0891B2] text-[#0891B2] text-[10px] font-extrabold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer"
                       title="Invoice"
                     >
-                      <FileText size={10} />
+                      <FileText size={11} />
                       <span>Invoice</span>
                     </button>
                   </div>

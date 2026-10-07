@@ -83,21 +83,21 @@ export default function TeamManager({
   };
 
   const roleBadges: Record<Staff['role'], string> = {
-    owner: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
-    manager: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
-    detailer: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20'
+    owner: 'bg-rose-50 text-rose-700 border-rose-200',
+    manager: 'bg-cyan-50 text-[#0E7490] border-cyan-200',
+    detailer: 'bg-emerald-50 text-emerald-700 border-emerald-200'
   };
 
   return (
-    <div className="space-y-6" id="team-manager-root">
+    <div className="space-y-6 text-left" id="team-manager-root">
       {/* Tab Selectors for Shift vs Ledger */}
-      <div className="flex border-b border-slate-800">
+      <div className="flex border-b border-[#E5EDF3]">
         <button
           onClick={() => setMode('shifts')}
           className={`px-6 py-3 text-xs font-black uppercase tracking-wider flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
             mode === 'shifts'
-              ? 'border-indigo-500 text-white font-extrabold'
-              : 'border-transparent text-slate-400 hover:text-white'
+              ? 'border-[#0891B2] text-[#0891B2] font-extrabold'
+              : 'border-transparent text-[#475569] hover:text-[#0F172A]'
           }`}
         >
           <UserCheck size={14} />
@@ -107,8 +107,8 @@ export default function TeamManager({
           onClick={() => setMode('ledger')}
           className={`px-6 py-3 text-xs font-black uppercase tracking-wider flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
             mode === 'ledger'
-              ? 'border-indigo-500 text-white font-extrabold'
-              : 'border-transparent text-slate-400 hover:text-white'
+              ? 'border-[#0891B2] text-[#0891B2] font-extrabold'
+              : 'border-transparent text-[#475569] hover:text-[#0F172A]'
           }`}
         >
           <BookOpen size={14} />
@@ -121,49 +121,52 @@ export default function TeamManager({
       ) : (
         <>
           {/* Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl border border-[#E5EDF3] shadow-xs">
             <div>
-              <h1 className="text-xl font-extrabold text-white tracking-tight md:text-2xl">Team Status</h1>
-              <p className="text-xs text-slate-400">Control active detailer shifts, assignments, and studio access roles</p>
+              <h1 className="text-xl font-extrabold text-[#0F172A] tracking-tight md:text-2xl flex items-center gap-2">
+                <Users className="text-[#0891B2]" size={22} />
+                <span>Team Status</span>
+              </h1>
+              <p className="text-xs text-[#475569]">Control active detailer shifts, assignments, and studio access roles</p>
             </div>
             <button
               onClick={() => setShowAddModal(true)}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2.5 bg-[#0891B2] hover:bg-[#0E7490] text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <Plus size={16} />
-              Add Team Member
+              <span>Add Team Member</span>
             </button>
           </div>
 
           {/* Roster overview banner stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl flex items-center gap-4">
-              <div className="h-10 w-10 bg-indigo-500/10 text-indigo-400 rounded-lg flex items-center justify-center">
+            <div className="bg-white border border-[#E5EDF3] p-5 rounded-2xl flex items-center gap-4 shadow-sm">
+              <div className="h-10 w-10 bg-cyan-50 text-[#0891B2] rounded-xl flex items-center justify-center">
                 <Users size={20} />
               </div>
               <div>
-                <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Total Recruited Staff</span>
-                <strong className="text-lg font-black text-white">{staffList.length} Team Members</strong>
+                <span className="text-3xs text-[#475569] font-bold uppercase tracking-wider block">Total Recruited Staff</span>
+                <strong className="text-lg font-black text-[#0F172A]">{staffList.length} Team Members</strong>
               </div>
             </div>
 
-            <div className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl flex items-center gap-4">
-              <div className="h-10 w-10 bg-emerald-500/10 text-emerald-400 rounded-lg flex items-center justify-center">
+            <div className="bg-white border border-[#E5EDF3] p-5 rounded-2xl flex items-center gap-4 shadow-sm">
+              <div className="h-10 w-10 bg-emerald-50 text-[#16A34A] rounded-xl flex items-center justify-center">
                 <UserCheck size={20} />
               </div>
               <div>
-                <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">On Duty Currently</span>
-                <strong className="text-lg font-black text-emerald-400">{staffList.filter(s => s.status === 'active').length} Active</strong>
+                <span className="text-3xs text-[#475569] font-bold uppercase tracking-wider block">On Duty Currently</span>
+                <strong className="text-lg font-black text-[#16A34A]">{staffList.filter(s => s.status === 'active').length} Active</strong>
               </div>
             </div>
 
-            <div className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl flex items-center gap-4">
-              <div className="h-10 w-10 bg-amber-500/10 text-amber-400 rounded-lg flex items-center justify-center">
+            <div className="bg-white border border-[#E5EDF3] p-5 rounded-2xl flex items-center gap-4 shadow-sm">
+              <div className="h-10 w-10 bg-cyan-50 text-[#0E7490] rounded-xl flex items-center justify-center">
                 <Activity size={20} />
               </div>
               <div>
-                <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Total Workload Jobs</span>
-                <strong className="text-lg font-black text-white">{staffList.reduce((sum, s) => sum + s.activeJobsCount, 0)} Active Bays</strong>
+                <span className="text-3xs text-[#475569] font-bold uppercase tracking-wider block">Total Workload Jobs</span>
+                <strong className="text-lg font-black text-[#0F172A]">{staffList.reduce((sum, s) => sum + s.activeJobsCount, 0)} Active Bays</strong>
               </div>
             </div>
           </div>
@@ -171,9 +174,9 @@ export default function TeamManager({
           {/* Staff Flat Cards Roster List */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {staffList.map(stf => (
-              <div key={stf.id} className="bg-[#131D35] border border-slate-800/40 p-5 rounded-xl flex items-center justify-between gap-4 hover:border-slate-700/60 transition-all">
+              <div key={stf.id} className="bg-white border border-[#E5EDF3] p-5 rounded-2xl flex items-center justify-between gap-4 hover:shadow-md transition-all shadow-sm">
                 <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-sm font-bold text-slate-300 uppercase shrink-0 overflow-hidden">
+                  <div className="h-12 w-12 rounded-xl bg-slate-50 border border-[#E5EDF3] flex items-center justify-center text-sm font-bold text-[#334155] uppercase shrink-0 overflow-hidden">
                     {stf.avatar ? (
                       <img src={stf.avatar} alt={stf.name} className="h-full w-full object-cover" referrerPolicy="no-referrer" />
                     ) : (
@@ -181,12 +184,12 @@ export default function TeamManager({
                     )}
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-xs font-extrabold text-white">{stf.name}</h3>
+                    <h3 className="text-xs font-extrabold text-[#0F172A]">{stf.name}</h3>
                     <div className="flex items-center gap-2">
                       <span className={`px-2 py-0.5 rounded-full text-4xs font-bold uppercase border ${roleBadges[stf.role]}`}>
                         {roleLabels[stf.role]}
                       </span>
-                      <span className="text-4xs text-slate-500 font-semibold uppercase">
+                      <span className="text-4xs text-[#475569] font-bold uppercase">
                         {stf.activeJobsCount} Active Jobs
                       </span>
                     </div>
@@ -196,10 +199,10 @@ export default function TeamManager({
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleToggleDuty(stf.id)}
-                    className={`px-2.5 py-1 text-4xs font-extrabold rounded-lg uppercase tracking-wider transition-all border flex items-center gap-1 cursor-pointer ${
+                    className={`px-2.5 py-1.5 text-4xs font-extrabold rounded-xl uppercase tracking-wider transition-all border flex items-center gap-1 cursor-pointer ${
                       stf.status === 'active'
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25 hover:bg-emerald-500/20'
-                        : 'bg-slate-950 text-slate-500 border-slate-800 hover:text-slate-300'
+                        ? 'bg-emerald-50 text-[#16A34A] border-emerald-200 hover:bg-emerald-100'
+                        : 'bg-slate-50 text-[#475569] border-[#CBD5E1] hover:bg-slate-100'
                     }`}
                   >
                     {stf.status === 'active' ? 'On Duty' : 'Off Shift'}
@@ -207,8 +210,12 @@ export default function TeamManager({
 
                   {stf.role !== 'owner' && (
                     <button
-                      onClick={() => handleDeleteStaff(stf.id)}
-                      className="p-1.5 bg-slate-950 hover:bg-rose-500/10 text-slate-500 hover:text-rose-400 border border-slate-800 rounded-lg transition-all cursor-pointer"
+                      onClick={() => {
+                        if (confirm('Are you sure you want to remove this team member?')) {
+                          handleDeleteStaff(stf.id);
+                        }
+                      }}
+                      className="p-2 bg-white hover:bg-rose-50 text-[#EF4444] hover:text-rose-600 border border-[#E5EDF3] rounded-xl transition-all cursor-pointer shadow-2xs"
                       title="Remove team member"
                     >
                       <Trash2 size={13} />
@@ -223,37 +230,37 @@ export default function TeamManager({
 
       {/* Add Staff Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111827] border border-slate-800 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-zoom-in">
-            <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900 text-white">
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-white border border-[#E5EDF3] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-zoom-in text-slate-800 text-left">
+            <div className="p-5 border-b border-[#E5EDF3] flex items-center justify-between bg-white text-[#0F172A]">
               <h2 className="text-sm font-extrabold uppercase tracking-wider flex items-center gap-2">
-                <UserCheck size={16} className="text-indigo-400" />
-                Add Team Member
+                <UserCheck size={16} className="text-[#0891B2]" />
+                <span>Add Team Member</span>
               </h2>
-              <button onClick={() => setShowAddModal(false)} className="p-1 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white">
+              <button onClick={() => setShowAddModal(false)} className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 cursor-pointer">
                 <X size={18} />
               </button>
             </div>
 
             <form onSubmit={handleAddStaff} className="p-6 space-y-4">
               <div className="space-y-1">
-                <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Full Name</label>
+                <label className="text-xs text-[#1E293B] font-medium block mb-1">Full Name</label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Rachel Zane"
-                  className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500"
+                  placeholder="e.g. Rajesh Kumar"
+                  className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Job Role</label>
+                <label className="text-xs text-[#1E293B] font-medium block mb-1">Job Role</label>
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value as any)}
-                  className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-indigo-500 cursor-pointer"
+                  className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] focus:outline-none focus:border-[#0891B2] focus:ring-2 focus:ring-[#0891B2]/20 cursor-pointer font-bold"
                 >
                   <option value="detailer">Employee</option>
                   <option value="manager">Car Washer</option>
@@ -261,27 +268,27 @@ export default function TeamManager({
               </div>
 
               <div className="space-y-1">
-                <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Avatar Photo URL (Optional)</label>
+                <label className="text-xs text-[#1E293B] font-medium block mb-1">Avatar Photo URL (Optional)</label>
                 <input
                   type="text"
                   value={avatar}
                   onChange={(e) => setAvatar(e.target.value)}
                   placeholder="https://images.unsplash.com/photo-..."
-                  className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden"
+                  className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] focus:outline-none"
                 />
               </div>
 
-              <div className="border-t border-slate-800 pt-4 flex justify-end gap-2">
+              <div className="border-t border-[#E5EDF3] pt-4 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-lg transition-all"
+                  className="px-4 py-2.5 bg-white hover:bg-slate-50 text-[#334155] border border-[#CBD5E1] text-xs font-bold rounded-xl transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition-all shadow-sm cursor-pointer"
+                  className="px-5 py-2.5 bg-[#0891B2] hover:bg-[#0E7490] text-white text-xs font-bold rounded-xl transition-all shadow-md cursor-pointer"
                 >
                   Enlist Team Member
                 </button>

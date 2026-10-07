@@ -440,15 +440,15 @@ export default function AppointmentsList({
       {/* Header section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-xl font-extrabold text-white tracking-tight md:text-2xl">Calendar</h1>
-          <p className="text-xs text-slate-400">Manage customer detailing appointments and schedules</p>
+          <h1 className="text-xl font-extrabold text-[#0F172A] tracking-tight md:text-2xl">Calendar</h1>
+          <p className="text-xs text-[#475569]">Manage customer detailing appointments and schedules</p>
         </div>
         
         {/* New Booking button */}
         <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
           <button
             onClick={() => setShowModal(true)}
-            className="px-4 py-2.5 bg-[#0ea5e9] hover:bg-[#38bdf8] text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
+            className="px-4 py-2.5 bg-[#0891B2] hover:bg-[#0E7490] text-white text-xs font-bold rounded-xl shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
           >
             <Plus size={16} />
             <span>New Booking</span>
@@ -461,30 +461,30 @@ export default function AppointmentsList({
         <div className="flex flex-col xl:flex-row gap-6">
             
             {/* Left Card: Calendar Month Grid (approx 2/3 width) */}
-            <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs flex-1">
+            <div className="bg-white p-5 rounded-2xl border border-[#E5EDF3] shadow-md flex-1">
               
               {/* Calendar Controls header inside the card */}
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-800/60">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#E5EDF3]">
                 <div className="flex items-center gap-3">
-                  <h2 className="text-lg font-extrabold text-white font-mono">{monthNames[currentMonth]} {currentYear}</h2>
+                  <h2 className="text-lg font-bold text-[#0F172A]">{monthNames[currentMonth]} {currentYear}</h2>
                 </div>
                 
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={handlePrevMonth}
-                    className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer transition-all"
+                    className="p-1.5 rounded-lg bg-white border border-[#CBD5E1] text-[#334155] hover:text-[#0891B2] hover:bg-[#F4F8FB] cursor-pointer transition-all"
                   >
                     <ChevronRight size={16} className="rotate-180" />
                   </button>
                   <button
                     onClick={handleToday}
-                    className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer transition-all"
+                    className="px-3 py-1.5 rounded-lg bg-white border border-[#CBD5E1] text-xs font-bold text-[#334155] hover:text-[#0891B2] hover:bg-[#F4F8FB] cursor-pointer transition-all"
                   >
                     Today
                   </button>
                   <button
                     onClick={handleNextMonth}
-                    className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer transition-all"
+                    className="p-1.5 rounded-lg bg-white border border-[#CBD5E1] text-[#334155] hover:text-[#0891B2] hover:bg-[#F4F8FB] cursor-pointer transition-all"
                   >
                     <ChevronRight size={16} />
                   </button>
@@ -494,7 +494,7 @@ export default function AppointmentsList({
               {/* Day names row */}
               <div className="grid grid-cols-7 gap-2 mb-2 text-center">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                  <span key={day} className="text-4xs text-slate-400 font-extrabold uppercase tracking-wider py-1.5">
+                  <span key={day} className="text-xs font-bold text-[#475569] uppercase tracking-wider py-1.5">
                     {day}
                   </span>
                 ))}
@@ -511,36 +511,36 @@ export default function AppointmentsList({
                     <button
                       key={idx}
                       onClick={() => setSelectedDateStr(cell.dateStr)}
-                      className={`h-24 p-2 rounded-xl flex flex-col justify-between items-start border cursor-pointer relative transition-all ${
+                      className={`h-24 p-2 rounded-xl flex flex-col justify-between items-start border cursor-pointer relative transition-all duration-200 ${
                         isSelected
-                          ? 'bg-[#0ea5e9] border-[#0ea5e9] text-white shadow-lg shadow-sky-500/10'
+                          ? 'bg-gradient-to-br from-[#0891B2] to-[#06B6D4] border-[#0891B2] text-white shadow-md'
                           : cell.isCurrentMonth
-                            ? 'bg-[#18223c] border-slate-800/40 text-slate-200 hover:bg-slate-800/60 hover:border-slate-700'
-                            : 'bg-[#111827]/60 border-slate-900/60 text-slate-650 hover:bg-slate-800/20'
+                            ? 'bg-white border-[#E5EDF3] text-[#1E293B] hover:bg-[#ECFEFF]/60 hover:border-[#0891B2]/50'
+                            : 'bg-slate-50/50 border-slate-100 text-[#64748B] hover:bg-slate-100/40'
                       }`}
                     >
                       <span className={`text-xs font-bold ${
                         isSelected 
                           ? 'text-white' 
                           : isTodayStr 
-                            ? 'text-sky-400 font-extrabold bg-sky-500/10 px-1.5 py-0.5 rounded-md border border-sky-500/20' 
+                            ? 'text-[#0891B2] font-black bg-[#CFFAFE] px-1.5 py-0.5 rounded-md border border-[#0891B2]/20' 
                             : cell.isCurrentMonth 
-                              ? 'text-slate-200' 
-                              : 'text-slate-600'
+                              ? 'text-slate-800 font-semibold' 
+                              : 'text-slate-400'
                       }`}>
                         {cell.dayNum}
                       </span>
 
                       {/* Render indicators of appointments in the cell */}
                       {dayBookings.length > 0 && (
-                        <div className="w-full space-y-1">
+                        <div className="w-full space-y-1 text-left">
                           {dayBookings.slice(0, 2).map(apt => (
                             <div
                               key={apt.id}
-                              className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-md truncate text-left w-full ${
+                              className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md truncate text-left w-full ${
                                 isSelected
-                                  ? 'bg-slate-900/35 text-white border border-white/10'
-                                  : 'bg-indigo-550/15 text-indigo-300 border border-indigo-500/15'
+                                  ? 'bg-white/25 text-white border border-white/10'
+                                  : 'bg-[#ECFEFF] text-[#0E7490] border border-[#CFFAFE]'
                               }`}
                               title={`${apt.customerName} (${apt.time})`}
                             >
@@ -548,7 +548,7 @@ export default function AppointmentsList({
                             </div>
                           ))}
                           {dayBookings.length > 2 && (
-                            <div className={`text-[8px] font-black text-right pr-1 ${isSelected ? 'text-white' : 'text-slate-400'}`}>
+                            <div className={`text-[8px] font-bold text-right pr-1 ${isSelected ? 'text-white' : 'text-[#475569]'}`}>
                               + {dayBookings.length - 2} more
                             </div>
                           )}
@@ -561,47 +561,47 @@ export default function AppointmentsList({
             </div>
 
             {/* Right Card: Day Bookings Detail Panel (approx 1/3 width) */}
-            <div className="bg-[#131D35] p-5 rounded-xl border border-slate-800/40 shadow-xs w-full xl:w-80 shrink-0 space-y-4">
-              <div className="border-b border-slate-800 pb-3">
-                <h3 className="text-sm font-bold text-white font-mono">{formatSelectedDate(selectedDateStr)}</h3>
-                <p className="text-[10px] text-slate-400">Detailed agenda & technician assignments</p>
+            <div className="bg-white p-5 rounded-2xl border border-[#E5EDF3] shadow-md w-full xl:w-80 shrink-0 space-y-4">
+              <div className="border-b border-[#E5EDF3] pb-3">
+                <h3 className="text-sm font-bold text-[#0F172A]">{formatSelectedDate(selectedDateStr)}</h3>
+                <p className="text-[10px] text-[#475569]">Detailed agenda & technician assignments</p>
               </div>
 
               <div className="space-y-3 overflow-y-auto max-h-[460px] pr-1">
                 {selectedDayBookings.length === 0 ? (
                   <div className="py-24 text-center text-slate-500 flex flex-col items-center justify-center">
-                    <CalendarIcon className="text-slate-700 mb-2" size={32} />
-                    <p className="text-xs font-semibold">No bookings for this day</p>
-                    <p className="text-[10px] text-slate-500 mt-0.5">Use the + New Booking button to schedule a client.</p>
+                    <CalendarIcon className="text-slate-300 mb-2" size={32} />
+                    <p className="text-xs font-semibold text-[#475569]">No bookings for this day</p>
+                    <p className="text-[10px] text-[#64748B] mt-0.5">Use the + New Booking button to schedule a client.</p>
                   </div>
                 ) : (
                   selectedDayBookings.map(apt => {
                     const tech = staff.find(s => s.id === apt.assignedTo);
                     return (
-                      <div key={apt.id} className="bg-[#18223c] p-3.5 rounded-xl border border-slate-800 space-y-2.5 text-left relative group">
+                      <div key={apt.id} className="bg-[#F4F8FB] p-3.5 rounded-xl border border-[#E5EDF3] space-y-2.5 text-left relative group">
                         <div className="flex justify-between items-start gap-2">
                           <div>
-                            <span className="text-[9px] font-black bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded-full border border-indigo-500/20 uppercase font-mono tracking-wider">{apt.time}</span>
-                            <h4 className="text-xs font-extrabold text-white mt-1.5 leading-tight">{apt.customerName}</h4>
-                            <p className="text-4xs text-slate-400 font-mono mt-0.5">{apt.customerPhone}</p>
+                            <span className="text-[9px] font-bold bg-[#CFFAFE] text-[#0E7490] px-2 py-0.5 rounded-full border border-[#0891B2]/10 uppercase tracking-wider">{apt.time}</span>
+                            <h4 className="text-xs font-extrabold text-[#0F172A] mt-1.5 leading-tight">{apt.customerName}</h4>
+                            <p className="text-4xs text-[#475569] mt-0.5">{apt.customerPhone}</p>
                           </div>
-                          <span className="text-xs font-mono font-black text-emerald-400">₹{apt.price}</span>
+                          <span className="text-xs font-bold text-[#16A34A]">₹{apt.price}</span>
                         </div>
                         
-                        <div className="text-[10px] text-slate-300 flex items-center gap-1.5 bg-slate-950/40 p-2 rounded-lg border border-slate-850">
-                          <Car size={11} className="text-slate-400 shrink-0" />
+                        <div className="text-[10px] text-[#1E293B] flex items-center gap-1.5 bg-white p-2 rounded-lg border border-[#E5EDF3]">
+                          <Car size={11} className="text-[#64748B] shrink-0" />
                           <span className="truncate">{apt.vehicle.year} {apt.vehicle.make} {apt.vehicle.model}</span>
                         </div>
 
-                        <div className="flex justify-between items-center pt-2 border-t border-slate-800/40 text-3xs">
+                        <div className="flex justify-between items-center pt-2 border-t border-[#E5EDF3] text-3xs">
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-indigo-400 font-bold">{apt.serviceName}</span>
-                            {tech && <span className="text-slate-500">Tech: {tech.name}</span>}
+                            <span className="text-[#0E7490] font-bold">{apt.serviceName}</span>
+                            {tech && <span className="text-[#475569]">Tech: {tech.name}</span>}
                           </div>
                           <span className={`px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-wide text-[8px] ${
-                            apt.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                            apt.status === 'cancelled' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
-                            'bg-sky-500/10 text-sky-400 border border-sky-500/20'
+                            apt.status === 'completed' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
+                            apt.status === 'cancelled' ? 'bg-rose-100 text-rose-800 border border-rose-200' :
+                            'bg-[#CFFAFE] text-[#0E7490] border border-[#0891B2]/20'
                           }`}>
                             {apt.status}
                           </span>
@@ -613,7 +613,7 @@ export default function AppointmentsList({
                             <button
                               type="button"
                               onClick={() => onUpdateAppointment({ ...apt, status: 'completed', paymentStatus: 'paid' })}
-                              className="px-2 py-1 bg-emerald-650 hover:bg-emerald-550 text-white font-extrabold text-[8px] rounded-md transition-all cursor-pointer flex items-center gap-0.5"
+                              className="px-2 py-1 bg-[#16A34A] hover:bg-[#15803D] text-white font-bold text-[8px] rounded transition-all cursor-pointer flex items-center gap-0.5"
                             >
                               <Check size={8} /> Complete
                             </button>
@@ -626,7 +626,7 @@ export default function AppointmentsList({
                                 onUpdateAppointment({ ...apt, status: 'cancelled' });
                               }
                             }}
-                            className="px-2 py-1 bg-slate-900 hover:bg-rose-950/40 border border-slate-800 text-slate-400 hover:text-rose-400 font-bold text-[8px] rounded-md transition-all cursor-pointer"
+                            className="px-2 py-1 bg-white hover:bg-rose-50 border border-rose-200 text-[#EF4444] font-bold text-[8px] rounded transition-all cursor-pointer"
                           >
                             Cancel
                           </button>
@@ -642,18 +642,18 @@ export default function AppointmentsList({
 
       {/* Book Appointment Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto animate-fade-in" id="appointment-modal">
-          <div className="bg-[#0e1526] border border-slate-800 rounded-2xl w-full max-w-2xl max-h-[92vh] shadow-2xl flex flex-col overflow-hidden animate-zoom-in text-white">
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto animate-fade-in" id="appointment-modal">
+          <div className="bg-white border border-[#E5EDF3] rounded-2xl w-full max-w-2xl max-h-[92vh] shadow-2xl flex flex-col overflow-hidden animate-zoom-in text-[#1E293B]">
             
             {/* Modal Header */}
-            <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950 shrink-0">
+            <div className="p-5 border-b border-[#E5EDF3] flex items-center justify-between bg-white shrink-0">
               <div className="flex items-center gap-2">
-                <Sparkles size={18} className="text-cyan-400 animate-pulse" />
-                <h2 className="text-sm font-bold tracking-tight uppercase font-mono text-cyan-400">Smart Scheduling ... AI Calendar</h2>
+                <Sparkles size={18} className="text-[#0891B2] animate-pulse" />
+                <h2 className="text-sm font-bold tracking-tight uppercase text-[#0E7490]">Smart Scheduling ... AI Calendar</h2>
               </div>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-1 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -664,13 +664,13 @@ export default function AppointmentsList({
               
               {/* Customer selection toggle */}
               <div className="space-y-2.5">
-                <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block">Customer Association</label>
-                <div className="flex gap-2 bg-slate-950 border border-slate-850 p-1 rounded-xl">
+                <label className="text-[10px] text-[#475569] font-extrabold uppercase tracking-wider block">Customer Association</label>
+                <div className="flex gap-2 bg-[#F4F8FB] border border-[#CBD5E1] p-1 rounded-xl">
                   <button
                     type="button"
                     onClick={() => setCustType('existing')}
                     className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                      custType === 'existing' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-400 hover:text-slate-200'
+                      custType === 'existing' ? 'bg-white text-[#0F172A] shadow-sm' : 'text-[#475569] hover:text-[#0F172A]'
                     }`}
                   >
                     Select Existing Client
@@ -679,7 +679,7 @@ export default function AppointmentsList({
                     type="button"
                     onClick={() => setCustType('new')}
                     className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                      custType === 'new' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-400 hover:text-slate-200'
+                      custType === 'new' ? 'bg-white text-[#0F172A] shadow-sm' : 'text-[#475569] hover:text-[#0F172A]'
                     }`}
                   >
                     Create New Client
@@ -691,11 +691,11 @@ export default function AppointmentsList({
                     value={selectedCustId}
                     onChange={(e) => setSelectedCustId(e.target.value)}
                     required={custType === 'existing'}
-                    className="w-full text-xs font-semibold rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white focus:outline-sky-500/50"
+                    className="w-full text-xs font-semibold rounded-lg border border-[#CBD5E1] p-2.5 bg-white text-[#1E293B] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
                   >
-                    <option value="" className="text-slate-400 bg-slate-900">Choose existing client...</option>
+                    <option value="" className="text-slate-400 bg-white">Choose existing client...</option>
                     {customers.map(c => (
-                      <option key={c.id} value={c.id} className="text-white bg-slate-900 font-semibold">{c.name} ({c.phone})</option>
+                      <option key={c.id} value={c.id} className="text-[#1E293B] bg-white font-semibold">{c.name} ({c.phone})</option>
                     ))}
                   </select>
                 ) : (
@@ -706,7 +706,7 @@ export default function AppointmentsList({
                       value={newCustName}
                       onChange={(e) => setNewCustName(e.target.value)}
                       placeholder="Client Full Name"
-                      className="text-xs p-2.5 border border-slate-850 rounded-lg w-full bg-slate-900 text-white placeholder-slate-500 focus:outline-sky-500/50"
+                      className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
                     />
                     <input
                       type="tel"
@@ -714,7 +714,7 @@ export default function AppointmentsList({
                       value={newCustPhone}
                       onChange={(e) => setNewCustPhone(e.target.value)}
                       placeholder="Mobile Number"
-                      className="text-xs p-2.5 border border-slate-850 rounded-lg w-full bg-slate-900 text-white placeholder-slate-500 focus:outline-sky-500/50"
+                      className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
                     />
                     <div className="sm:col-span-2">
                       <input
@@ -722,23 +722,23 @@ export default function AppointmentsList({
                         value={newCustAddress}
                         onChange={(e) => setNewCustAddress(e.target.value)}
                         placeholder="Service Address"
-                        className="text-xs p-2.5 border border-slate-850 rounded-lg w-full bg-slate-900 text-white placeholder-slate-500 focus:outline-sky-500/50"
+                        className="text-xs p-2.5 border border-[#CBD5E1] rounded-lg w-full bg-white text-[#1E293B] placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
                       />
                     </div>
 
                     {/* Dynamic Existing Client Alert & Auto-Fill option */}
                     {isPhoneConflict ? (
-                      <div className="sm:col-span-2 bg-rose-950/50 border border-rose-800/40 rounded-xl p-3.5 flex items-start gap-3 animate-fade-in transition-all">
-                        <div className="p-2 bg-rose-950 text-rose-400 rounded-lg shrink-0 mt-0.5 border border-rose-900/30">
+                      <div className="sm:col-span-2 bg-rose-50 border border-rose-200 rounded-xl p-3.5 flex items-start gap-3 animate-fade-in transition-all">
+                        <div className="p-2 bg-rose-100 text-[#EF4444] rounded-lg shrink-0 mt-0.5 border border-rose-200">
                           <AlertCircle size={14} />
                         </div>
                         <div className="flex-1 space-y-1 text-left">
-                          <h4 className="text-xs font-bold text-rose-350 flex items-center gap-1.5">
+                          <h4 className="text-xs font-bold text-[#EF4444] flex items-center gap-1.5">
                             <span>Duplicate Mobile Number Alert!</span>
-                            <span className="bg-rose-950 text-rose-400 text-[8px] font-extrabold px-1.5 py-0.5 rounded-full border border-rose-800/20 uppercase tracking-wider">Conflict</span>
+                            <span className="bg-rose-100 text-[#EF4444] text-[8px] font-extrabold px-1.5 py-0.5 rounded-full border border-rose-200 uppercase tracking-wider">Conflict</span>
                           </h4>
-                          <p className="text-[10px] text-rose-200 leading-relaxed font-medium">
-                            The mobile number <strong className="font-bold text-white">{newCustPhone}</strong> is already registered under the name <strong className="font-bold text-white">{isPhoneConflict.name}</strong>. You cannot register this phone number under a different name.
+                          <p className="text-[10px] text-slate-700 leading-relaxed font-medium">
+                            The mobile number <strong className="font-bold text-slate-900">{newCustPhone}</strong> is already registered under the name <strong className="font-bold text-slate-900">{isPhoneConflict.name}</strong>. You cannot register this phone number under a different name.
                           </p>
                           <div className="pt-2 flex flex-wrap gap-2">
                             <button
@@ -765,17 +765,17 @@ export default function AppointmentsList({
                         </div>
                       </div>
                     ) : matchedClient && !isAlreadyFilled ? (
-                      <div className="sm:col-span-2 bg-[#1e293b]/60 border border-slate-800 rounded-xl p-3.5 flex items-start gap-3 animate-fade-in transition-all">
-                        <div className="p-2 bg-slate-900 text-cyan-400 rounded-lg shrink-0 mt-0.5">
+                      <div className="sm:col-span-2 bg-slate-50 border border-[#E5EDF3] rounded-xl p-3.5 flex items-start gap-3 animate-fade-in transition-all">
+                        <div className="p-2 bg-white border border-[#E5EDF3] text-[#0891B2] rounded-lg shrink-0 mt-0.5 shadow-xs">
                           <User size={14} />
                         </div>
                         <div className="flex-1 space-y-1 text-left">
-                          <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                          <h4 className="text-xs font-bold text-[#0F172A] flex items-center gap-1.5">
                             <span>Existing Client Found!</span>
-                            <span className="bg-cyan-500/15 text-cyan-400 text-[8px] font-extrabold px-1.5 py-0.5 rounded-full border border-cyan-500/25 uppercase tracking-wider">CRM Match</span>
+                            <span className="bg-[#CFFAFE] text-[#0E7490] text-[8px] font-extrabold px-1.5 py-0.5 rounded-full border border-[#0891B2]/25 uppercase tracking-wider">CRM Match</span>
                           </h4>
-                          <p className="text-[10px] text-slate-300 leading-relaxed font-medium">
-                            We found an existing client named <strong className="font-bold text-white">{matchedClient.name}</strong> with phone <strong className="font-bold text-white">{matchedClient.phone || 'N/A'}</strong>. Would you like to use this client?
+                          <p className="text-[10px] text-[#475569] leading-relaxed font-medium">
+                            We found an existing client named <strong className="font-bold text-[#0F172A]">{matchedClient.name}</strong> with phone <strong className="font-bold text-[#0F172A]">{matchedClient.phone || 'N/A'}</strong>. Would you like to use this client?
                           </p>
                           <div className="pt-2 flex flex-wrap gap-2">
                             <button
@@ -784,7 +784,7 @@ export default function AppointmentsList({
                                 setCustType('existing');
                                 setSelectedCustId(matchedClient.id);
                               }}
-                              className="px-2.5 py-1.5 bg-cyan-600 hover:bg-cyan-505 text-white text-[10px] font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-xs hover:bg-cyan-500 hover:scale-[1.01]"
+                              className="px-2.5 py-1.5 bg-[#0891B2] hover:bg-[#0E7490] text-white text-[10px] font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-xs"
                             >
                               <Check size={10} className="stroke-[2.5]" />
                               <span>Switch to Existing Client</span>
@@ -804,7 +804,7 @@ export default function AppointmentsList({
                                   if (mainVehicle.licensePlate) setVehPlate(mainVehicle.licensePlate);
                                 }
                               }}
-                              className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 border border-slate-700"
+                              className="px-2.5 py-1.5 bg-white hover:bg-slate-50 text-[#334155] text-[10px] font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1 border border-[#CBD5E1]"
                             >
                               <span>Auto-Fill Details Only</span>
                             </button>
@@ -819,31 +819,31 @@ export default function AppointmentsList({
               {/* Row 2: Service & Vehicle Input (replacing size dropdown & year/make/model inputs) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Service Type *</label>
+                  <label className="text-[10px] text-[#475569] font-extrabold uppercase tracking-wider block mb-1">Service Type *</label>
                   <select
                     required
                     value={selectedServiceId}
                     onChange={(e) => setSelectedServiceId(e.target.value)}
-                    className="w-full text-xs font-semibold rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white focus:outline-sky-500/50"
+                    className="w-full text-xs font-semibold rounded-lg border border-[#CBD5E1] p-2.5 bg-white text-[#1E293B] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
                   >
-                    <option value="" className="text-slate-400 bg-slate-900">Select Core Treatment Package</option>
+                    <option value="" className="text-slate-400 bg-white">Select Core Treatment Package</option>
                     {services
                       .filter(s => s.category !== 'add_on')
                       .map(pkg => (
-                        <option key={pkg.id} value={pkg.id} className="text-white bg-slate-900 font-semibold">{pkg.name}</option>
+                        <option key={pkg.id} value={pkg.id} className="text-[#1E293B] bg-white font-semibold">{pkg.name}</option>
                       ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Vehicle *</label>
+                  <label className="text-[10px] text-[#475569] font-extrabold uppercase tracking-wider block mb-1">Vehicle *</label>
                   <input
                     type="text"
                     required
                     value={vehMake}
                     onChange={(e) => setVehMake(e.target.value)}
                     placeholder="e.g. Maruti Swift (Manually type vehicle name)"
-                    className="w-full text-xs p-2.5 border border-slate-850 rounded-lg bg-slate-900 text-white placeholder-slate-500 focus:outline-sky-500/50"
+                    className="w-full text-xs p-2.5 border border-[#CBD5E1] rounded-lg bg-white text-[#1E293B] placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
                   />
                 </div>
               </div>
@@ -851,46 +851,46 @@ export default function AppointmentsList({
               {/* Row 4: Scheduling details (Date, Time, Price, Assign Employee) */}
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div>
-                  <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Date *</label>
+                  <label className="text-[10px] text-[#475569] font-extrabold uppercase tracking-wider block mb-1">Date *</label>
                   <input
                     type="date"
                     required
                     value={bookingDate}
                     onChange={(e) => setBookingDate(e.target.value)}
-                    className="w-full text-xs font-semibold rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white focus:outline-sky-500/50 font-mono"
+                    className="w-full text-xs font-semibold rounded-lg border border-[#CBD5E1] p-2.5 bg-white text-[#1E293B] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Start Time *</label>
+                  <label className="text-[10px] text-[#475569] font-extrabold uppercase tracking-wider block mb-1">Start Time *</label>
                   <input
                     type="time"
                     required
                     value={bookingTime}
                     onChange={(e) => setBookingTime(e.target.value)}
-                    className="w-full text-xs font-semibold rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white focus:outline-sky-500/50 font-mono"
+                    className="w-full text-xs font-semibold rounded-lg border border-[#CBD5E1] p-2.5 bg-white text-[#1E293B] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Price (₹) *</label>
+                  <label className="text-[10px] text-[#475569] font-extrabold uppercase tracking-wider block mb-1">Price (₹) *</label>
                   <input
                     type="number"
                     required
                     value={bookingPrice || ''}
                     onChange={(e) => setBookingPrice(Number(e.target.value))}
                     placeholder="0"
-                    className="w-full text-xs font-semibold rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white focus:outline-sky-500/50 font-mono"
+                    className="w-full text-xs font-semibold rounded-lg border border-[#CBD5E1] p-2.5 bg-white text-[#1E293B] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Assign Employee</label>
+                  <label className="text-[10px] text-[#475569] font-extrabold uppercase tracking-wider block mb-1">Assign Employee</label>
                   <select
                     value={assignedStaffId}
                     onChange={(e) => setAssignedStaffId(e.target.value)}
-                    className="w-full text-xs font-semibold rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white focus:outline-sky-500/50 cursor-pointer h-[38px] overflow-y-auto"
+                    className="w-full text-xs font-semibold rounded-lg border border-[#CBD5E1] p-2.5 bg-white text-[#1E293B] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none cursor-pointer h-[38px] overflow-y-auto"
                   >
-                    <option value="" className="text-slate-400 bg-slate-900">Not Assigned</option>
+                    <option value="" className="text-slate-400 bg-white">Not Assigned</option>
                     {staff.map(s => (
-                      <option key={s.id} value={s.id} className="text-white bg-slate-900 font-semibold">
+                      <option key={s.id} value={s.id} className="text-[#1E293B] bg-white font-semibold">
                         {s.name} ({s.role === 'detailer' ? 'Employee' : s.role === 'manager' ? 'Car Washer' : s.role})
                       </option>
                     ))}
@@ -900,32 +900,32 @@ export default function AppointmentsList({
 
               {/* Notes */}
               <div>
-                <label className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Studio Work Notes</label>
+                <label className="text-[10px] text-[#475569] font-extrabold uppercase tracking-wider block mb-1">Studio Work Notes</label>
                 <textarea
                   value={bookingNotes}
                   onChange={(e) => setBookingNotes(e.target.value)}
                   placeholder="e.g. Customer requested a discount. Basic wash interior only."
-                  className="w-full text-xs rounded-lg border border-slate-850 p-2.5 bg-slate-900 text-white placeholder-slate-500 focus:outline-sky-500/50 h-16"
+                  className="w-full text-xs rounded-lg border border-[#CBD5E1] p-2.5 bg-white text-[#1E293B] placeholder-[#94A3B8] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none h-16"
                 />
               </div>
 
               {/* Subtotal Footer */}
-              <div className="border-t border-slate-800 pt-4 flex items-center justify-between shrink-0 bg-transparent">
+              <div className="border-t border-[#E5EDF3] pt-4 flex items-center justify-between shrink-0 bg-transparent">
                 <div className="space-y-0.5">
-                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Estimated Quote</span>
-                  <span className="text-lg font-black text-emerald-400 font-mono">₹{bookingPrice}</span>
+                  <span className="text-[10px] text-[#475569] font-bold uppercase tracking-wider block">Estimated Quote</span>
+                  <span className="text-lg font-black text-[#16A34A]">₹{bookingPrice}</span>
                 </div>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
-                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-lg transition-all cursor-pointer"
+                    className="px-4 py-2 bg-white border border-[#CBD5E1] hover:bg-slate-50 text-[#334155] text-xs font-bold rounded-lg transition-all cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 bg-[#0ea5e9] hover:bg-[#38bdf8] text-white text-xs font-bold rounded-lg shadow-md transition-all cursor-pointer"
+                    className="px-5 py-2 bg-[#0891B2] hover:bg-[#0E7490] text-white text-xs font-bold rounded-lg shadow-md transition-all cursor-pointer"
                   >
                     Create Booking
                   </button>
