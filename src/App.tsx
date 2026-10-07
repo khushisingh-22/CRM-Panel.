@@ -68,6 +68,7 @@ import { loadFirebaseUserData, saveFirebaseUserField, loadPublicInvoiceData } fr
 import LoginScreen from './components/LoginScreen';
 import PublicInvoiceView from './components/PublicInvoiceView';
 import CarIntroLoader from './components/CarIntroLoader';
+import { DrWashitLogo } from './components/DrWashitLogo';
 
 // Helper to dynamically calculate customer stats
 const recalculateCustomerStats = (customerList: Customer[], appointmentList: Appointment[]): Customer[] => {
@@ -193,26 +194,9 @@ export default function App() {
 
   // Premium Car Detailing Intro trigger when transitioning to logged-in
   useEffect(() => {
-    if (currentUser) {
-      setShowIntro(true);
-      setIntroStep(0);
-      const t1 = setTimeout(() => setIntroStep(1), 1100);
-      const t2 = setTimeout(() => setIntroStep(2), 2200);
-      const t3 = setTimeout(() => setIntroStep(3), 3300);
-      const t4 = setTimeout(() => setIntroStep(4), 4400);
-      const t5 = setTimeout(() => setShowIntro(false), 5200);
-
-      return () => {
-        clearTimeout(t1);
-        clearTimeout(t2);
-        clearTimeout(t3);
-        clearTimeout(t4);
-        clearTimeout(t5);
-      };
-    } else {
-      setShowIntro(false);
-      setIntroStep(0);
-    }
+    // Disabled fake multi-step progress bar as requested
+    setShowIntro(false);
+    setIntroStep(0);
   }, [currentUser]);
 
   const fetchAndSetUserData = async (user: any) => {
@@ -885,10 +869,14 @@ export default function App() {
   // 1. Guard against Auth Loading state
   if (authLoading) {
     return (
-      <div className="h-screen bg-[#070A13] flex items-center justify-center text-slate-400 font-medium select-none">
-        <div className="flex flex-col items-center gap-3">
-          <span className="h-9 w-9 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin"></span>
-          <span className="text-xs font-bold tracking-wider uppercase text-slate-500 animate-pulse">Checking Secure Session...</span>
+      <div className="h-screen bg-[#F4F8FB] flex flex-col items-center justify-center select-none font-sans">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <DrWashitLogo size={64} className="shadow-md border border-[#E5EDF3]" />
+          
+          <div className="flex flex-col items-center gap-2 mt-2">
+            <span className="h-6 w-6 rounded-full border-[3px] border-[#0891B2]/20 border-t-[#0891B2] animate-spin"></span>
+            <span className="text-sm font-medium text-[#64748B] mt-1">Checking secure session...</span>
+          </div>
         </div>
       </div>
     );
@@ -907,10 +895,14 @@ export default function App() {
   // 3. Guard against unmounted defaults when logged in but data still fetching
   if (!settings || !settings.shopName) {
     return (
-      <div className="h-screen bg-[#070A13] flex items-center justify-center text-slate-400 font-medium select-none">
-        <div className="flex flex-col items-center gap-3">
-          <span className="h-9 w-9 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin"></span>
-          <span className="text-xs font-bold tracking-wider uppercase text-slate-500 animate-pulse">Syncing Workshop Database...</span>
+      <div className="h-screen bg-[#F4F8FB] flex flex-col items-center justify-center select-none font-sans">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <DrWashitLogo size={64} className="shadow-md border border-[#E5EDF3]" />
+          
+          <div className="flex flex-col items-center gap-2 mt-2">
+            <span className="h-6 w-6 rounded-full border-[3px] border-[#0891B2]/20 border-t-[#0891B2] animate-spin"></span>
+            <span className="text-sm font-medium text-[#64748B] mt-1">Loading your workspace...</span>
+          </div>
         </div>
       </div>
     );
