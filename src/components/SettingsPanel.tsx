@@ -80,7 +80,7 @@ export default function SettingsPanel({
   const [newWebTitle, setNewWebTitle] = useState('');
 
   // --- Accessibility States ---
-  const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark' | 'system'>(settings.theme || 'dark');
+  const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark' | 'system'>('light');
   const [fontSize, setFontSize] = useState<'small' | 'medium' | 'large'>((settings.fontSize as any) || 'medium');
   const [reduceMotion, setReduceMotion] = useState(false);
   const [highContrast, setHighContrast] = useState(false);
@@ -89,25 +89,10 @@ export default function SettingsPanel({
 
   // --- Accessibility Live Application ---
   React.useEffect(() => {
-    const theme = selectedTheme || 'dark';
+    // Redesigned with Premium LIGHT Theme as requested
     const root = document.documentElement;
-    if (theme === 'light') {
-      root.classList.remove('dark');
-      root.classList.add('light');
-    } else if (theme === 'dark') {
-      root.classList.remove('light');
-      root.classList.add('dark');
-    } else {
-      // System
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (systemPrefersDark) {
-        root.classList.remove('light');
-        root.classList.add('dark');
-      } else {
-        root.classList.remove('dark');
-        root.classList.add('light');
-      }
-    }
+    root.classList.remove('dark');
+    root.classList.add('light');
   }, [selectedTheme]);
 
   React.useEffect(() => {
@@ -179,13 +164,13 @@ export default function SettingsPanel({
     <div className="space-y-6" id="settings-management-root">
       {/* Page Title Header */}
       <div>
-        <h1 className="text-xl font-extrabold text-white tracking-tight md:text-2xl">Settings</h1>
-        <p className="text-xs text-slate-400">Configure business information, manage domains, and customize interface accessibility settings</p>
+        <h1 className="text-xl font-extrabold text-[#0F172A] tracking-tight md:text-2xl">Settings</h1>
+        <p className="text-xs text-[#64748B]">Configure business information, manage domains, and customize interface accessibility settings</p>
       </div>
 
       {/* Tabs Row Header */}
-      <div className="border-b border-slate-800/80 overflow-x-auto">
-        <div className="flex gap-1 pb-px min-w-max">
+      <div className="border-b border-[#E5EDF3] overflow-x-auto">
+        <div className="flex gap-1 pb-px min-w-max font-sans">
           {([
             { id: 'business', name: 'Business Info' },
             { id: 'whatsapp', name: 'WhatsApp Gateway' },
@@ -198,11 +183,12 @@ export default function SettingsPanel({
             return (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 cursor-pointer ${
                   active
-                    ? 'border-sky-500 text-sky-400 bg-sky-500/5'
-                    : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/25'
+                    ? 'border-[#0891B2] text-[#0891B2] bg-[#ECFEFF]/50'
+                    : 'border-transparent text-[#64748B] hover:text-[#0891B2] hover:bg-[#F4F8FB]'
                 }`}
               >
                 {tab.name}
@@ -669,41 +655,46 @@ export default function SettingsPanel({
 
         {/* --- TAB 8: ACCESSIBILITY --- */}
         {activeTab === 'accessibility' && (
-          <div className="bg-[#0B1329] border border-slate-800/60 rounded-xl p-6 shadow-md space-y-6 shadow-lg max-w-4xl animate-fade-in" id="settings-tab-accessibility">
+          <div className="bg-white border border-[#E5EDF3] rounded-2xl p-6 space-y-6 shadow-xs max-w-4xl animate-fade-in" id="settings-tab-accessibility">
             
-            {/* Header info */}
-            <div>
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Sliders className="text-sky-500 animate-pulse" size={16} />
-                Accessibility Settings
-              </h3>
-              <p className="text-xs text-slate-400">Customize the interface to better suit your needs</p>
-            </div>
-
-            {/* Theme Toggle Buttons */}
+            {/* Theme section */}
             <div className="space-y-2">
-              <label className="text-3xs text-slate-400 font-extrabold uppercase tracking-wider block">Theme</label>
-              <p className="text-3xs text-slate-500">Choose how the interface appears</p>
+              <div>
+                <h4 className="text-[16px] font-semibold text-[#0F172A] leading-snug">Theme</h4>
+                <p className="text-[13px] text-[#64748B]">Choose how the interface appears</p>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {([
-                  { id: 'light', label: 'Light' },
-                  { id: 'dark', label: 'Dark' },
-                  { id: 'system', label: 'System' }
+                  { id: 'light', label: 'Light', disabled: false },
+                  { id: 'dark', label: 'Dark', disabled: true },
+                  { id: 'system', label: 'System', disabled: true }
                 ] as const).map(th => {
                   const active = selectedTheme === th.id;
                   return (
                     <button
                       key={th.id}
                       type="button"
-                      onClick={() => setSelectedTheme(th.id)}
-                      className={`flex items-center justify-center gap-2 p-3.5 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
-                        active
-                          ? 'bg-sky-500 border-sky-400 text-slate-950 shadow-md'
-                          : 'bg-slate-950/50 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-950'
+                      disabled={th.disabled}
+                      onClick={() => {
+                        if (!th.disabled) {
+                          setSelectedTheme(th.id);
+                        }
+                      }}
+                      className={`flex items-center justify-center gap-2 p-3.5 rounded-xl text-xs font-bold transition-all border relative cursor-pointer ${
+                        th.disabled
+                          ? 'bg-slate-50 border-[#E2E8F0] text-slate-400 cursor-not-allowed opacity-60'
+                          : active
+                            ? 'bg-[#0891B2] border-[#0891B2] text-white shadow-sm'
+                            : 'bg-white border-[#CBD5E1] text-[#334155] hover:text-[#0891B2] hover:bg-[#F4F8FB]'
                       }`}
                     >
-                      <Eye size={14} className={active ? 'text-slate-950' : 'text-slate-500'} />
+                      <Eye size={14} className={th.disabled ? 'text-slate-300' : active ? 'text-white' : 'text-[#334155]'} />
                       <span>{th.label}</span>
+                      {th.disabled && (
+                        <span className="absolute -top-2 right-2 bg-slate-100 text-slate-500 text-[9px] font-semibold px-1.5 py-0.5 rounded-md border border-[#E2E8F0]">
+                          Coming soon
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -711,13 +702,15 @@ export default function SettingsPanel({
             </div>
 
             {/* Font Size Selector */}
-            <div className="space-y-1">
-              <label className="text-3xs text-slate-400 font-extrabold uppercase tracking-wider block">Font Size</label>
-              <p className="text-3xs text-slate-500">Adjust text size across the interface</p>
+            <div className="space-y-2">
+              <div>
+                <h4 className="text-[16px] font-semibold text-[#0F172A] leading-snug">Font size</h4>
+                <p className="text-[13px] text-[#64748B]">Adjust text size across the interface</p>
+              </div>
               <select
                 value={fontSize}
                 onChange={(e) => setFontSize(e.target.value as any)}
-                className="text-xs p-2.5 border border-slate-800 rounded-lg w-full bg-slate-950 text-white focus:outline-hidden focus:border-sky-500/50 cursor-pointer max-w-xs"
+                className="text-xs px-3 border border-[#CBD5E1] rounded-xl w-full bg-white text-[#0F172A] focus:outline-hidden focus:border-[#0891B2] cursor-pointer max-w-xs h-[44px]"
               >
                 <option value="small">Small</option>
                 <option value="medium">Medium (Default)</option>
@@ -729,16 +722,16 @@ export default function SettingsPanel({
             <div className="space-y-4 pt-2">
               
               {/* Reduce Motion Switch */}
-              <div className="flex items-center justify-between p-3.5 border border-slate-800/80 rounded-xl bg-slate-950/20 hover:bg-slate-950/40 transition-all">
+              <div className="flex items-center justify-between p-4 bg-white border border-[#E5EDF3] rounded-xl hover:shadow-2xs transition-all">
                 <div>
-                  <span className="text-xs font-bold text-slate-200 block">Reduce Motion</span>
-                  <span className="text-3xs text-slate-500 block mt-0.5">Minimize animations and transitions</span>
+                  <span className="text-[15px] font-semibold text-[#0F172A] block">Reduce Motion</span>
+                  <span className="text-[13px] text-[#64748B] block mt-0.5">Minimize animations and transitions</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setReduceMotion(!reduceMotion)}
                   className={`w-10 h-5.5 rounded-full p-0.5 transition-colors duration-200 cursor-pointer focus:outline-hidden ${
-                    reduceMotion ? 'bg-sky-500' : 'bg-slate-800'
+                    reduceMotion ? 'bg-[#0891B2]' : 'bg-[#CBD5E1]'
                   }`}
                 >
                   <div
@@ -750,16 +743,16 @@ export default function SettingsPanel({
               </div>
 
               {/* High Contrast Mode Switch */}
-              <div className="flex items-center justify-between p-3.5 border border-slate-800/80 rounded-xl bg-slate-950/20 hover:bg-slate-950/40 transition-all">
+              <div className="flex items-center justify-between p-4 bg-white border border-[#E5EDF3] rounded-xl hover:shadow-2xs transition-all">
                 <div>
-                  <span className="text-xs font-bold text-slate-200 block">High Contrast Mode</span>
-                  <span className="text-3xs text-slate-500 block mt-0.5">Increase contrast for better visibility</span>
+                  <span className="text-[15px] font-semibold text-[#0F172A] block">High Contrast Mode</span>
+                  <span className="text-[13px] text-[#64748B] block mt-0.5">Increase contrast for better visibility</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setHighContrast(!highContrast)}
                   className={`w-10 h-5.5 rounded-full p-0.5 transition-colors duration-200 cursor-pointer focus:outline-hidden ${
-                    highContrast ? 'bg-sky-500' : 'bg-slate-800'
+                    highContrast ? 'bg-[#0891B2]' : 'bg-[#CBD5E1]'
                   }`}
                 >
                   <div
@@ -771,16 +764,16 @@ export default function SettingsPanel({
               </div>
 
               {/* Enhanced Focus Indicators Switch */}
-              <div className="flex items-center justify-between p-3.5 border border-slate-800/80 rounded-xl bg-slate-950/20 hover:bg-slate-950/40 transition-all">
+              <div className="flex items-center justify-between p-4 bg-white border border-[#E5EDF3] rounded-xl hover:shadow-2xs transition-all">
                 <div>
-                  <span className="text-xs font-bold text-slate-200 block">Enhanced Focus Indicators</span>
-                  <span className="text-3xs text-slate-500 block mt-0.5">Show prominent outlines when navigating with keyboard</span>
+                  <span className="text-[15px] font-semibold text-[#0F172A] block">Enhanced Focus Indicators</span>
+                  <span className="text-[13px] text-[#64748B] block mt-0.5">Show prominent outlines when navigating with keyboard</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setEnhancedFocus(!enhancedFocus)}
                   className={`w-10 h-5.5 rounded-full p-0.5 transition-colors duration-200 cursor-pointer focus:outline-hidden ${
-                    enhancedFocus ? 'bg-sky-500' : 'bg-slate-800'
+                    enhancedFocus ? 'bg-[#0891B2]' : 'bg-[#CBD5E1]'
                   }`}
                 >
                   <div
@@ -792,19 +785,21 @@ export default function SettingsPanel({
               </div>
 
               {/* Notification Sounds Switch */}
-              <div className="flex items-center justify-between p-3.5 border border-slate-800/80 rounded-xl bg-slate-950/20 hover:bg-slate-950/40 transition-all">
-                <div>
-                  <span className="text-xs font-bold text-slate-200 block flex items-center gap-1.5">
-                    <Volume2 size={13} className="text-slate-400" />
-                    Notification Sounds
-                  </span>
-                  <span className="text-3xs text-slate-500 block mt-0.5">Play audio alerts when new notifications arrive</span>
+              <div className="flex items-center justify-between p-4 bg-white border border-[#E5EDF3] rounded-xl hover:shadow-2xs transition-all">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-[#ECFEFF] text-[#0891B2] shrink-0">
+                    <Volume2 size={18} className="stroke-[2.5]" />
+                  </div>
+                  <div>
+                    <span className="text-[15px] font-semibold text-[#0F172A] block">Notification Sounds</span>
+                    <span className="text-[13px] text-[#64748B] block mt-0.5">Play audio alerts when new notifications arrive</span>
+                  </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setNotificationSounds(!notificationSounds)}
                   className={`w-10 h-5.5 rounded-full p-0.5 transition-colors duration-200 cursor-pointer focus:outline-hidden ${
-                    notificationSounds ? 'bg-sky-500' : 'bg-slate-800'
+                    notificationSounds ? 'bg-[#0891B2]' : 'bg-[#CBD5E1]'
                   }`}
                 >
                   <div
@@ -818,26 +813,49 @@ export default function SettingsPanel({
             </div>
 
             {/* Keyboard Navigation Block */}
-            <div className="p-4 border border-slate-800 rounded-xl bg-slate-950/40 space-y-2.5">
-              <span className="text-3xs font-extrabold uppercase tracking-widest text-slate-400 block">Keyboard Navigation</span>
-              <ul className="space-y-1.5 text-xs text-slate-300">
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-sky-500 rounded-full shrink-0"></span>
-                  <span>Use <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-3xs font-mono border border-slate-700 text-slate-200 font-extrabold shadow-sm">Tab</kbd> to navigate between elements</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-sky-500 rounded-full shrink-0"></span>
-                  <span>Use <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-3xs font-mono border border-slate-700 text-slate-200 font-extrabold shadow-sm">Enter</kbd> or <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-3xs font-mono border border-slate-700 text-slate-200 font-extrabold shadow-sm">Space</kbd> to activate buttons</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-sky-500 rounded-full shrink-0"></span>
-                  <span>Use <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-3xs font-mono border border-slate-700 text-slate-200 font-extrabold shadow-sm">Esc</kbd> to close dialogs and menus</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-sky-500 rounded-full shrink-0"></span>
-                  <span>Use arrow keys to navigate within menus and dropdowns</span>
-                </li>
-              </ul>
+            <div className="space-y-3">
+              <div>
+                <h4 className="text-[16px] font-semibold text-[#0F172A] leading-snug">Keyboard navigation</h4>
+                <p className="text-[13px] text-[#64748B]">Use hotkeys to move around quickly</p>
+              </div>
+              <div className="p-4 border border-[#E5EDF3] rounded-xl bg-[#F8FAFC] space-y-3 font-sans">
+                <ul className="space-y-2.5 text-[14px] text-[#334155]">
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-[#0891B2] rounded-full shrink-0"></span>
+                    <span>Use <kbd className="px-2 py-1 rounded bg-white text-[12px] font-semibold border border-[#CBD5E1] border-b-2 text-[#0F172A] shadow-xs">Tab</kbd> to navigate between elements</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-[#0891B2] rounded-full shrink-0"></span>
+                    <span>Use <kbd className="px-2 py-1 rounded bg-white text-[12px] font-semibold border border-[#CBD5E1] border-b-2 text-[#0F172A] shadow-xs">Enter</kbd> or <kbd className="px-2 py-1 rounded bg-white text-[12px] font-semibold border border-[#CBD5E1] border-b-2 text-[#0F172A] shadow-xs">Space</kbd> to activate buttons</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-[#0891B2] rounded-full shrink-0"></span>
+                    <span>Use <kbd className="px-2 py-1 rounded bg-white text-[12px] font-semibold border border-[#CBD5E1] border-b-2 text-[#0F172A] shadow-xs">Esc</kbd> to close dialogs and menus</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-[#0891B2] rounded-full shrink-0"></span>
+                    <span>Use arrow keys to navigate within menus and dropdowns</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Save Button Row inside tab */}
+            <div className="border-t border-[#E5EDF3] pt-5 mt-6 flex items-center justify-between">
+              <div>
+                {success && (
+                  <span className="text-emerald-600 text-xs font-bold flex items-center gap-1.5">
+                    <CheckCircle size={14} className="text-emerald-600" /> Accessibility settings saved successfully!
+                  </span>
+                )}
+              </div>
+              <button
+                type="submit"
+                className="px-5 py-2.5 bg-[#0891B2] hover:bg-[#0E7490] text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <Save size={14} />
+                Save Accessibility Settings
+              </button>
             </div>
 
           </div>
