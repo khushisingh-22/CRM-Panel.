@@ -24,7 +24,8 @@ import {
   Mail,
   Phone,
   Globe,
-  MessageSquare
+  MessageSquare,
+  ArrowLeft
 } from 'lucide-react';
 import { Appointment, ShopSettings, Customer } from '../types/crm';
 import { sendWhatsAppMessage } from '../utils/whatsapp';
@@ -38,6 +39,8 @@ interface BillingManagerProps {
   customers?: Customer[];
   ownerUid?: string;
   initialInvoiceId?: string | null;
+  onNavigate?: (tab: string, paramId?: string) => void;
+  onBack?: () => void;
 }
 
 const formatDate = (dateStr: string) => {
@@ -104,7 +107,9 @@ export default function BillingManager({
   onUpdateAppointment,
   customers = [],
   ownerUid = '',
-  initialInvoiceId = null
+  initialInvoiceId = null,
+  onNavigate,
+  onBack
 }: BillingManagerProps) {
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(
     initialInvoiceId || appointments.filter(a => a.status !== 'cancelled')[0]?.id || appointments[0]?.id || null
@@ -116,7 +121,11 @@ export default function BillingManager({
     }
   }, [initialInvoiceId]);
 
-  const activeInvoice = appointments.find(a => a.id === selectedInvoiceId || a.invoiceNumber === selectedInvoiceId) 
+  const activeInvoice = appointments.find(a => 
+    a.id === selectedInvoiceId || 
+    a.invoiceNumber === selectedInvoiceId || 
+    (selectedInvoiceId && String(a.id).trim() === String(selectedInvoiceId).trim())
+  ) 
     || appointments.filter(a => a.status !== 'cancelled')[0] 
     || appointments[0];
 
@@ -163,10 +172,26 @@ export default function BillingManager({
   return (
     <div className="space-y-6" id="billing-tab-root">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 no-print bg-white p-5 rounded-2xl border border-[#E5EDF3] shadow-md">
-        <div className="text-left">
-          <h1 className="text-xl font-extrabold text-[#0F172A] tracking-tight md:text-2xl">Invoicing & Billing Hub</h1>
-          <p className="text-xs text-[#475569]">Generate itemized job invoices, track transaction payments, and print customer receipts</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 no-print bg-white p-4 sm:p-5 rounded-2xl border border-[#E5EDF3] shadow-md">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          {(onBack || onNavigate) && (
+            <button
+              onClick={() => {
+                if (onBack) onBack();
+                else if (onNavigate) onNavigate('bookings');
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 bg-[#ECFEFF] hover:bg-[#CFFAFE] text-[#0891B2] hover:text-[#0E7490] rounded-xl text-xs font-bold border border-[#0891B2]/40 transition-all cursor-pointer shadow-xs shrink-0"
+              title="Go Back to Bookings / Previous Screen"
+              id="billing-back-btn"
+            >
+              <ArrowLeft size={16} className="stroke-[2.5]" />
+              <span>Back</span>
+            </button>
+          )}
+          <div className="text-left min-w-0">
+            <h1 className="text-lg sm:text-xl font-extrabold text-[#0F172A] tracking-tight md:text-2xl truncate">Invoicing & Billing Hub</h1>
+            <p className="text-xs text-[#475569] truncate sm:whitespace-normal">Generate itemized job invoices, track transaction payments, and print customer receipts</p>
+          </div>
         </div>
         
         {/* Dropdown Selector instead of full sidebar */}
@@ -182,7 +207,7 @@ export default function BillingManager({
                 .filter(a => a.status !== 'cancelled')
                 .map(invoice => (
                   <option key={invoice.id} value={invoice.id} className="text-[#1E293B] bg-white">
-                    {invoice.invoiceNumber || 'INV-0000'} - {invoice.customerName}
+                    {invoice.invoiceNumber || 'INV-0000'} - {invoice.customerName} (₹{invoice.price})
                   </option>
                 ))}
             </select>

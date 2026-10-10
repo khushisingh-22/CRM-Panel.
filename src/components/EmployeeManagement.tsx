@@ -21,18 +21,23 @@ import {
   AlertCircle,
   X,
   Shield,
-  Edit2
+  Edit2,
+  ArrowLeft
 } from 'lucide-react';
 import { Staff, StaffLedgerEntry } from '../types/crm';
 
 interface EmployeeManagementProps {
   staffList: Staff[];
   onUpdateStaffList: (updated: Staff[]) => void;
+  onNavigate?: (tab: string, paramId?: string) => void;
+  onBack?: () => void;
 }
 
 export default function EmployeeManagement({
   staffList,
-  onUpdateStaffList
+  onUpdateStaffList,
+  onNavigate,
+  onBack
 }: EmployeeManagementProps) {
   // Selected employee for tracking details and ledger
   const [selectedStaffId, setSelectedStaffId] = useState<string>(staffList[0]?.id || '');

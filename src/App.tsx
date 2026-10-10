@@ -31,8 +31,28 @@ import {
   User,
   HelpCircle,
   LogOut,
-  ClipboardCheck
+  ClipboardCheck,
+  ArrowLeft
 } from 'lucide-react';
+
+const TAB_NAMES: Record<string, string> = {
+  dashboard: 'Overview',
+  appointments: 'Calendar',
+  bookings: 'Bookings',
+  workboard: 'Bay Workboard',
+  crm: 'Clients',
+  employee_ledger: 'Employee Ledger',
+  services: 'Services Catalog',
+  billing: 'Invoices & Billing',
+  'booking-portal': 'Online Portal',
+  settings: 'Settings',
+  expenses: 'Expenses Log',
+  inventory: 'Stock & Inventory',
+  packages: 'Packages',
+  team: 'Team Status',
+  help: 'Help Desk',
+  profile: 'Profile'
+};
 
 import { getStoredData, saveStoredData } from './utils/storage';
 import { DEFAULT_SERVICES, DEFAULT_STAFF, DEFAULT_SETTINGS } from './data/mockData';
@@ -86,11 +106,72 @@ const recalculateCustomerStats = (customerList: Customer[], appointmentList: App
 };
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<string>('dashboard');
-  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabFromUrl = urlParams.get('tab');
+      if (tabFromUrl && tabFromUrl !== 'dashboard') return tabFromUrl;
+    }
+    return 'dashboard';
+  });
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('id');
+    }
+    return null;
+  });
+  const [navHistory, setNavHistory] = useState<Array<{ tab: string; paramId?: string }>>([{ tab: 'dashboard' }]);
   const [autoOpenNewBooking, setAutoOpenNewBooking] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
   const [showNotifications, setShowNotifications] = useState(false);
+
+  // Synchronize browser history and trap Android / iOS / Browser Back button to prevent exiting CRM
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const initialTab = new URLSearchParams(window.location.search).get('tab') || 'dashboard';
+    const initialId = new URLSearchParams(window.location.search).get('id') || undefined;
+    
+    // Replace current state with app baseline
+    window.history.replaceState({ tab: initialTab, paramId: initialId, crmApp: true }, '', window.location.href);
+    // Push a buffer entry so mobile swipe back or hardware back doesn't immediately close/exit the website
+    window.history.pushState({ tab: initialTab, paramId: initialId, crmApp: true }, '', window.location.href);
+
+    const handlePopState = () => {
+      // Intercept back gesture on Android / iOS / browser
+      setNavHistory(prev => {
+        if (prev.length > 1) {
+          const updated = [...prev];
+          updated.pop(); // pop current screen
+          const target = updated[updated.length - 1];
+          if (target) {
+            setActiveTab(target.tab);
+            if (target.tab === 'billing') {
+              setSelectedInvoiceId(target.paramId || null);
+            }
+            // Update URL cleanly without leaving page
+            const searchParams = new URLSearchParams(window.location.search);
+            searchParams.set('tab', target.tab);
+            if (target.paramId) searchParams.set('id', target.paramId);
+            else searchParams.delete('id');
+            window.history.replaceState({ tab: target.tab, paramId: target.paramId, crmApp: true }, '', `${window.location.pathname}?${searchParams.toString()}`);
+            return updated;
+          }
+        }
+
+        // Already at root or dashboard: stay in CRM safely!
+        setActiveTab('dashboard');
+        setSelectedInvoiceId(null);
+        // Push a safety state so next back gesture also keeps user in CRM
+        window.history.pushState({ tab: 'dashboard', crmApp: true }, '', window.location.pathname);
+        return [{ tab: 'dashboard' }];
+      });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Public customer invoice viewing state
   const [publicInvoice, setPublicInvoice] = useState<{ settings: ShopSettings; appointment: Appointment } | null>(null);
@@ -797,8 +878,8 @@ export default function App() {
     setSelectedJobId(newApt.id);
   };
 
-  // Nav support helper
-  const handleNavigate = (tabId: string, paramId?: string) => {
+  // Nav support helper with browser history integration
+  const handleNavigate = (tabId: string, paramId?: string, addToHistory: boolean = true) => {
     // Admin only views list
     const adminOnlyTabs = ['employee_ledger', 'billing', 'settings', 'expenses', 'inventory', 'packages', 'services', 'workflows', 'automations'];
     if (currentUser?.role === 'employee' && adminOnlyTabs.includes(tabId)) {
@@ -807,21 +888,67 @@ export default function App() {
     }
 
     if (tabId === 'billing') {
-      if (paramId) {
-        setSelectedInvoiceId(paramId);
+      setSelectedInvoiceId(paramId || null);
+    }
+
+    const targetTab = tabId === 'bookings_new' ? 'bookings' : tabId;
+
+    if (addToHistory && targetTab !== activeTab) {
+      if (typeof window !== 'undefined') {
+        const searchParams = new URLSearchParams(window.location.search);
+        searchParams.set('tab', targetTab);
+        if (paramId) {
+          searchParams.set('id', paramId);
+        } else {
+          searchParams.delete('id');
+        }
+        window.history.pushState({ tab: targetTab, paramId, crmApp: true }, '', `${window.location.pathname}?${searchParams.toString()}`);
       }
+      setNavHistory(prev => [...prev, { tab: targetTab, paramId }]);
     }
 
     if (tabId === 'bookings_new') {
       setActiveTab('bookings');
       setAutoOpenNewBooking(true);
     } else {
-      setActiveTab(tabId);
+      setActiveTab(targetTab);
     }
 
     // Auto-close sidebar on mobile/tablet after navigating
     if (window.innerWidth < 1024) {
       setSidebarOpen(false);
+    }
+  };
+
+  const handleGoBack = () => {
+    if (navHistory.length > 1) {
+      const updatedHistory = [...navHistory];
+      updatedHistory.pop(); // remove current active page
+      const previous = updatedHistory[updatedHistory.length - 1];
+      setNavHistory(updatedHistory);
+      if (previous) {
+        if (typeof window !== 'undefined') {
+          const searchParams = new URLSearchParams(window.location.search);
+          searchParams.set('tab', previous.tab);
+          if (previous.paramId) {
+            searchParams.set('id', previous.paramId);
+          } else {
+            searchParams.delete('id');
+          }
+          window.history.replaceState({ tab: previous.tab, paramId: previous.paramId, crmApp: true }, '', `${window.location.pathname}?${searchParams.toString()}`);
+        }
+        if (previous.tab === 'billing') {
+          setSelectedInvoiceId(previous.paramId || null);
+        }
+        setActiveTab(previous.tab);
+        return;
+      }
+    }
+    // If only 1 item in navHistory or at root, stay on dashboard safely without leaving the app!
+    setActiveTab('dashboard');
+    setSelectedInvoiceId(null);
+    if (typeof window !== 'undefined') {
+      window.history.replaceState({ tab: 'dashboard', crmApp: true }, '', window.location.pathname);
     }
   };
 
@@ -1098,8 +1225,42 @@ export default function App() {
             >
               <Menu size={18} />
             </button>
-            <span className="text-sm font-extrabold text-[#0F172A] truncate max-w-[120px] sm:max-w-none">{settings.shopName}</span>
-            <span className="bg-[#CFFAFE] text-[#0E7490] text-4xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider border border-[#CFFAFE] hidden sm:inline-block">Active Workspace</span>
+
+            {/* In-app Back Arrow Button whenever on any inner page */}
+            {activeTab !== 'dashboard' && (
+              <button
+                onClick={handleGoBack}
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-[#ECFEFF] hover:bg-[#CFFAFE] text-[#0891B2] hover:text-[#0E7490] rounded-xl text-xs font-extrabold border border-[#0891B2]/40 transition-all cursor-pointer shadow-xs shrink-0"
+                title={`Go Back to ${TAB_NAMES[navHistory[navHistory.length - 2]?.tab || 'dashboard'] || 'Previous'}`}
+                id="header-back-button"
+              >
+                <ArrowLeft size={15} className="stroke-[2.5]" />
+                <span className="font-extrabold text-xs">Back</span>
+                {navHistory.length > 1 && navHistory[navHistory.length - 2]?.tab && (
+                  <span className="hidden md:inline font-medium text-[#0E7490]/75">
+                    to {TAB_NAMES[navHistory[navHistory.length - 2].tab] || 'Overview'}
+                  </span>
+                )}
+              </button>
+            )}
+
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-sm font-extrabold text-[#0F172A] truncate max-w-[100px] sm:max-w-none">{settings.shopName || 'Dr Washit'}</span>
+              {activeTab !== 'dashboard' && (
+                <div className="flex items-center gap-1 min-w-0 text-xs">
+                  <span className="text-[#CBD5E1]">/</span>
+                  <span className="font-bold text-[#0891B2] truncate max-w-[110px] sm:max-w-[200px]">
+                    {TAB_NAMES[activeTab] || activeTab}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {activeTab === 'dashboard' && (
+              <span className="bg-[#CFFAFE] text-[#0E7490] text-4xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider border border-[#CFFAFE] hidden sm:inline-block shrink-0">
+                Active Workspace
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-3 md:gap-4 relative shrink-0">
@@ -1303,6 +1464,7 @@ export default function App() {
               onUpdateCustomer={(updated) => syncCustomers(customers.map(c => c.id === updated.id ? updated : c))}
               onDeleteCustomer={(id) => syncCustomers(customers.filter(c => c.id !== id))}
               onNavigate={handleNavigate}
+              onBack={handleGoBack}
             />
           )}
 
@@ -1310,6 +1472,8 @@ export default function App() {
             <EmployeeManagement
               staffList={staff}
               onUpdateStaffList={syncStaff}
+              onNavigate={handleNavigate}
+              onBack={handleGoBack}
             />
           )}
 
@@ -1323,12 +1487,15 @@ export default function App() {
 
           {activeTab === 'billing' && (
             <BillingManager
+              key={selectedInvoiceId || 'billing-latest'}
               appointments={appointments}
               settings={settings}
               onUpdateAppointment={handleUpdateAppointment}
               customers={customers}
               ownerUid={currentUser?.adminUid || currentUser?.uid || ''}
               initialInvoiceId={selectedInvoiceId}
+              onNavigate={handleNavigate}
+              onBack={handleGoBack}
             />
           )}
 
