@@ -1464,7 +1464,6 @@ export default function App() {
               onUpdateCustomer={(updated) => syncCustomers(customers.map(c => c.id === updated.id ? updated : c))}
               onDeleteCustomer={(id) => syncCustomers(customers.filter(c => c.id !== id))}
               onNavigate={handleNavigate}
-              onBack={handleGoBack}
             />
           )}
 

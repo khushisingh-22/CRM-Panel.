@@ -299,18 +299,34 @@ export default function EmployeeManagement({
       )}
 
       {/* Header section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[#E5EDF3] pb-5 bg-white p-5 rounded-2xl border">
-        <div>
-          <h1 className="text-xl font-extrabold text-[#0F172A] tracking-tight md:text-2xl flex items-center gap-2.5">
-            <Users className="text-[#0891B2]" size={24} />
-            <span>Employee Management & Ledger</span>
-          </h1>
-          <p className="text-xs text-[#475569]">Track employee details, base salaries, and payment transactions ("Hisab-Kitab")</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[#E5EDF3] pb-5 bg-white p-4 sm:p-5 rounded-2xl border">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          {(onBack || onNavigate) && (
+            <button
+              onClick={() => {
+                if (onBack) onBack();
+                else if (onNavigate) onNavigate('dashboard');
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 bg-[#ECFEFF] hover:bg-[#CFFAFE] text-[#0891B2] hover:text-[#0E7490] rounded-xl text-xs font-bold border border-[#0891B2]/40 transition-all cursor-pointer shadow-xs shrink-0"
+              title="Go Back to Previous Screen"
+              id="employee-ledger-back-btn"
+            >
+              <ArrowLeft size={16} className="stroke-[2.5]" />
+              <span>Back</span>
+            </button>
+          )}
+          <div className="text-left min-w-0">
+            <h1 className="text-lg sm:text-xl font-extrabold text-[#0F172A] tracking-tight md:text-2xl flex items-center gap-2.5 truncate">
+              <Users className="text-[#0891B2] shrink-0" size={24} />
+              <span className="truncate">Employee Management & Ledger</span>
+            </h1>
+            <p className="text-xs text-[#475569] truncate sm:whitespace-normal">Track employee details, base salaries, and payment transactions ("Hisab-Kitab")</p>
+          </div>
         </div>
 
         <button
           onClick={() => setShowAddEmployeeModal(true)}
-          className="px-4 py-2.5 bg-[#0891B2] hover:bg-[#0E7490] text-white text-xs font-bold rounded-xl shadow-md flex items-center gap-1.5 transition-all cursor-pointer"
+          className="px-4 py-2.5 bg-[#0891B2] hover:bg-[#0E7490] text-white text-xs font-bold rounded-xl shadow-md flex items-center gap-1.5 transition-all cursor-pointer shrink-0 w-full sm:w-auto justify-center"
         >
           <UserPlus size={16} />
           <span>Create Employee</span>
