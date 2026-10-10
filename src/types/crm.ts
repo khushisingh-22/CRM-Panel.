@@ -70,7 +70,7 @@ export interface Appointment {
   checklist?: { [key: string]: boolean };
   paymentStatus: 'paid' | 'unpaid' | 'partially_paid' | 'discount';
   paidAmount?: number;
-  paymentMethod?: 'cash' | 'card' | 'stripe' | 'apple_pay' | 'bank_transfer';
+  paymentMethod?: 'cash' | 'card' | 'upi' | 'stripe' | 'apple_pay' | 'bank_transfer';
   invoiceNumber?: string;
   createdAt: string;
   isMonthlyPackage?: boolean;

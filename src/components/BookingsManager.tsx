@@ -206,6 +206,7 @@ export default function BookingsManager({
   // Form State for Screenshot 1 Booking Creation
   const [priceInput, setPriceInput] = useState<number>(0);
   const [paidAmountInput, setPaidAmountInput] = useState<number>(0);
+  const [paymentMethodInput, setPaymentMethodInput] = useState<'cash' | 'card' | 'upi'>('upi');
   const [scheduledDateTime, setScheduledDateTime] = useState<string>(() => {
     const d = new Date();
     const year = d.getFullYear();
@@ -404,6 +405,7 @@ export default function BookingsManager({
       assignedTo: assignedStaffId || undefined,
       paymentStatus: isMonthlyPkg ? 'paid' : (paidAmountInput >= (priceInput || 0) ? 'paid' : paidAmountInput > 0 ? 'partially_paid' : 'unpaid'),
       paidAmount: isMonthlyPkg ? (priceInput || 0) : paidAmountInput,
+      paymentMethod: paymentMethodInput,
       invoiceNumber: `INV-2026-0${Math.floor(Math.random() * 900) + 100}`,
       createdAt: new Date().toISOString(),
       isMonthlyPackage: isMonthlyPkg,
@@ -1218,8 +1220,8 @@ export default function BookingsManager({
                 </div>
               )}
 
-              {/* Row 3: Price * and Customer Paid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Row 3: Price * and Customer Paid & Payment Method */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="text-xs font-bold text-slate-700 block mb-1">Price (₹) *</label>
                   <div className="relative">
@@ -1246,6 +1248,18 @@ export default function BookingsManager({
                       className="text-xs pl-7 pr-2.5 py-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-sky-500"
                     />
                   </div>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Payment Method</label>
+                  <select
+                    value={paymentMethodInput}
+                    onChange={(e) => setPaymentMethodInput(e.target.value as any)}
+                    className="text-xs p-2.5 border border-slate-200 rounded-lg w-full bg-slate-50/50 text-slate-800 focus:outline-sky-500 font-bold uppercase cursor-pointer h-[38px]"
+                  >
+                    <option value="upi">UPI</option>
+                    <option value="cash">Cash</option>
+                    <option value="card">Card</option>
+                  </select>
                 </div>
               </div>
 

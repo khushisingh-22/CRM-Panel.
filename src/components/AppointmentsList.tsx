@@ -49,9 +49,15 @@ export default function AppointmentsList({
 
   // Calendar states
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
-  const [currentYear, setCurrentYear] = useState(2026);
-  const [currentMonth, setCurrentMonth] = useState(6); // 6 is July (0-indexed)
-  const [selectedDateStr, setSelectedDateStr] = useState('2026-07-09');
+  const [currentYear, setCurrentYear] = useState(() => new Date().getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(() => new Date().getMonth());
+  const [selectedDateStr, setSelectedDateStr] = useState(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  });
 
   const handlePrevMonth = () => {
     if (currentMonth === 0) {
@@ -115,17 +121,20 @@ export default function AppointmentsList({
     });
   }
 
-  // Next month padding days
-  const remaining = 42 - gridCells.length;
-  for (let i = 1; i <= remaining; i++) {
+  // Next month padding days to complete the last week row if needed
+  const totalCellsSoFar = gridCells.length;
+  const remainder = totalCellsSoFar % 7;
+  if (remainder > 0) {
     const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
     const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
-    const dateStr = `${nextYear}-${String(nextMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-    gridCells.push({
-      dayNum: i,
-      isCurrentMonth: false,
-      dateStr
-    });
+    for (let i = 1; i <= (7 - remainder); i++) {
+      const dateStr = `${nextYear}-${String(nextMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+      gridCells.push({
+        dayNum: i,
+        isCurrentMonth: false,
+        dateStr
+      });
+    }
   }
 
   const selectedDayBookings = appointments.filter(apt => apt.date === selectedDateStr);
@@ -461,12 +470,12 @@ export default function AppointmentsList({
         <div className="flex flex-col xl:flex-row gap-6">
             
             {/* Left Card: Calendar Month Grid (approx 2/3 width) */}
-            <div className="bg-white p-5 rounded-2xl border border-[#E5EDF3] shadow-md flex-1">
+            <div className="bg-white p-3 sm:p-5 rounded-2xl border border-[#E5EDF3] shadow-md flex-1">
               
               {/* Calendar Controls header inside the card */}
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#E5EDF3]">
+              <div className="flex items-center justify-between mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-[#E5EDF3]">
                 <div className="flex items-center gap-3">
-                  <h2 className="text-lg font-bold text-[#0F172A]">{monthNames[currentMonth]} {currentYear}</h2>
+                  <h2 className="text-base sm:text-lg font-bold text-[#0F172A]">{monthNames[currentMonth]} {currentYear}</h2>
                 </div>
                 
                 <div className="flex items-center gap-1.5">
@@ -478,7 +487,7 @@ export default function AppointmentsList({
                   </button>
                   <button
                     onClick={handleToday}
-                    className="px-3 py-1.5 rounded-lg bg-white border border-[#CBD5E1] text-xs font-bold text-[#334155] hover:text-[#0891B2] hover:bg-[#F4F8FB] cursor-pointer transition-all"
+                    className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-white border border-[#CBD5E1] text-xs font-bold text-[#334155] hover:text-[#0891B2] hover:bg-[#F4F8FB] cursor-pointer transition-all"
                   >
                     Today
                   </button>
@@ -492,16 +501,16 @@ export default function AppointmentsList({
               </div>
 
               {/* Day names row */}
-              <div className="grid grid-cols-7 gap-2 mb-2 text-center">
+              <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2 text-center">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                  <span key={day} className="text-xs font-bold text-[#475569] uppercase tracking-wider py-1.5">
+                  <span key={day} className="text-3xs sm:text-xs font-bold text-[#475569] uppercase tracking-wider py-1">
                     {day}
                   </span>
                 ))}
               </div>
 
               {/* Days grid */}
-              <div className="grid grid-cols-7 gap-2">
+              <div className="grid grid-cols-7 gap-1 sm:gap-2">
                 {gridCells.map((cell, idx) => {
                   const dayBookings = appointments.filter(apt => apt.date === cell.dateStr);
                   const isSelected = selectedDateStr === cell.dateStr;
@@ -511,48 +520,74 @@ export default function AppointmentsList({
                     <button
                       key={idx}
                       onClick={() => setSelectedDateStr(cell.dateStr)}
-                      className={`h-24 p-2 rounded-xl flex flex-col justify-between items-start border cursor-pointer relative transition-all duration-200 ${
+                      className={`min-h-[52px] sm:h-24 p-1 sm:p-2 rounded-xl flex flex-col justify-between items-start border cursor-pointer relative transition-all duration-200 overflow-hidden ${
                         isSelected
-                          ? 'bg-gradient-to-br from-[#0891B2] to-[#06B6D4] border-[#0891B2] text-white shadow-md'
-                          : cell.isCurrentMonth
-                            ? 'bg-white border-[#E5EDF3] text-[#1E293B] hover:bg-[#ECFEFF]/60 hover:border-[#0891B2]/50'
-                            : 'bg-slate-50/50 border-slate-100 text-[#64748B] hover:bg-slate-100/40'
+                          ? 'ring-2 ring-[#0891B2] bg-cyan-50/90 border-[#0891B2] text-slate-900 shadow-sm'
+                          : isTodayStr
+                            ? 'border-[#0891B2] bg-[#ECFEFF]/40 text-slate-900'
+                            : cell.isCurrentMonth
+                              ? 'bg-white border-[#E5EDF3] text-[#1E293B] hover:bg-[#ECFEFF]/60 hover:border-[#0891B2]/50'
+                              : 'bg-slate-50/50 border-slate-100 text-[#64748B] hover:bg-slate-100/40'
                       }`}
                     >
-                      <span className={`text-xs font-bold ${
-                        isSelected 
-                          ? 'text-white' 
-                          : isTodayStr 
-                            ? 'text-[#0891B2] font-black bg-[#CFFAFE] px-1.5 py-0.5 rounded-md border border-[#0891B2]/20' 
-                            : cell.isCurrentMonth 
-                              ? 'text-slate-800 font-semibold' 
-                              : 'text-slate-400'
-                      }`}>
-                        {cell.dayNum}
-                      </span>
+                      <div className="w-full flex justify-start items-center">
+                        <span className={`text-[11px] sm:text-xs font-bold ${
+                          isSelected 
+                            ? 'text-[#0891B2] font-black' 
+                            : isTodayStr 
+                              ? 'text-[#0891B2] font-black bg-[#CFFAFE] px-1.5 py-0.5 rounded-md border border-[#0891B2]/20' 
+                              : cell.isCurrentMonth 
+                                ? 'text-slate-800 font-semibold' 
+                                : 'text-slate-400'
+                        }`}>
+                          {cell.dayNum}
+                        </span>
+                      </div>
 
                       {/* Render indicators of appointments in the cell */}
                       {dayBookings.length > 0 && (
-                        <div className="w-full space-y-1 text-left">
-                          {dayBookings.slice(0, 2).map(apt => (
-                            <div
-                              key={apt.id}
-                              className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md truncate text-left w-full ${
-                                isSelected
-                                  ? 'bg-white/25 text-white border border-white/10'
-                                  : 'bg-[#ECFEFF] text-[#0E7490] border border-[#CFFAFE]'
-                              }`}
-                              title={`${apt.customerName} (${apt.time})`}
-                            >
-                              {apt.customerName}
+                        <>
+                          {/* Mobile view (< 640px): colored dots (max 3, w-2 h-2) + +N badge centered at bottom */}
+                          <div className="flex sm:hidden items-center justify-center gap-1 mt-auto w-full pb-0.5">
+                            <div className="flex items-center gap-1">
+                              {dayBookings.slice(0, 3).map((apt, bIdx) => {
+                                let dotColor = '#0891B2';
+                                if (apt.status === 'completed') dotColor = '#16A34A';
+                                else if (apt.status === 'cancelled') dotColor = '#EF4444';
+                                return (
+                                  <span key={bIdx} className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dotColor }} title={apt.customerName} />
+                                );
+                              })}
                             </div>
-                          ))}
-                          {dayBookings.length > 2 && (
-                            <div className={`text-[8px] font-bold text-right pr-1 ${isSelected ? 'text-white' : 'text-[#475569]'}`}>
-                              + {dayBookings.length - 2} more
-                            </div>
-                          )}
-                        </div>
+                            {dayBookings.length > 3 && (
+                              <span className="text-[10px] font-bold text-[#0E7490] bg-[#CFFAFE] px-1 py-0.2 rounded leading-none shrink-0">
+                                +{dayBookings.length - 3}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Desktop/tablet view (>= 640px): current chip view with ellipsis */}
+                          <div className="hidden sm:block w-full space-y-1 text-left mt-1">
+                            {dayBookings.slice(0, 2).map(apt => (
+                              <div
+                                key={apt.id}
+                                className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md truncate text-left w-full ${
+                                  isSelected
+                                    ? 'bg-white/95 text-[#0891B2] border border-[#0891B2]/30 shadow-2xs'
+                                    : 'bg-[#ECFEFF] text-[#0E7490] border border-[#CFFAFE]'
+                                }`}
+                                title={`${apt.customerName} (${apt.time})`}
+                              >
+                                {apt.customerName}
+                              </div>
+                            ))}
+                            {dayBookings.length > 2 && (
+                              <div className={`text-[8px] font-bold text-right pr-1 truncate ${isSelected ? 'text-[#0891B2]' : 'text-[#475569]'}`}>
+                                + {dayBookings.length - 2} more
+                              </div>
+                            )}
+                          </div>
+                        </>
                       )}
                     </button>
                   );
