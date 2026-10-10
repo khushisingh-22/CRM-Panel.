@@ -30,7 +30,7 @@ import {
 import { Appointment, ShopSettings, Customer } from '../types/crm';
 import { sendWhatsAppMessage } from '../utils/whatsapp';
 import { DrWashitLogo } from './DrWashitLogo';
-import logoImg from '../assets/dr_washit_logo.jpg';
+import logoImg from "../assets/images.png";
 
 interface BillingManagerProps {
   appointments: Appointment[];
