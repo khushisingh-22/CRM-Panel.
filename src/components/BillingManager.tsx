@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FileText,
   Search,
@@ -29,7 +29,7 @@ import {
 import { Appointment, ShopSettings, Customer } from '../types/crm';
 import { sendWhatsAppMessage } from '../utils/whatsapp';
 import { DrWashitLogo } from './DrWashitLogo';
-import logoImg from '../assets/images.png';
+import logoImg from '../assets/dr_washit_logo.jpg';
 
 interface BillingManagerProps {
   appointments: Appointment[];
@@ -37,6 +37,7 @@ interface BillingManagerProps {
   onUpdateAppointment: (updated: Appointment) => void;
   customers?: Customer[];
   ownerUid?: string;
+  initialInvoiceId?: string | null;
 }
 
 const formatDate = (dateStr: string) => {
@@ -102,13 +103,22 @@ export default function BillingManager({
   settings,
   onUpdateAppointment,
   customers = [],
-  ownerUid = ''
+  ownerUid = '',
+  initialInvoiceId = null
 }: BillingManagerProps) {
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(
-    appointments.filter(a => a.status !== 'cancelled')[0]?.id || null
+    initialInvoiceId || appointments.filter(a => a.status !== 'cancelled')[0]?.id || appointments[0]?.id || null
   );
 
-  const activeInvoice = appointments.find(a => a.id === selectedInvoiceId);
+  useEffect(() => {
+    if (initialInvoiceId) {
+      setSelectedInvoiceId(initialInvoiceId);
+    }
+  }, [initialInvoiceId]);
+
+  const activeInvoice = appointments.find(a => a.id === selectedInvoiceId || a.invoiceNumber === selectedInvoiceId) 
+    || appointments.filter(a => a.status !== 'cancelled')[0] 
+    || appointments[0];
 
   const isUnsplashPlaceholder = settings?.logoUrl && (settings.logoUrl.includes('unsplash.com') || settings.logoUrl === 'logo_url');
   const resolvedLogo = (!settings?.logoUrl || isUnsplashPlaceholder) ? logoImg : settings.logoUrl;
@@ -161,12 +171,12 @@ export default function BillingManager({
         
         {/* Dropdown Selector instead of full sidebar */}
         {appointments.filter(a => a.status !== 'cancelled').length > 0 && (
-          <div className="flex items-center gap-2 bg-[#F4F8FB] px-3 py-2 rounded-xl border border-[#CBD5E1] shadow-xs shrink-0">
-            <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider">Select Invoice:</span>
+          <div className="flex items-center gap-2 bg-[#F4F8FB] px-3 py-2 rounded-xl border border-[#CBD5E1] shadow-xs shrink-0 w-full sm:w-auto">
+            <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider shrink-0">Select Invoice:</span>
             <select
-              value={selectedInvoiceId || ''}
+              value={activeInvoice?.id || ''}
               onChange={(e) => setSelectedInvoiceId(e.target.value || null)}
-              className="text-xs font-bold text-[#0F172A] bg-transparent border-0 focus:ring-0 p-0 cursor-pointer outline-none"
+              className="text-xs font-bold text-[#0F172A] bg-transparent border-0 focus:ring-0 p-0 cursor-pointer outline-none w-full sm:w-auto"
             >
               {appointments
                 .filter(a => a.status !== 'cancelled')
@@ -346,7 +356,7 @@ Let your car sparkle at your doorstep🚗💦✨ & thankyou for choosing *Dr Was
                 `}} />
 
                 {/* Main Invoice Card (Inter font, 1px border, soft shadow, centered) */}
-                <div className="max-w-[800px] mx-auto bg-white border border-[#E2E8F0] rounded-2xl shadow-xl p-10 print:border-0 print:shadow-none print:p-0 print:max-w-full relative space-y-8 overflow-hidden text-left font-sans">
+                <div className="max-w-[800px] mx-auto bg-white border border-[#E2E8F0] rounded-2xl shadow-xl p-4 sm:p-6 md:p-10 print:border-0 print:shadow-none print:p-0 print:max-w-full relative space-y-6 sm:space-y-8 overflow-hidden text-left font-sans">
                   
                   {/* Aqua Gradient Strip at the very top */}
                   <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#0891B2] to-[#22D3EE]" />
@@ -472,8 +482,8 @@ Let your car sparkle at your doorstep🚗💦✨ & thankyou for choosing *Dr Was
                   </div>
 
                   {/* Items Table */}
-                  <div className="overflow-hidden rounded-xl border border-[#E5EDF3]">
-                    <table className="w-full text-left border-collapse text-xs">
+                  <div className="overflow-x-auto rounded-xl border border-[#E5EDF3]">
+                    <table className="w-full min-w-[500px] sm:min-w-full text-left border-collapse text-xs">
                       <thead>
                         <tr className="bg-[#0891B2] text-white text-xs font-semibold">
                           <th className="py-3 px-4 w-12 text-center">#</th>

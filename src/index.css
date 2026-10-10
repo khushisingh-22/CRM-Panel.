@@ -40,13 +40,16 @@ html.text-size-large {
    PAGE BASE & LAYOUT INTEGRITY
    ----------------------------------------- */
 body, 
-html, 
+html,
+#root, 
 #drwashit-crm-app,
 div#view-tabs-router {
   background-color: var(--bg-page) !important;
   color: var(--color-body) !important;
   font-family: 'Poppins', 'Inter', system-ui, -apple-system, sans-serif !important;
   transition: background-color 200ms ease, color 200ms ease;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 main#view-tabs-router,

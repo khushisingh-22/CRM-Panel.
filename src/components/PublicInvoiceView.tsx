@@ -111,14 +111,14 @@ export default function PublicInvoiceView({ appointment, settings }: PublicInvoi
         className="max-w-2xl w-full bg-white text-slate-900 border border-slate-200 rounded-2xl overflow-hidden shadow-2xl print:border-0 print:shadow-none print:rounded-none"
       >
         {/* Top Branding Banner */}
-        <div className="bg-slate-900 p-6 md:p-8 text-white flex justify-between items-center relative overflow-hidden border-b border-slate-800">
+        <div className="bg-slate-900 p-4 sm:p-6 md:p-8 text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative overflow-hidden border-b border-slate-800">
           <div className="relative z-10 space-y-1">
             <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400 block">PREMIUM DOORSTEP CAR DETAILING</span>
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-none uppercase">
               DR WASHIT
             </h2>
-            <p className="text-[9px] text-slate-300 leading-normal max-w-sm pt-1.5 font-medium">
-              B-129.PocketB,Sector-omicron 3rd,omicron|||,greaternoida,mathurapur,uttarpradesh201310
+            <p className="text-[9px] text-slate-300 leading-normal max-w-sm pt-1.5 font-medium break-words">
+              B-129, Pocket B, Sector-omicron 3rd, Greater Noida, Uttar Pradesh 201310
               <br />
               Phone: 8510002780 | Email: info.drwashit@gmail.com
               <br />
@@ -126,8 +126,8 @@ export default function PublicInvoiceView({ appointment, settings }: PublicInvoi
             </p>
           </div>
 
-          <div className="relative z-10 flex flex-col items-end gap-2 shrink-0">
-            <DrWashitLogo size={64} className="shadow-md" />
+          <div className="relative z-10 flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start w-full sm:w-auto gap-2 shrink-0">
+            <DrWashitLogo size={56} className="shadow-md" />
             <div className="text-right">
               <span className="text-3xs font-extrabold bg-slate-800 px-2 py-0.5 rounded text-indigo-300 font-mono uppercase tracking-wider block border border-slate-700">
                 EST. 2024
@@ -137,7 +137,7 @@ export default function PublicInvoiceView({ appointment, settings }: PublicInvoi
         </div>
 
         {/* Body Details Area */}
-        <div className="p-6 md:p-8 space-y-6">
+        <div className="p-4 sm:p-6 md:p-8 space-y-6">
           {/* Metadata Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-4 border-b border-slate-100 text-xs">
             <div className="space-y-1">
@@ -184,8 +184,8 @@ export default function PublicInvoiceView({ appointment, settings }: PublicInvoi
           </div>
 
           {/* Table of Items */}
-          <div className="overflow-hidden rounded-lg border border-slate-100 font-sans">
-            <table className="w-full text-left border-collapse text-xs">
+          <div className="overflow-x-auto rounded-lg border border-slate-100 font-sans">
+            <table className="w-full min-w-[460px] sm:min-w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-slate-900 text-white text-[10px] font-extrabold uppercase tracking-wider">
                   <th className="py-2.5 px-4">PRODUCT TREATMENT</th>

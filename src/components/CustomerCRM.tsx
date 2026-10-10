@@ -62,7 +62,7 @@ interface CustomerCRMProps {
   onAddCustomer: (customer: Customer) => void;
   onUpdateCustomer: (customer: Customer) => void;
   onDeleteCustomer?: (id: string) => void;
-  onNavigate?: (tab: string) => void;
+  onNavigate?: (tab: string, paramId?: string) => void;
 }
 
 export default function CustomerCRM({
@@ -380,9 +380,21 @@ export default function CustomerCRM({
                       <td className="py-3 font-sans text-[#475569] whitespace-nowrap">{formatDateTimeFriendly(apt.date, apt.time)}</td>
                       <td className="py-3 text-right font-semibold text-[#16A34A]">₹{apt.price}</td>
                       <td className="py-3 text-right">
-                        <span className="bg-emerald-100 text-emerald-800 border border-emerald-200 text-[9px] font-bold uppercase px-2 py-0.5 rounded">
-                          COMPLETED
-                        </span>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <span className="bg-emerald-100 text-emerald-800 border border-emerald-200 text-[9px] font-bold uppercase px-2 py-0.5 rounded">
+                            COMPLETED
+                          </span>
+                          {onNavigate && (
+                            <button
+                              onClick={() => onNavigate('billing', apt.id)}
+                              className="px-2 py-0.5 bg-[#ECFEFF] hover:bg-[#CFFAFE] text-[#0891B2] border border-[#0891B2]/30 text-[10px] font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1"
+                              title="View Invoice"
+                            >
+                              <FileText size={10} />
+                              <span>Invoice</span>
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -457,10 +469,22 @@ export default function CustomerCRM({
                     <span>{formatDateTimeFriendly(apt.date, apt.time)}</span>
                   </div>
 
-                  {/* Bottom row: Divider + Amount & Price */}
+                  {/* Bottom row: Divider + Amount & Price + Invoice Button */}
                   <div className="pt-2.5 border-t border-[#E5EDF3] flex justify-between items-center">
-                    <span className="text-[13px] text-[#64748B]">Amount</span>
-                    <span className="text-[18px] font-bold text-[#0F172A]">₹{apt.price}</span>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-[13px] text-[#64748B]">Amount</span>
+                      <span className="text-[18px] font-bold text-[#0F172A]">₹{apt.price}</span>
+                    </div>
+                    {onNavigate && (
+                      <button
+                        onClick={() => onNavigate('billing', apt.id)}
+                        className="px-3 py-1.5 bg-[#ECFEFF] hover:bg-[#CFFAFE] text-[#0891B2] border border-[#0891B2]/30 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1 shadow-2xs"
+                        title="View Invoice"
+                      >
+                        <FileText size={12} />
+                        <span>Invoice</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

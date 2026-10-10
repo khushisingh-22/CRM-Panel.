@@ -198,9 +198,9 @@ export default function BookingPortal({
           </button>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-md overflow-hidden max-w-4xl mx-auto flex flex-col md:flex-row">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-md overflow-hidden max-w-4xl mx-auto flex flex-col md:flex-row w-full">
           {/* Form Side */}
-          <form onSubmit={handleSubmit} className="flex-1 p-6 sm:p-8 space-y-6">
+          <form onSubmit={handleSubmit} className="flex-1 p-4 sm:p-6 md:p-8 space-y-6">
             <div className="space-y-1">
               <h2 className="text-lg font-black text-slate-900 tracking-tight">Book Professional Detailing</h2>
               <p className="text-xs text-slate-500">Choose vehicle specifications, package treatments, and select your slot</p>
@@ -210,7 +210,7 @@ export default function BookingPortal({
             <div className="space-y-3">
               <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">1. Vehicle Specification</label>
               
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
                 {[
                   { id: 'sedan', name: 'Sedan / Coupe', sub: '2-4 Doors' },
                   { id: 'suv', name: 'Crossover / SUV', sub: 'Compact & Mid' },
@@ -236,7 +236,7 @@ export default function BookingPortal({
               </div>
 
               {/* Vehicle specific input fields */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
                 <input
                   type="text"
                   required
@@ -306,7 +306,7 @@ export default function BookingPortal({
             {/* Premium Add-ons */}
             <div className="space-y-3">
               <label className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">3. Choose Premium Add-ons</label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                 {services
                   .filter(s => s.category === 'add_on')
                   .map(addon => {
@@ -398,7 +398,7 @@ export default function BookingPortal({
           </form>
 
           {/* Pricing Quote side column */}
-          <div className="w-full md:w-80 bg-slate-900 text-white p-6 sm:p-8 flex flex-col justify-between border-t md:border-t-0 md:border-l border-slate-800 shrink-0">
+          <div className="w-full md:w-80 bg-slate-900 text-white p-4 sm:p-6 md:p-8 flex flex-col justify-between border-t md:border-t-0 md:border-l border-slate-800 shrink-0">
             <div className="space-y-6">
               <span className="text-3xs text-slate-400 font-bold uppercase tracking-wider block">Itemized Quote breakdown</span>
 

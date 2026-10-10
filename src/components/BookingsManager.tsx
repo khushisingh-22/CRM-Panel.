@@ -41,7 +41,7 @@ interface BookingsManagerProps {
   onAddAppointment: (apt: Appointment) => void;
   onUpdateAppointment: (updated: Appointment) => void;
   onDeleteAppointment: (id: string) => void;
-  onNavigate: (tab: string) => void;
+  onNavigate: (tab: string, paramId?: string) => void;
   autoOpenNewBooking?: boolean;
   onClearAutoOpenNewBooking?: () => void;
   settings: ShopSettings;
@@ -939,7 +939,7 @@ export default function BookingsManager({
 
                   <div className="flex gap-1.5 pt-1">
                     <button
-                      onClick={() => onNavigate('billing')}
+                      onClick={() => onNavigate('billing', apt.id)}
                       className="flex-1 py-1.5 bg-white hover:bg-[#ECFEFF] border border-[#0891B2] text-[#0891B2] text-[10px] font-extrabold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer"
                       title="Invoice"
                     >

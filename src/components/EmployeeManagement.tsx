@@ -20,7 +20,8 @@ import {
   TrendingUp,
   AlertCircle,
   X,
-  Shield
+  Shield,
+  Edit2
 } from 'lucide-react';
 import { Staff, StaffLedgerEntry } from '../types/crm';
 
@@ -79,11 +80,76 @@ export default function EmployeeManagement({
   const [leaveRemarks, setLeaveRemarks] = useState('');
   const [leaveDeduction, setLeaveDeduction] = useState<number>(0);
 
+  // Salary & Employee Edit states
+  const [isEditingSalary, setIsEditingSalary] = useState(false);
+  const [editedSalary, setEditedSalary] = useState<number>(18000);
+
+  const [showEditEmployeeModal, setShowEditEmployeeModal] = useState(false);
+  const [editEmpName, setEditEmpName] = useState('');
+  const [editEmpRole, setEditEmpRole] = useState<Staff['role']>('detailer');
+  const [editEmpPhone, setEditEmpPhone] = useState('');
+  const [editEmpSalary, setEditEmpSalary] = useState<number>(18000);
+
   const selectedStaff = staffList.find(stf => stf.id === selectedStaffId) || staffList[0] || null;
   const selectedStaffLedger = selectedStaff ? (selectedStaff.ledger || []) : [];
   const selectedStaffTotalPaid = selectedStaffLedger.filter(e => e.amount > 0).reduce((acc, entry) => acc + entry.amount, 0);
   const selectedStaffTotalDeductions = Math.abs(selectedStaffLedger.filter(e => e.amount < 0).reduce((acc, entry) => acc + entry.amount, 0));
   const selectedStaffNetRemaining = selectedStaff ? Math.max(0, (selectedStaff.salary || 18000) - selectedStaffTotalPaid - selectedStaffTotalDeductions) : 0;
+
+  // Handler to quickly update employee salary
+  const handleSaveSalary = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!selectedStaff) return;
+    if (editedSalary <= 0) return;
+
+    const updated = staffList.map(stf => {
+      if (stf.id === selectedStaff.id) {
+        return {
+          ...stf,
+          salary: Number(editedSalary)
+        };
+      }
+      return stf;
+    });
+
+    onUpdateStaffList(updated);
+    setIsEditingSalary(false);
+    triggerSuccess(`Base salary updated to ₹${Number(editedSalary).toLocaleString('en-IN')} for ${selectedStaff.name}!`);
+  };
+
+  // Handler to open full employee edit modal
+  const handleOpenEditEmployee = () => {
+    if (!selectedStaff) return;
+    setEditEmpName(selectedStaff.name);
+    setEditEmpRole(selectedStaff.role);
+    setEditEmpPhone(selectedStaff.phone || '');
+    setEditEmpSalary(selectedStaff.salary || 18000);
+    setShowEditEmployeeModal(true);
+  };
+
+  // Handler to save full employee details
+  const handleSaveEmployeeEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStaff) return;
+    if (!editEmpName.trim()) return;
+
+    const updated = staffList.map(stf => {
+      if (stf.id === selectedStaff.id) {
+        return {
+          ...stf,
+          name: editEmpName.trim(),
+          role: editEmpRole,
+          phone: editEmpPhone.trim() || stf.phone,
+          salary: Number(editEmpSalary) || stf.salary
+        };
+      }
+      return stf;
+    });
+
+    onUpdateStaffList(updated);
+    setShowEditEmployeeModal(false);
+    triggerSuccess(`Employee details updated successfully for ${editEmpName.trim()}!`);
+  };
 
   // Handler to register a new employee
   const handleAddEmployee = (e: React.FormEvent) => {
@@ -293,7 +359,22 @@ export default function EmployeeManagement({
                     </div>
 
                     <div className="text-right">
-                      <span className="text-[9px] text-[#0891B2] block font-bold uppercase tracking-wider">Remaining</span>
+                      <div className="flex items-center justify-end gap-1">
+                        <span className="text-[9px] text-[#0891B2] block font-bold uppercase tracking-wider">Remaining</span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedStaffId(emp.id);
+                            setEditedSalary(emp.salary || 18000);
+                            setIsEditingSalary(true);
+                          }}
+                          className="p-0.5 hover:bg-[#CFFAFE] text-[#0891B2] rounded transition-colors"
+                          title={`Edit ${emp.name}'s Salary`}
+                        >
+                          <Edit2 size={9} />
+                        </button>
+                      </div>
                       <strong className="text-xs font-bold text-[#0F172A]">₹{netRemaining}</strong>
                       <div className="text-[9px] text-[#475569] block font-semibold mt-0.5">Paid: ₹{totalPaid}</div>
                       {totalDeductions > 0 && (
@@ -356,15 +437,46 @@ export default function EmployeeManagement({
                         >
                           Change Photo 📷
                         </button>
+
+                        <button
+                          onClick={handleOpenEditEmployee}
+                          className="text-[10px] bg-white hover:bg-slate-50 text-[#0891B2] hover:text-[#0E7490] px-2.5 py-0.5 rounded-full border border-[#CBD5E1] transition-all cursor-pointer font-bold shadow-2xs flex items-center gap-1"
+                        >
+                          <Edit2 size={10} />
+                          <span>Edit Details</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setEditedSalary(selectedStaff.salary || 18000);
+                            setIsEditingSalary(true);
+                          }}
+                          className="text-[10px] bg-[#ECFEFF] hover:bg-[#CFFAFE] text-[#0891B2] hover:text-[#0E7490] px-2.5 py-0.5 rounded-full border border-[#0891B2]/40 transition-all cursor-pointer font-extrabold shadow-2xs flex items-center gap-1"
+                          title="Quick Edit Base Salary"
+                        >
+                          <DollarSign size={10} className="stroke-[2.5]" />
+                          <span>Edit Salary (₹{(selectedStaff.salary || 18000).toLocaleString('en-IN')})</span>
+                        </button>
                       </div>
                     </div>
                   </div>
 
                   {/* Dynamic Salary Deductions Display */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full xl:w-auto">
-                    <div className="bg-white p-2 rounded-xl border border-[#E5EDF3] text-center min-w-[85px] flex-1">
-                      <span className="text-[9px] text-[#64748B] font-bold uppercase tracking-wider block">Base Salary</span>
-                      <strong className="text-xs font-bold text-[#0F172A] block mt-0.5">₹{selectedStaff.salary || 18000}</strong>
+                    <div 
+                      onClick={() => {
+                        setEditedSalary(selectedStaff.salary || 18000);
+                        setIsEditingSalary(true);
+                      }}
+                      className="bg-white hover:bg-[#ECFEFF]/60 hover:border-[#0891B2] p-2 rounded-xl border-2 border-[#0891B2]/40 text-center min-w-[85px] flex-1 cursor-pointer transition-all group relative shadow-2xs hover:shadow-xs"
+                      title="Click to edit Base Salary"
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        <span className="text-[9px] text-[#0891B2] font-black uppercase tracking-wider block">Base Salary</span>
+                        <Edit2 size={9} className="text-[#0891B2]" />
+                      </div>
+                      <strong className="text-xs font-bold text-[#0F172A] block mt-0.5">₹{(selectedStaff.salary || 18000).toLocaleString('en-IN')}</strong>
+                      <span className="text-[8px] bg-[#CFFAFE] text-[#0E7490] px-1.5 py-0.5 rounded font-extrabold inline-block mt-0.5">Edit ✎</span>
                     </div>
                     <div className="bg-white p-2 rounded-xl border border-[#E5EDF3] text-center min-w-[85px] flex-1">
                       <span className="text-[9px] text-[#64748B] font-bold uppercase tracking-wider block">Paid</span>
@@ -400,6 +512,33 @@ export default function EmployeeManagement({
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Prominent Active Salary Bar with One-Click Edit Button */}
+              <div className="bg-[#ECFEFF] border border-[#CFFAFE] p-3.5 sm:p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+                <div className="flex items-center gap-3 text-left">
+                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#0891B2] to-[#06B6D4] text-white flex items-center justify-center font-black shrink-0 shadow-sm">
+                    <DollarSign size={20} className="stroke-[2.5]" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-[#0E7490] font-black uppercase tracking-wider block">Monthly Base Salary</span>
+                    <div className="flex items-baseline gap-2">
+                      <strong className="text-lg font-black text-[#0F172A]">₹{(selectedStaff.salary || 18000).toLocaleString('en-IN')}</strong>
+                      <span className="text-xs text-[#64748B] font-semibold">per month</span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditedSalary(selectedStaff.salary || 18000);
+                    setIsEditingSalary(true);
+                  }}
+                  className="px-4 py-2 bg-[#0891B2] hover:bg-[#0E7490] text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md flex items-center gap-1.5 self-stretch sm:self-auto justify-center"
+                >
+                  <Edit2 size={13} />
+                  <span>Edit Salary (₹{(selectedStaff.salary || 18000).toLocaleString('en-IN')})</span>
+                </button>
               </div>
 
               {/* Ledger (Hisab-Kitab) & Add Payment/Leave Entry Section */}
@@ -726,6 +865,176 @@ export default function EmployeeManagement({
                   className="flex-1 py-2.5 bg-[#0891B2] hover:bg-[#0E7490] text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md"
                 >
                   Add Employee
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Edit Base Salary Modal */}
+      {isEditingSalary && selectedStaff && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in" id="edit-salary-modal">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-5 sm:p-6 shadow-2xl space-y-4 border border-[#E5EDF3] animate-zoom-in text-left">
+            <div className="flex justify-between items-center border-b border-[#E5EDF3] pb-3">
+              <h3 className="text-sm font-extrabold text-[#0F172A] flex items-center gap-2">
+                <DollarSign size={16} className="text-[#0891B2]" />
+                <span>Edit Monthly Base Salary</span>
+              </h3>
+              <button
+                onClick={() => setIsEditingSalary(false)}
+                className="p-1 text-[#64748B] hover:text-[#0F172A] rounded-lg transition-colors cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="bg-[#F8FAFC] border border-[#E5EDF3] p-3 rounded-xl space-y-1">
+              <span className="text-[10px] text-[#64748B] font-bold uppercase tracking-wider block">Staff Member</span>
+              <strong className="text-xs text-[#0F172A] block font-bold">{selectedStaff.name} ({roleLabels[selectedStaff.role]})</strong>
+            </div>
+
+            <form onSubmit={handleSaveSalary} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-[#1E293B] block mb-1">New Monthly Base Salary (₹) *</label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-2.5 text-sm font-bold text-[#64748B]">₹</span>
+                  <input
+                    type="number"
+                    min="1000"
+                    step="500"
+                    required
+                    value={editedSalary}
+                    onChange={(e) => setEditedSalary(Number(e.target.value))}
+                    placeholder="e.g. 18000"
+                    className="w-full text-sm font-bold pl-8 pr-3.5 py-2.5 rounded-xl border border-[#CBD5E1] bg-white text-[#1E293B] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
+                    autoFocus
+                  />
+                </div>
+                <p className="text-[10px] text-[#64748B] mt-1.5 leading-relaxed">
+                  Salary updates automatically recalculate ledger deductions and net remaining balance.
+                </p>
+              </div>
+
+              {/* Quick salary preset chips */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] text-[#64748B] font-bold uppercase tracking-wider block">Quick Presets:</span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {[12000, 15000, 18000, 20000, 22000, 25000].map(amt => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => setEditedSalary(amt)}
+                      className={`text-[10px] font-bold px-2 py-1 rounded-lg border transition-colors cursor-pointer ${
+                        editedSalary === amt
+                          ? 'bg-[#0891B2] text-white border-[#0891B2]'
+                          : 'bg-[#F4F8FB] hover:bg-[#ECFEFF] text-[#0891B2] border-[#CFFAFE]'
+                      }`}
+                    >
+                      ₹{amt.toLocaleString('en-IN')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsEditingSalary(false)}
+                  className="flex-1 py-2.5 bg-[#F4F8FB] hover:bg-[#E5EDF3] text-[#475569] text-xs font-bold rounded-xl transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-[#0891B2] hover:bg-[#0E7490] text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md"
+                >
+                  Save Salary
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Full Employee Details Modal */}
+      {showEditEmployeeModal && selectedStaff && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in" id="edit-employee-modal">
+          <div className="bg-white rounded-2xl w-full max-w-md p-5 sm:p-6 shadow-2xl space-y-4 border border-[#E5EDF3] animate-zoom-in text-left">
+            <div className="flex justify-between items-center border-b border-[#E5EDF3] pb-3">
+              <h3 className="text-sm font-extrabold text-[#0F172A] flex items-center gap-2">
+                <Edit2 size={16} className="text-[#0891B2]" />
+                <span>Edit Employee Details</span>
+              </h3>
+              <button
+                onClick={() => setShowEditEmployeeModal(false)}
+                className="p-1 text-[#64748B] hover:text-[#0F172A] rounded-lg transition-colors cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEmployeeEdit} className="space-y-3.5">
+              <div>
+                <label className="text-xs text-[#1E293B] font-medium block mb-1">Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={editEmpName}
+                  onChange={(e) => setEditEmpName(e.target.value)}
+                  className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#CBD5E1] bg-white text-[#1E293B] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-[#1E293B] font-medium block mb-1">Job Role *</label>
+                <select
+                  value={editEmpRole}
+                  onChange={(e) => setEditEmpRole(e.target.value as Staff['role'])}
+                  className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#CBD5E1] bg-white text-[#1E293B] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none cursor-pointer font-bold"
+                >
+                  <option value="detailer">Employee</option>
+                  <option value="manager">Car Washer</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs text-[#1E293B] font-medium block mb-1">Mobile Phone *</label>
+                <input
+                  type="tel"
+                  required
+                  value={editEmpPhone}
+                  onChange={(e) => setEditEmpPhone(e.target.value)}
+                  className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#CBD5E1] bg-white text-[#1E293B] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-[#1E293B] font-medium block mb-1">Monthly Base Salary (₹) *</label>
+                <input
+                  type="number"
+                  min="1000"
+                  step="500"
+                  required
+                  value={editEmpSalary}
+                  onChange={(e) => setEditEmpSalary(Number(e.target.value))}
+                  className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#CBD5E1] bg-white text-[#1E293B] focus:ring-2 focus:ring-[#0891B2]/20 focus:border-[#0891B2] focus:outline-none font-bold"
+                />
+              </div>
+
+              <div className="pt-2 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowEditEmployeeModal(false)}
+                  className="flex-1 py-2.5 bg-white hover:bg-slate-50 text-[#334155] border border-[#CBD5E1] text-xs font-bold rounded-xl transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-[#0891B2] hover:bg-[#0E7490] text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md"
+                >
+                  Save Changes
                 </button>
               </div>
             </form>
