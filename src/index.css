@@ -260,10 +260,10 @@ button[class*="bg-rose-500/20"] {
    BUTTONS STYLING OVERRIDES
    ----------------------------------------- */
 /* "New Booking" gradient button */
-button.bg-\[\#0ea5e9\],
+button.bg-sky-500,
 button.bg-indigo-600,
 button[class*="bg-sky-500"],
-button[class*="bg-[#0ea5e9]"] {
+button[class*="bg-cyan-500"] {
   background: linear-gradient(135deg, #0891B2, #06B6D4) !important;
   color: #FFFFFF !important;
   border-radius: 0.75rem !important;
@@ -273,7 +273,7 @@ button[class*="bg-[#0ea5e9]"] {
   transition: all 200ms ease;
 }
 
-button.bg-\[\#0ea5e9\]:hover,
+button.bg-sky-500:hover,
 button.bg-indigo-600:hover,
 button[class*="bg-sky-500"]:hover {
   background: linear-gradient(135deg, #0E7490, #0891B2) !important;
@@ -449,7 +449,7 @@ body, html, #drwashit-crm-app, div#view-tabs-router, main {
 }
 
 /* 1. Heavy dark slate (#0F172A) for very light/white text classes in light theme (excluding action buttons and welcome banner) */
-.text-white:not(button):not(.bg-[#0ea5e9]):not(.bg-[#0891B2]):not(.bg-rose-600):not(.active-sidebar-nav):not(#welcome-banner-element *):not(button *),
+.text-white:not(button):not([class*="bg-sky-500"]):not([class*="bg-cyan-500"]):not(.bg-rose-600):not(.active-sidebar-nav):not(#welcome-banner-element *):not(button *),
 .text-slate-50,
 .text-slate-100,
 .text-slate-200,
@@ -469,8 +469,8 @@ body, html, #drwashit-crm-app, div#view-tabs-router, main {
 .text-slate-600,
 .text-gray-600,
 .text-slate-500\/50,
-.text-[#94A3B8],
-.text-[#64748B] {
+[class*="text-slate-400"],
+[class*="text-slate-500"] {
   color: #475569 !important;
 }
 
@@ -530,10 +530,10 @@ textarea {
 }
 
 /* Exception to keep specific active buttons and welcome banner texts white */
-button.bg-[#0ea5e9],
-button.bg-[#0ea5e9] *,
-button.bg-[#0891B2],
-button.bg-[#0891B2] *,
+button.bg-sky-500,
+button.bg-sky-500 *,
+button.bg-cyan-600,
+button.bg-cyan-600 *,
 button.bg-rose-600,
 button.bg-rose-600 *,
 #welcome-banner-element,
@@ -555,8 +555,8 @@ div[class*="bg-slate-950"] button {
   font-weight: 700 !important;
 }
 
-div.bg-slate-950[class*="rounded-xl"] button[class*="bg-[#0ea5e9]"],
-div[class*="bg-slate-950"] button[class*="bg-[#0ea5e9]"] {
+div.bg-slate-950[class*="rounded-xl"] button[class*="bg-sky-500"],
+div[class*="bg-slate-950"] button[class*="bg-sky-500"] {
   background-color: #0891B2 !important;
   color: #FFFFFF !important;
 }
