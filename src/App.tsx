@@ -1216,8 +1216,8 @@ export default function App() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         
         {/* Top Navbar with light layout */}
-        <header className="h-16 border-b border-[#E5EDF3] bg-white px-3 sm:px-4 md:px-6 flex items-center justify-between shrink-0 select-none overflow-x-hidden">
-          <div className="flex items-center gap-2 min-w-0">
+        <header className="h-16 border-b border-[#E5EDF3] bg-white px-2.5 sm:px-4 md:px-6 flex items-center justify-between shrink-0 select-none overflow-x-hidden">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="p-1.5 hover:bg-[#F4F8FB] hover:text-[#0F172A] rounded-lg transition-colors cursor-pointer text-[#64748B] lg:hidden shrink-0"
@@ -1230,7 +1230,7 @@ export default function App() {
             {activeTab !== 'dashboard' && (
               <button
                 onClick={handleGoBack}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-[#ECFEFF] hover:bg-[#CFFAFE] text-[#0891B2] hover:text-[#0E7490] rounded-xl text-xs font-extrabold border border-[#0891B2]/40 transition-all cursor-pointer shadow-xs shrink-0"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-[#ECFEFF] hover:bg-[#CFFAFE] text-[#0891B2] hover:text-[#0E7490] rounded-xl text-xs font-extrabold border border-[#0891B2]/40 transition-all cursor-pointer shadow-xs shrink-0 mr-1"
                 title={`Go Back to ${TAB_NAMES[navHistory[navHistory.length - 2]?.tab || 'dashboard'] || 'Previous'}`}
                 id="header-back-button"
               >
@@ -1244,10 +1244,10 @@ export default function App() {
               </button>
             )}
 
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-sm font-extrabold text-[#0F172A] truncate max-w-[100px] sm:max-w-none">{settings.shopName || 'Dr Washit'}</span>
+            <div className="flex items-center gap-1.5 min-w-0 shrink">
+              <span className="text-sm font-extrabold text-[#0F172A] truncate max-w-[80px] sm:max-w-none">{settings.shopName || 'Dr Washit'}</span>
               {activeTab !== 'dashboard' && (
-                <div className="flex items-center gap-1 min-w-0 text-xs">
+                <div className="hidden sm:flex items-center gap-1 min-w-0 text-xs">
                   <span className="text-[#CBD5E1]">/</span>
                   <span className="font-bold text-[#0891B2] truncate max-w-[110px] sm:max-w-[200px]">
                     {TAB_NAMES[activeTab] || activeTab}
@@ -1302,19 +1302,21 @@ export default function App() {
 
             <span className="h-6 w-px bg-[#E5EDF3] my-auto"></span>
 
-            {/* Notification triggers */}
-            <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="p-2 bg-[#F4F8FB] hover:bg-[#E5EDF3] border border-[#CBD5E1] rounded-xl text-[#334155] relative transition-all cursor-pointer"
-              id="top-notification-bell"
-            >
-              <Bell size={16} />
-              {pendingLeads.length > 0 && (
-                <span className="absolute -top-1 -right-1 h-4 w-4 bg-[#EF4444] border-2 border-white text-white text-4xs font-black rounded-full flex items-center justify-center animate-bounce">
-                  {pendingLeads.length}
-                </span>
-              )}
-            </button>
+            {/* Notification triggers - only render if pending leads exist */}
+            {pendingLeads.length > 0 && (
+              <>
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="p-2 bg-[#F4F8FB] hover:bg-[#E5EDF3] border border-[#CBD5E1] rounded-xl text-[#334155] relative transition-all cursor-pointer"
+                  id="top-notification-bell"
+                >
+                  <Bell size={16} />
+                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-[#EF4444] border-2 border-white text-white text-4xs font-black rounded-full flex items-center justify-center animate-bounce">
+                    {pendingLeads.length}
+                  </span>
+                </button>
+              </>
+            )}
 
             {/* Notifications self booking requests dropdown */}
             {showNotifications && (
